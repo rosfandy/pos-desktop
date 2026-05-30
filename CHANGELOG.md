@@ -9,6 +9,11 @@ dan proyek ini mengikuti [Semantic Versioning](https://semver.org/).
 
 ## [1.3.0] — 2026-05-30
 
+### Fixed
+- **Auto-updater NSIS**: Ganti `oneClick: false` → `oneClick: true` agar update tidak menampilkan wizard instalasi (silent upgrade). Sebelumnya saat user klik "Restart & Pasang", NSIS menampilkan full installer wizard sehingga tampak seperti install ulang.
+
+### Added
+
 ### Added
 - **Export/Import pelanggan**: Tombol Export dan Import di halaman Manajemen Pelanggan.
   - Export: format Excel (.xlsx) atau CSV (.csv), filter status aktif/nonaktif.
