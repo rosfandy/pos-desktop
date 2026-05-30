@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useProductStore } from '@/stores/productStore';
 import {
   Dialog,
@@ -42,6 +42,7 @@ interface PreviewRow {
 
 export default function BulkImportDialog({ open, onOpenChange }: BulkImportDialogProps) {
   const { fetchProducts, fetchCategories } = useProductStore();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [step, setStep] = useState<'idle' | 'preview' | 'result'>('idle');
   const [loading, setLoading] = useState(false);
@@ -73,7 +74,16 @@ export default function BulkImportDialog({ open, onOpenChange }: BulkImportDialo
     setFileName(file.name);
 
     try {
-      const result = await window.api.productImportPreview((file as any).path);
+      // Baca file sebagai ArrayBuffer di renderer
+      const buffer = await new Promise<ArrayBuffer>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as ArrayBuffer);
+        reader.onerror = () => reject(new Error('Gagal membaca file'));
+        reader.readAsArrayBuffer(file);
+      });
+
+      const uint8 = new Uint8Array(buffer);
+      const result = await window.api.productImportPreview(uint8);
 
       if (result.ok && result.data) {
         const data = result.data;
@@ -168,13 +178,17 @@ export default function BulkImportDialog({ open, onOpenChange }: BulkImportDialo
             <div className="flex flex-col items-center justify-center py-8 border-2 border-dashed border-neutral-200 rounded-lg">
               <FileText className="w-10 h-10 text-neutral-300 mb-3" />
               <p className="text-[12px] text-neutral-600 mb-3">Pilih file Excel atau CSV untuk di-import</p>
-              <label className="cursor-pointer">
-                <input type="file" accept=".csv,.xlsx,.xls" onChange={handleFileChange} className="hidden" />
-                <Button type="button" size="sm" className="bg-indigo-600 hover:bg-indigo-700 text-white">
-                  <Upload className="w-3.5 h-3.5" />
-                  Pilih File
-                </Button>
-              </label>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".csv,.xlsx,.xls"
+                onChange={handleFileChange}
+                className="hidden"
+              />
+              <Button type="button" size="sm" onClick={() => fileInputRef.current?.click()} className="bg-indigo-600 hover:bg-indigo-700 text-white">
+                <Upload className="w-3.5 h-3.5" />
+                Pilih File
+              </Button>
               {fileName && <p className="text-[11px] text-neutral-500 mt-2">{fileName}</p>}
             </div>
           )}

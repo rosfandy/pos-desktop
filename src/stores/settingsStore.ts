@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import type { API } from '@/lib/api';
 
+export type FontSize = 'small' | 'medium' | 'large';
+
 export interface SettingsState {
   storeName: string;
   storeAddress: string;
@@ -13,6 +15,7 @@ export interface SettingsState {
   receiptShowQr: boolean;
   minStockThreshold: number;  // 0 = use per-product minStock
   printerName: string;        // nama printer untuk thermal printer
+  fontSize: FontSize;         // small / medium / large
   isLoading: boolean;
   isSaving: boolean;
   error: string | null;
@@ -29,6 +32,7 @@ export interface SettingsState {
     receiptShowQr: boolean;
     minStockThreshold: number;
     printerName: string;
+    fontSize: FontSize;
   }) => Promise<void>;
 }
 
@@ -44,6 +48,7 @@ const DEFAULTS = {
   receiptShowQr: false,
   minStockThreshold: 0,
   printerName: '',
+  fontSize: 'medium' as FontSize,
 };
 
 function getBool(val: string | undefined, def: boolean): boolean {
@@ -63,6 +68,7 @@ export const useSettingsStore = create<SettingsState>((set) => ({
   receiptShowQr: DEFAULTS.receiptShowQr,
   minStockThreshold: DEFAULTS.minStockThreshold,
   printerName: DEFAULTS.printerName,
+  fontSize: DEFAULTS.fontSize,
   isLoading: false,
   isSaving: false,
   error: null,
@@ -85,6 +91,7 @@ export const useSettingsStore = create<SettingsState>((set) => ({
           receiptShowQr: getBool(data.receipt_show_qr, DEFAULTS.receiptShowQr),
           minStockThreshold: parseInt(data.min_stock_threshold ?? '0', 10) || 0,
           printerName: data.printer_name ?? DEFAULTS.printerName,
+          fontSize: (data.font_size as FontSize) ?? DEFAULTS.fontSize,
           isLoading: false,
         });
       } else {
@@ -111,6 +118,7 @@ export const useSettingsStore = create<SettingsState>((set) => ({
         api.settingsSet('receipt_show_qr', String(values.receiptShowQr)),
         api.settingsSet('min_stock_threshold', String(values.minStockThreshold)),
         api.settingsSet('printer_name', values.printerName),
+        api.settingsSet('font_size', values.fontSize),
       ]);
 
       set({
@@ -125,6 +133,7 @@ export const useSettingsStore = create<SettingsState>((set) => ({
         receiptShowQr: values.receiptShowQr,
         minStockThreshold: values.minStockThreshold,
         printerName: values.printerName,
+        fontSize: values.fontSize,
         isSaving: false,
       });
     } catch {

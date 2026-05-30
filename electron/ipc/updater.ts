@@ -1,4 +1,4 @@
-import { ipcMain, BrowserWindow } from 'electron';
+import { ipcMain, BrowserWindow, app } from 'electron';
 import { autoUpdater } from 'electron-updater';
 
 autoUpdater.autoDownload = false;
@@ -38,6 +38,9 @@ export function registerUpdaterHandlers(mainWindow: BrowserWindow): void {
 
   // IPC handlers from renderer
   ipcMain.handle('updater:check', async () => {
+    if (!app.isPackaged) {
+      return { ok: false, error: 'Update hanya tersedia di aplikasi terinstall' };
+    }
     try {
       await autoUpdater.checkForUpdates();
       return { ok: true };

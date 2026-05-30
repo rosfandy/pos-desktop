@@ -9,12 +9,12 @@ import { cn, unwrap } from '@/lib/utils';
 import type { PrinterInfo } from '@/lib/api';
 import {
   Storefront, MapPin, Phone, Percent, CheckCircle, Warning, FloppyDisk,
-  WarningCircle, Printer, Package, Gear, ArrowClockwise
+  WarningCircle, Printer, Package, Gear, TextT, ArrowClockwise
 } from 'phosphor-react';
 
 // ─── Tab definitions ───────────────────────────────────────────────────────────
 
-type TabId = 'general' | 'print' | 'inventory';
+type TabId = 'general' | 'print' | 'inventory' | 'tampilan';
 
 interface TabItem {
   id: TabId;
@@ -23,9 +23,10 @@ interface TabItem {
 }
 
 const TABS: TabItem[] = [
-  { id: 'general',  label: 'Umum',        icon: <Gear className="w-4 h-4" /> },
-  { id: 'print',    label: 'Cetak',       icon: <Printer className="w-4 h-4" /> },
-  { id: 'inventory', label: 'Inventaris', icon: <Package className="w-4 h-4" /> },
+  { id: 'general',   label: 'Umum',        icon: <Gear className="w-4 h-4" /> },
+  { id: 'print',     label: 'Cetak',       icon: <Printer className="w-4 h-4" /> },
+  { id: 'inventory', label: 'Inventaris',  icon: <Package className="w-4 h-4" /> },
+  { id: 'tampilan',  label: 'Tampilan',    icon: <TextT className="w-4 h-4" /> },
 ];
 
 // ─── Component ─────────────────────────────────────────────────────────────────
@@ -34,7 +35,7 @@ export default function SettingsPage() {
   const {
     storeName, storeAddress, storePhone, taxRate,
     receiptHeader, receiptFooter, receiptShowLogo, receiptShowTaxBreakdown, receiptShowQr,
-    minStockThreshold, printerName, isLoading, isSaving, error, loadSettings, saveSettings
+    minStockThreshold, printerName, fontSize, isLoading, isSaving, error, loadSettings, saveSettings
   } = useSettingsStore();
 
   const [activeTab, setActiveTab] = useState<TabId>('general');
@@ -50,6 +51,7 @@ export default function SettingsPage() {
     receiptShowQr: false,
     minStockThreshold: 0,
     printerName: '',
+    fontSize: 'medium' as 'small' | 'medium' | 'large',
   });
 
   const [showSuccess, setShowSuccess] = useState(false);
@@ -79,9 +81,9 @@ export default function SettingsPage() {
     setForm({
       storeName, storeAddress, storePhone, taxRate,
       receiptHeader, receiptFooter, receiptShowLogo, receiptShowTaxBreakdown, receiptShowQr,
-      minStockThreshold, printerName,
+      minStockThreshold, printerName, fontSize,
     });
-  }, [storeName, storeAddress, storePhone, taxRate, receiptHeader, receiptFooter, receiptShowLogo, receiptShowTaxBreakdown, receiptShowQr, minStockThreshold, printerName]);
+  }, [storeName, storeAddress, storePhone, taxRate, receiptHeader, receiptFooter, receiptShowLogo, receiptShowTaxBreakdown, receiptShowQr, minStockThreshold, printerName, fontSize]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -102,7 +104,8 @@ export default function SettingsPage() {
     form.receiptShowTaxBreakdown !== receiptShowTaxBreakdown ||
     form.receiptShowQr !== receiptShowQr ||
     form.minStockThreshold !== minStockThreshold ||
-    form.printerName !== printerName;
+    form.printerName !== printerName ||
+    form.fontSize !== fontSize;
 
   // ── Section renderers ────────────────────────────────────────────────────────
 
@@ -335,6 +338,45 @@ export default function SettingsPage() {
     );
   }
 
+  function renderPreferences() {
+    const sizes: { value: 'small' | 'medium' | 'large'; label: string }[] = [
+      { value: 'small',  label: 'Kecil' },
+      { value: 'medium', label: 'Sedang' },
+      { value: 'large',  label: 'Besar' },
+    ];
+
+    return (
+      <div className="space-y-4">
+        <p className="text-[10px] font-semibold text-neutral-500 uppercase tracking-wide">Ukuran Huruf</p>
+
+        <div className="space-y-1">
+          <p className="text-[10px] text-neutral-600">Pilih ukuran huruf keseluruhan aplikasi.</p>
+          <div className="flex gap-2">
+            {sizes.map((s) => (
+              <button
+                key={s.value}
+                type="button"
+                onClick={() => setForm((f) => ({ ...f, fontSize: s.value }))}
+                className={cn(
+                  'flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded border transition-colors',
+                  form.fontSize === s.value
+                    ? 'bg-indigo-50 border-indigo-300 text-indigo-700'
+                    : 'bg-white border-neutral-200 text-neutral-600 hover:bg-neutral-50'
+                )}
+              >
+                <TextT className="w-4 h-4" />
+                {s.label}
+              </button>
+            ))}
+          </div>
+          <p className="text-[10px] text-neutral-400">
+            Perubahan ukuran huruf akan langsung diterapkan setelah disimpan.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   // ── Loading state ────────────────────────────────────────────────────────────
 
   if (isLoading) {
@@ -401,6 +443,7 @@ export default function SettingsPage() {
             {activeTab === 'general' && renderGeneral()}
             {activeTab === 'print' && renderPrint()}
             {activeTab === 'inventory' && renderInventory()}
+            {activeTab === 'tampilan' && renderPreferences()}
 
             {/* Save Button */}
             <div className="pt-4 flex items-center justify-between border-t border-neutral-100">

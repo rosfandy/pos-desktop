@@ -1,14 +1,14 @@
 import { ipcMain } from 'electron';
-import { previewImport, commitImport } from '../services/product/bulk-import.service.ts';
+import { previewImportFromBuffer, commitImport } from '../services/product/bulk-import.service.ts';
 import type { ImportRow } from '../services/product/bulk-import.service.ts';
 
 function ok<T>(data: T) { return { ok: true as const, data }; }
 function fail(message: string, code = 'IMP_ERR') { return { ok: false as const, error: { code, message } }; }
 
 export function registerBulkImportHandlers() {
-  ipcMain.handle('product:import-preview', async (_e, filePath: string) => {
+  ipcMain.handle('product:import-preview', async (_e, data: Uint8Array) => {
     try {
-      const result = await previewImport(filePath);
+      const result = await previewImportFromBuffer(Buffer.from(data));
       return ok(result);
     } catch (err: any) {
       return fail(err?.message || 'Gagal membaca file');

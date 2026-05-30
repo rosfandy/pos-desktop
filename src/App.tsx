@@ -33,6 +33,7 @@ import {
 } from 'phosphor-react';
 import { useAuthStore } from '@/stores/authStore';
 import { useThemeStore } from '@/stores/themeStore';
+import { useSettingsStore } from '@/stores/settingsStore';
 import { useShiftStore } from '@/stores/shiftStore';
 import { Toaster } from '@/components/ui/toaster';
 import { Button } from '@/components/ui/button';
@@ -631,6 +632,21 @@ export default function App() {
   const checkAuth = useAuthStore((s) => s.checkAuth);
   const initTheme = useThemeStore((s) => s.initTheme);
   const { checkUpdate } = useAutoUpdater();
+  const fontSize = useSettingsStore((s) => s.fontSize);
+  const loadSettings = useSettingsStore((s) => s.loadSettings);
+
+  // Load settings on mount (includes font-size preference)
+  useEffect(() => {
+    loadSettings();
+  }, [loadSettings]);
+
+  // Apply font-size class to <html>
+  useEffect(() => {
+    document.documentElement.className = document.documentElement.className
+      .replace(/text-size-\S+/g, '')
+      .trim();
+    document.documentElement.classList.add(`text-size-${fontSize}`);
+  }, [fontSize]);
 
   useEffect(() => {
     checkAuth();

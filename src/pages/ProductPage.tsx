@@ -33,6 +33,7 @@ export default function ProductPage() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('products');
   const [showImportDialog, setShowImportDialog] = useState(false);
   const [showExportDialog, setShowExportDialog] = useState(false);
+  const [productRefreshKey, setProductRefreshKey] = useState(0);
 
   // Load product counts (total, active, lowStock) — 1 cheap query, no rows loaded
   const loadCounts = useCallback(async () => {
@@ -44,6 +45,15 @@ export default function ProductPage() {
       // ignore
     }
   }, []);
+
+  // Refresh product list when import dialog closes
+  const handleImportOpenChange = useCallback((open: boolean) => {
+    setShowImportDialog(open);
+    if (!open) {
+      loadCounts();
+      setProductRefreshKey((k) => k + 1);
+    }
+  }, [loadCounts]);
 
   // Load categories for stats + InlineCategoryTable
   const loadCategories = useCallback(async () => {
@@ -177,17 +187,15 @@ export default function ProductPage() {
         {/* ── Main content ────────────────────────────────────────────── */}
         <main className="flex-1 min-w-0 bg-white">
           {activeTab === 'products' ? (
-            <InlineProductTable />
+            <InlineProductTable refreshKey={productRefreshKey} />
           ) : (
             <InlineCategoryTable />
           )}
         </main>
       </div>
 
-      {/* ═══════════════════════════════════════════════════════════════ */}
-      {/* ── Dialogs ─────────────────────────────────────────────────── */}
-      {/* ═══════════════════════════════════════════════════════════════ */}
-      <BulkImportDialog open={showImportDialog} onOpenChange={setShowImportDialog} />
+      {/* Dialogs */}
+      <BulkImportDialog open={showImportDialog} onOpenChange={handleImportOpenChange} />
       <BulkExportDialog open={showExportDialog} onOpenChange={setShowExportDialog} />
     </div>
   );

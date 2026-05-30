@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, nativeImage } from 'electron';
 import { join } from 'path';
 import { registerAuthHandlers } from './ipc/auth.ts';
 import { registerSettingsHandlers } from './ipc/settings.ts';
@@ -17,15 +17,20 @@ import { registerUpdaterHandlers } from './ipc/updater.ts';
 import { migrate, getDb, seedAdmin } from './db/index.ts';
 
 const __dirname = join(__filename, '..');
+const iconPath = join(__dirname, '..', 'build-resources', 'icon.png');
 
 let mainWindow: BrowserWindow | null = null;
 
 function createWindow() {
+  const icon = nativeImage.createFromPath(iconPath);
+
   mainWindow = new BrowserWindow({
     width: 1280,
     height: 800,
     minWidth: 1024,
     minHeight: 768,
+    title: 'POS Desktop',
+    icon: icon.isEmpty() ? undefined : icon,
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,
@@ -52,6 +57,7 @@ function createWindow() {
 }
 
 app.whenReady().then(async () => {
+  app.setName('POS Desktop');
   console.log('[APP] whenReady fired');
 
   // ── Database ──────────────────────────────────────────────────────────
@@ -84,10 +90,8 @@ app.whenReady().then(async () => {
 
   createWindow();
 
-  // Register updater after window created
-  if (app.isPackaged) {
-    registerUpdaterHandlers(mainWindow!);
-  }
+  // Register updater handlers (always — autoUpdater aman dipanggil di dev)
+  registerUpdaterHandlers(mainWindow!);
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {

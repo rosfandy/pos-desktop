@@ -528,7 +528,7 @@ export interface API {
   productUpdateStock: (productId: string, quantityChange: number) => Promise<ApiResponse<boolean>>;
   productLowStock: (threshold?: number) => Promise<ApiResponse<ProductRow[]>>;
   productHistory: (productId: string) => Promise<ApiResponse<ProductHistoryEntry[]>>;
-  productImportPreview: (filePath: string) => Promise<ApiResponse<{ rows: ImportRow[]; totalRows: number; errors: Array<{ row: number; message: string }> }>>;
+  productImportPreview: (data: Uint8Array) => Promise<ApiResponse<{ rows: ImportRow[]; totalRows: number; errors: Array<{ row: number; message: string }> }>>;
   productImportCommit: (rows: ImportRow[]) => Promise<ApiResponse<{ success: boolean; totalRows: number; imported: number; errors: Array<{ row: number; message: string }> }>>;
   productExport: (params: { filter?: { categoryId?: string; search?: string; isActive?: boolean }; format: 'csv' | 'xlsx' }) => Promise<ApiResponse<{ success: boolean; filePath?: string; error?: string }>>;
   productBulkSave: (rows: any[]) => Promise<ApiResponse<{ success: number; errors: { row: number; message: string }[] }>>;

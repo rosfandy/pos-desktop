@@ -134,3 +134,8 @@ html {
     @apply font-sans;
   }
 }
+
+/* Font-size scale */
+html.text-size-small  { font-size: 85%; }
+html.text-size-medium { font-size: 100%; }
+html.text-size-large  { font-size: 115%; }

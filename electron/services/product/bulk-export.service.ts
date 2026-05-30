@@ -1,4 +1,6 @@
 import * as XLSX from 'xlsx';
+import * as path from 'node:path';
+import * as fs from 'node:fs';
 import { getDb } from '../../db/index.ts';
 
 export interface ExportParams {
@@ -54,16 +56,23 @@ export async function exportProducts(params: ExportParams): Promise<{ success: b
 
     const date = new Date().toISOString().split('T')[0];
     const fileName = `produk_export_${date}.${params.format}`;
-    const outputPath = `${process.cwd()}/data/${fileName}`;
+    const outputDir = path.join(process.cwd(), 'data');
+    const outputPath = path.join(outputDir, fileName);
+
+    // Pastikan direktori data ada
+    if (!fs.existsSync(outputDir)) {
+      fs.mkdirSync(outputDir, { recursive: true });
+    }
 
     if (params.format === 'csv') {
       const csvContent = rows.map((row) => row.map((cell) => `"${String(cell ?? '').replace(/"/g, '""')}"`).join(',')).join('\n');
-      require('fs').writeFileSync(outputPath, '\uFEFF' + csvContent); // BOM for Excel
+      fs.writeFileSync(outputPath, '\uFEFF' + csvContent); // BOM for Excel
     } else {
       const worksheet = XLSX.utils.aoa_to_sheet(rows);
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, 'Produk');
-      XLSX.writeFile(workbook, outputPath);
+      const buffer: Uint8Array = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+      fs.writeFileSync(outputPath, Buffer.from(buffer));
     }
 
     return { success: true, filePath: outputPath };

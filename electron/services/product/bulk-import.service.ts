@@ -120,6 +120,55 @@ function parseWorkbook(buffer: Buffer): ImportRow[] {
 
 // ─── Preview (parse + validate, no DB write) ──────────────────────────────────
 
+async function validateRows(rows: ImportRow[]): Promise<PreviewResult['errors']> {
+  const db = await getDb();
+  const errors: PreviewResult['errors'] = [];
+
+  const existingSkus = new Set<string>();
+  const existingBarcodes = new Set<string>();
+  try {
+    const skuRows = db.exec('SELECT sku FROM products WHERE sku IS NOT NULL');
+    skuRows[0]?.values?.forEach((r) => existingSkus.add(String(r[0])));
+    const barcodeRows = db.exec('SELECT barcode FROM products WHERE barcode IS NOT NULL');
+    barcodeRows[0]?.values?.forEach((r) => existingBarcodes.add(String(r[0])));
+  } catch { /* ignore */ }
+
+  const validCategoryIds = new Set<string>();
+  try {
+    const catRows = db.exec('SELECT id FROM categories');
+    catRows[0]?.values?.forEach((r) => validCategoryIds.add(String(r[0])));
+  } catch { /* ignore */ }
+
+  for (const row of rows) {
+    if (!row.name) {
+      errors.push({ row: row.rowIndex, message: 'Nama produk wajib diisi' });
+      continue;
+    }
+    if (row.priceSell <= 0) errors.push({ row: row.rowIndex, message: 'Harga jual harus > 0' });
+    if (row.stock < 0) errors.push({ row: row.rowIndex, message: 'Stok tidak boleh negatif' });
+    if (row.sku && existingSkus.has(row.sku)) errors.push({ row: row.rowIndex, message: `SKU '${row.sku}' sudah ada` });
+    if (row.barcode && existingBarcodes.has(row.barcode)) errors.push({ row: row.rowIndex, message: `Barcode '${row.barcode}' sudah ada` });
+    if (row.categoryId && !validCategoryIds.has(row.categoryId)) errors.push({ row: row.rowIndex, message: `Kategori '${row.categoryId}' tidak ditemukan` });
+  }
+
+  return errors;
+}
+
+export async function previewImportFromBuffer(buffer: Buffer): Promise<PreviewResult> {
+  try {
+    const rows = parseWorkbook(buffer);
+
+    if (rows.length === 0) {
+      return { rows: [], totalRows: 0, errors: [{ row: 0, message: 'File kosong atau tidak bisa dibaca' }] };
+    }
+
+    const errors = await validateRows(rows);
+    return { rows, totalRows: rows.length, errors };
+  } catch (err) {
+    return { rows: [], totalRows: 0, errors: [{ row: 0, message: (err as Error)?.message || 'Gagal membaca file' }] };
+  }
+}
+
 export async function previewImport(filePath: string): Promise<PreviewResult> {
   const fs = await import('fs');
   const path = await import('path');
@@ -127,43 +176,7 @@ export async function previewImport(filePath: string): Promise<PreviewResult> {
   try {
     const resolvedPath = path.resolve(filePath);
     const buffer = fs.readFileSync(resolvedPath);
-    const rows = parseWorkbook(Buffer.from(buffer));
-
-    if (rows.length === 0) {
-      return { rows: [], totalRows: 0, errors: [{ row: 0, message: 'File kosong atau tidak bisa dibaca' }] };
-    }
-
-    const db = await getDb();
-
-    const existingSkus = new Set<string>();
-    const existingBarcodes = new Set<string>();
-    try {
-      const skuRows = db.exec('SELECT sku FROM products WHERE sku IS NOT NULL');
-      skuRows[0]?.values?.forEach((r) => existingSkus.add(String(r[0])));
-      const barcodeRows = db.exec('SELECT barcode FROM products WHERE barcode IS NOT NULL');
-      barcodeRows[0]?.values?.forEach((r) => existingBarcodes.add(String(r[0])));
-    } catch { /* ignore */ }
-
-    const validCategoryIds = new Set<string>();
-    try {
-      const catRows = db.exec('SELECT id FROM categories');
-      catRows[0]?.values?.forEach((r) => validCategoryIds.add(String(r[0])));
-    } catch { /* ignore */ }
-
-    const errors: PreviewResult['errors'] = [];
-    for (const row of rows) {
-      if (!row.name) {
-        errors.push({ row: row.rowIndex, message: 'Nama produk wajib diisi' });
-        continue;
-      }
-      if (row.priceSell <= 0) errors.push({ row: row.rowIndex, message: 'Harga jual harus > 0' });
-      if (row.stock < 0) errors.push({ row: row.rowIndex, message: 'Stok tidak boleh negatif' });
-      if (row.sku && existingSkus.has(row.sku)) errors.push({ row: row.rowIndex, message: `SKU '${row.sku}' sudah ada` });
-      if (row.barcode && existingBarcodes.has(row.barcode)) errors.push({ row: row.rowIndex, message: `Barcode '${row.barcode}' sudah ada` });
-      if (row.categoryId && !validCategoryIds.has(row.categoryId)) errors.push({ row: row.rowIndex, message: `Kategori '${row.categoryId}' tidak ditemukan` });
-    }
-
-    return { rows, totalRows: rows.length, errors };
+    return previewImportFromBuffer(Buffer.from(buffer));
   } catch (err) {
     return { rows: [], totalRows: 0, errors: [{ row: 0, message: (err as Error)?.message || 'Gagal membaca file' }] };
   }

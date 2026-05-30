@@ -59,7 +59,7 @@ function unwrap<T>(res: unknown, fallback?: T): T | null {
 
 // ─── Component ──────────────────────────────────────────────────────────────────
 
-export default function InlineProductTable() {
+export default function InlineProductTable({ refreshKey }: { refreshKey?: number }) {
   // ── State ───────────────────────────────────────────────────────────────────
   const [products, setProducts] = useState<ProductRow[]>([]);
   const [categories, setCategories] = useState<CategoryRow[]>([]);
@@ -136,7 +136,7 @@ export default function InlineProductTable() {
 
   useEffect(() => {
     loadProducts();
-  }, [loadProducts]);
+  }, [loadProducts, refreshKey]);
 
   useEffect(() => {
     loadCategories();
@@ -480,20 +480,20 @@ export default function InlineProductTable() {
 
       {/* ── Table ───────────────────────────────────────────────────────────── */}
       <div className="flex-1 overflow-auto [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-neutral-300 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-neutral-400">
-        <table className="w-full text-left border-collapse min-w-[900px] [&_td]:border-r [&_th]:border-r [&_td]:border-neutral-200 [&_th]:border-neutral-200">
+        <table className="w-full text-left border-collapse min-w-[1100px] [&_td]:border-r [&_th]:border-r [&_td]:border-neutral-200 [&_th]:border-neutral-200">
           <thead className="sticky top-0 z-10">
             <tr className="bg-neutral-50 border-b-2 border-neutral-300">
               <th className="px-2 py-1.5 text-[10px] font-semibold text-neutral-500 uppercase w-8">No</th>
-              <th className="px-2 py-1.5 text-[10px] font-semibold text-neutral-500 uppercase">SKU</th>
-              <th className="px-2 py-1.5 text-[10px] font-semibold text-neutral-500 uppercase">Barcode</th>
-              <th className="px-2 py-1.5 text-[10px] font-semibold text-neutral-500 uppercase">Nama Produk</th>
-              <th className="px-2 py-1.5 text-[10px] font-semibold text-neutral-500 uppercase">Kategori</th>
-              <th className="px-2 py-1.5 text-[10px] font-semibold text-neutral-500 uppercase text-right">Harga Beli</th>
-              <th className="px-2 py-1.5 text-[10px] font-semibold text-neutral-500 uppercase text-right">Harga Jual</th>
-              <th className="px-2 py-1.5 text-[10px] font-semibold text-neutral-500 uppercase text-center">Stok</th>
-              <th className="px-2 py-1.5 text-[10px] font-semibold text-neutral-500 uppercase text-center">Satuan</th>
-              <th className="px-2 py-1.5 text-[10px] font-semibold text-neutral-500 uppercase text-center">Min</th>
-              <th className="px-2 py-1.5 text-[10px] font-semibold text-neutral-500 uppercase text-center">Aktif</th>
+              <th className="px-2 py-1.5 text-[10px] font-semibold text-neutral-500 uppercase w-[100px]">SKU</th>
+              <th className="px-2 py-1.5 text-[10px] font-semibold text-neutral-500 uppercase w-[120px]">Barcode</th>
+              <th className="px-2 py-1.5 text-[10px] font-semibold text-neutral-500 uppercase w-[200px]">Nama Produk</th>
+              <th className="px-2 py-1.5 text-[10px] font-semibold text-neutral-500 uppercase w-[120px]">Kategori</th>
+              <th className="px-2 py-1.5 text-[10px] font-semibold text-neutral-500 uppercase text-right w-[130px]">Harga Beli</th>
+              <th className="px-2 py-1.5 text-[10px] font-semibold text-neutral-500 uppercase text-right w-[130px]">Harga Jual</th>
+              <th className="px-2 py-1.5 text-[10px] font-semibold text-neutral-500 uppercase text-center w-[80px]">Stok</th>
+              <th className="px-2 py-1.5 text-[10px] font-semibold text-neutral-500 uppercase text-center w-[72px]">Satuan</th>
+              <th className="px-2 py-1.5 text-[10px] font-semibold text-neutral-500 uppercase text-center w-[60px]">Min</th>
+              <th className="px-2 py-1.5 text-[10px] font-semibold text-neutral-500 uppercase text-center w-[56px]">Aktif</th>
               <th className="px-2 py-1.5 text-[10px] font-semibold text-neutral-500 uppercase text-center w-24 sticky right-0 bg-neutral-50 z-20 border-l border-neutral-200">Aksi</th>
             </tr>
           </thead>
@@ -511,7 +511,7 @@ export default function InlineProductTable() {
                     <Input value={row.barcode} onChange={(e) => updateField(id, 'barcode', e.target.value)} onKeyDown={(e) => handleKeyDown(e, id)} placeholder="Barcode" className="h-7 text-[11px] font-mono" />
                   </td>
                   <td className="px-1.5 py-1.5">
-                    <Input value={row.name} onChange={(e) => updateField(id, 'name', e.target.value)} onKeyDown={(e) => handleKeyDown(e, id)} placeholder="Nama produk *" className={cn('h-7 text-[11px]', !row.name.trim() ? 'border-red-300 focus:ring-red-300' : '')} autoFocus />
+                    <Input value={row.name} onChange={(e) => updateField(id, 'name', e.target.value)} onKeyDown={(e) => handleKeyDown(e, id)} placeholder="Nama produk *" className={cn('h-7 text-[11px] w-full', !row.name.trim() ? 'border-red-300 focus:ring-red-300' : '')} autoFocus />
                   </td>
                   <td className="px-1.5 py-1.5">
                     <select value={row.categoryId} onChange={(e) => updateField(id, 'categoryId', e.target.value)} className="w-full h-7 text-[11px] border border-neutral-300 rounded px-2 focus:outline-none focus:ring-1 focus:ring-indigo-500">
@@ -520,13 +520,13 @@ export default function InlineProductTable() {
                     </select>
                   </td>
                   <td className="px-1.5 py-1.5">
-                    <Input type="number" min="0" step="100" value={row.priceBuy} onChange={(e) => updateField(id, 'priceBuy', e.target.value)} onKeyDown={(e) => handleKeyDown(e, id)} className="h-7 text-[11px] text-right tabular-nums" />
+                    <Input type="number" min="0" step="100" value={row.priceBuy} onChange={(e) => updateField(id, 'priceBuy', e.target.value)} onKeyDown={(e) => handleKeyDown(e, id)} className="h-7 text-[11px] text-right tabular-nums w-full" />
                   </td>
                   <td className="px-1.5 py-1.5">
-                    <Input type="number" min="0" step="100" value={row.priceSell} onChange={(e) => updateField(id, 'priceSell', e.target.value)} onKeyDown={(e) => handleKeyDown(e, id)} className="h-7 text-[11px] text-right tabular-nums" />
+                    <Input type="number" min="0" step="100" value={row.priceSell} onChange={(e) => updateField(id, 'priceSell', e.target.value)} onKeyDown={(e) => handleKeyDown(e, id)} className="h-7 text-[11px] text-right tabular-nums w-full" />
                   </td>
                   <td className="px-1.5 py-1.5">
-                    <Input type="number" min="0" value={row.stock} onChange={(e) => updateField(id, 'stock', e.target.value)} onKeyDown={(e) => handleKeyDown(e, id)} className="w-20 h-7 text-[11px] text-center tabular-nums" />
+                    <Input type="number" min="0" value={row.stock} onChange={(e) => updateField(id, 'stock', e.target.value)} onKeyDown={(e) => handleKeyDown(e, id)} className="h-7 text-[11px] text-center tabular-nums w-full" />
                   </td>
                   <td className="px-1.5 py-1.5">
                     <Input value={row.baseUnit} onChange={(e) => updateField(id, 'baseUnit', e.target.value)} onKeyDown={(e) => handleKeyDown(e, id)} placeholder="pcs" className="w-16 h-7 text-[11px] text-center" />
@@ -572,7 +572,7 @@ export default function InlineProductTable() {
                       <Input value={editing.barcode} onChange={(e) => updateField(product.id, 'barcode', e.target.value)} onKeyDown={(e) => handleKeyDown(e, product.id)} placeholder="Barcode" className="h-7 text-[11px] font-mono" />
                     </td>
                     <td className="px-1.5 py-1.5">
-                      <Input value={editing.name} onChange={(e) => updateField(product.id, 'name', e.target.value)} onKeyDown={(e) => handleKeyDown(e, product.id)} className={cn('h-7 text-[11px]', !editing.name.trim() ? 'border-red-300 focus:ring-red-300' : '')} autoFocus />
+                      <Input value={editing.name} onChange={(e) => updateField(product.id, 'name', e.target.value)} onKeyDown={(e) => handleKeyDown(e, product.id)} className={cn('h-7 text-[11px] w-full', !editing.name.trim() ? 'border-red-300 focus:ring-red-300' : '')} autoFocus />
                     </td>
                     <td className="px-1.5 py-1.5">
                       <select value={editing.categoryId} onChange={(e) => updateField(product.id, 'categoryId', e.target.value)} className="w-full h-7 text-[11px] border border-neutral-300 rounded px-2 focus:outline-none focus:ring-1 focus:ring-indigo-500">
@@ -581,13 +581,13 @@ export default function InlineProductTable() {
                       </select>
                     </td>
                     <td className="px-1.5 py-1.5">
-                      <Input type="number" min="0" step="100" value={editing.priceBuy} onChange={(e) => updateField(product.id, 'priceBuy', e.target.value)} onKeyDown={(e) => handleKeyDown(e, product.id)} className="h-7 text-[11px] text-right tabular-nums" />
+                      <Input type="number" min="0" step="100" value={editing.priceBuy} onChange={(e) => updateField(product.id, 'priceBuy', e.target.value)} onKeyDown={(e) => handleKeyDown(e, product.id)} className="h-7 text-[11px] text-right tabular-nums w-full" />
                     </td>
                     <td className="px-1.5 py-1.5">
-                      <Input type="number" min="0" step="100" value={editing.priceSell} onChange={(e) => updateField(product.id, 'priceSell', e.target.value)} onKeyDown={(e) => handleKeyDown(e, product.id)} className="h-7 text-[11px] text-right tabular-nums" />
+                      <Input type="number" min="0" step="100" value={editing.priceSell} onChange={(e) => updateField(product.id, 'priceSell', e.target.value)} onKeyDown={(e) => handleKeyDown(e, product.id)} className="h-7 text-[11px] text-right tabular-nums w-full" />
                     </td>
                     <td className="px-1.5 py-1.5">
-                      <Input type="number" min="0" value={editing.stock} onChange={(e) => updateField(product.id, 'stock', e.target.value)} onKeyDown={(e) => handleKeyDown(e, product.id)} className="w-20 h-7 text-[11px] text-center tabular-nums" />
+                      <Input type="number" min="0" value={editing.stock} onChange={(e) => updateField(product.id, 'stock', e.target.value)} onKeyDown={(e) => handleKeyDown(e, product.id)} className="h-7 text-[11px] text-center tabular-nums w-full" />
                     </td>
                     <td className="px-1.5 py-1.5">
                       <Input value={editing.baseUnit} onChange={(e) => updateField(product.id, 'baseUnit', e.target.value)} onKeyDown={(e) => handleKeyDown(e, product.id)} className="w-16 h-7 text-[11px] text-center" />
@@ -627,7 +627,7 @@ export default function InlineProductTable() {
                   <td className="px-2 py-1.5 text-[11px] text-neutral-500 font-mono">{product.sku || '—'}</td>
                   <td className="px-2 py-1.5 text-[11px] text-neutral-500 font-mono">{product.barcode || '—'}</td>
                   <td className="px-2 py-1.5">
-                    <p className="text-[12px] font-medium text-neutral-800 truncate max-w-[160px]">{product.name}</p>
+                    <p className="text-[12px] font-medium text-neutral-800 truncate max-w-[180px]">{product.name}</p>
                   </td>
                   <td className="px-2 py-1.5 text-[11px] text-neutral-500">
                     {categories.find((c) => c.id === product.categoryId)?.name || '—'}
