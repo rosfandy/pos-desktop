@@ -22,6 +22,7 @@ import {
   XCircle,
   X,
   Crown,
+  Star,
 } from 'phosphor-react';
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
@@ -69,6 +70,7 @@ function emptyForm() {
     phone: '',
     email: '',
     address: '',
+    points: 0,
   };
 }
 
@@ -113,6 +115,7 @@ export default function CustomerForm({ open, onOpenChange, customerId }: Custome
             phone: res.data.phone || '',
             email: res.data.email || '',
             address: res.data.address || '',
+            points: res.data.points ?? 0,
           });
         }
         setLoading(false);
@@ -128,6 +131,7 @@ export default function CustomerForm({ open, onOpenChange, customerId }: Custome
         phone: selectedCustomer.phone || '',
         email: selectedCustomer.email || '',
         address: selectedCustomer.address || '',
+        points: selectedCustomer.points ?? 0,
       });
     }
   }, [selectedCustomer, customerId, form.name]);
@@ -177,6 +181,7 @@ export default function CustomerForm({ open, onOpenChange, customerId }: Custome
           phone: form.phone.trim() || undefined,
           email: form.email.trim() || undefined,
           address: form.address.trim() || undefined,
+          points: form.points,
         });
       } else {
         result = await createCustomer({
@@ -184,6 +189,7 @@ export default function CustomerForm({ open, onOpenChange, customerId }: Custome
           phone: form.phone.trim() || undefined,
           email: form.email.trim() || undefined,
           address: form.address.trim() || undefined,
+          points: form.points,
         });
       }
 
@@ -277,6 +283,24 @@ export default function CustomerForm({ open, onOpenChange, customerId }: Custome
                 )}
               />
             </div>
+          </div>
+
+          {/* ── Poin (hanya di edit) ──────────────────────────────────────────────── */}
+          <div className="space-y-1">
+            <label className="text-[11px] font-medium text-neutral-600">Poin</label>
+            <div className="relative">
+              <Star className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-amber-400" />
+              <Input
+                type="number"
+                min={0}
+                value={form.points}
+                onChange={(e) => setForm((f) => ({ ...f, points: Math.max(0, parseInt(e.target.value) || 0) }))}
+                className="h-8 text-[12px] pl-8 font-mono"
+              />
+            </div>
+            <p className="text-[10px] text-neutral-400">
+              Jumlah poin loyalitas pelanggan. Poin otomatis bertambah saat transaksi menggunakan pelanggan ini.
+            </p>
           </div>
 
           {/* ── Info tier untuk edit mode ────────────────────────────────────────── */}

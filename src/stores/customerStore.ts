@@ -12,8 +12,8 @@ interface CustomerState {
 
   fetchCustomers: (filter?: { search?: string }) => Promise<void>;
   searchCustomers: (query: string) => Promise<void>;
-  createCustomer: (input: { name: string; phone?: string; email?: string; address?: string }) => Promise<CustomerRow | { error: string }>;
-  updateCustomer: (id: string, input: Partial<{ name: string; phone: string; email: string; address: string }>) => Promise<CustomerRow | { error: string }>;
+  createCustomer: (input: { name: string; phone?: string; email?: string; address?: string; points?: number }) => Promise<CustomerRow | { error: string }>;
+  updateCustomer: (id: string, input: Partial<{ name: string; phone: string; email: string; address: string; points: number }>) => Promise<CustomerRow | { error: string }>;
   deleteCustomer: (id: string) => Promise<{ success: boolean; error?: string }>;
   bulkDeleteCustomers: (ids: string[]) => Promise<{ success: boolean; deleted: number; errors: Array<{ id: string; message: string }> }>;
   selectCustomer: (customer: CustomerRow | null) => void;

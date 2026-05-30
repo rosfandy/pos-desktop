@@ -182,7 +182,7 @@ export function ReceiptCard({ data, className }: ReceiptCardProps) {
         <div className="flex justify-between items-center pt-1.5 mt-1 border-t border-dashed border-neutral-200 text-[10px] text-neutral-500">
           <span>Total Item</span>
           <span className="font-semibold text-neutral-700 tabular-nums">
-            {data.items.length} item · {data.items.reduce((s, i) => s + i.quantity, 0)} {data.items.reduce((s, i) => s + i.quantity, 0) > 1 ? 'pcs' : 'pcs'}
+            {data.items.length} item · {data.items.reduce((s, i) => s + i.quantity, 0)} pcs
           </span>
         </div>
       </div>

@@ -52,7 +52,7 @@ export default function ReceiptPreview({ transaction, className, onPrint, onSkip
         receiptShowQr: settings.receiptShowQr,
         receiptShowTaxBreakdown: settings.receiptShowTaxBreakdown,
         invoiceNumber: transaction.invoiceNumber,
-        createdAt: transaction.createdAt,
+        createdAt: transaction.createdAt * 1000,
         cashierName: transaction.cashierName,
         customerName: transaction.customerName,
         customerPoints: transaction.customerPoints,

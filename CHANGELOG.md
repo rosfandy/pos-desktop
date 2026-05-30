@@ -10,6 +10,25 @@ dan proyek ini mengikuti [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Added
+
+
+---
+
+## [1.5.1] — 2026-05-31
+
+### Added
+- **Poin bisa diedit di form pelanggan**: Field poin (input number) ditambahkan di form Tambah/Edit Pelanggan, sehingga poin bisa diatur manual.
+- **Total Item & Total Qty di struk termal**: Setelah daftar item, struk ESC/POS menampilkan ringkasan jumlah item dan total kuantitas.
+
+### Fixed
+- **Tanggal struk print salah**: `createdAt` dari SQLite dalam detik, tapi `new Date()` butuh milidetik. Diperbaiki di `buildReceiptData`, `TransactionDetailModal`, dan `ReceiptPreview` dengan mengalikan `tx.createdAt * 1000`.
+- **Void/Refund button tidak bereaksi**: Syntax error JSX (`{showVoidRefund ?? showVoidRefund : "taek"}`) di `POSTerminalPage.tsx` menyebabkan `VoidRefundModal` tidak pernah di-render.
+
+---
+
+## [1.5.0] — 2026-05-31
+
+### Added
 - **Sidebar collapsible**: Sidebar bisa diciutkan ke mode ikon-only (`w-14`) atau diperluas kembali (`w-48`) via tombol toggle di toolbar. State disimpan ke `localStorage`.
 - **Cash flow per item**: Setiap item yang terjual dicatat sebagai entri `type='in'` di tabel kas (`Penjualan: <nama produk> (INV-xxx)`).
 - **Pelanggan di hold bill**: Dialog konfirmasi tahan bill kini memiliki field `CustomerSearch` opsional untuk mengaitkan pelanggan ke bill yang ditahan.

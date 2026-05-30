@@ -544,8 +544,8 @@ export interface API {
   customerList: (filter?: { search?: string }) => Promise<ApiResponse<CustomerRow[]>>;
   customerGet: (id: string) => Promise<ApiResponse<CustomerRow>>;
   customerGetByPhone: (phone: string) => Promise<ApiResponse<CustomerRow>>;
-  customerCreate: (input: { name: string; phone?: string; email?: string; address?: string }) => Promise<ApiResponse<CustomerRow>>;
-  customerUpdate: (id: string, input: Partial<{ name: string; phone: string; email: string; address: string }>) => Promise<ApiResponse<CustomerRow>>;
+  customerCreate: (input: { name: string; phone?: string; email?: string; address?: string; points?: number }) => Promise<ApiResponse<CustomerRow>>;
+  customerUpdate: (id: string, input: Partial<{ name: string; phone: string; email: string; address: string; points: number }>) => Promise<ApiResponse<CustomerRow>>;
   customerDelete: (id: string) => Promise<ApiResponse<{ success: boolean }>>;
   customerBulkDelete: (ids: string[]) => Promise<ApiResponse<{ success: boolean; deleted: number; errors: Array<{ id: string; message: string }> }>>;
   customerAddPoints: (id: string, points: number) => Promise<ApiResponse<CustomerRow>>;

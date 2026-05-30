@@ -162,6 +162,11 @@ function buildEscposBuffer(data: ReceiptData): Buffer {
     }
   }
 
+  // ── TOTAL ITEM / QTY ────────────────────────────────────────────────────────
+  const totalQty = data.items.reduce((s, i) => s + i.quantity, 0);
+  printer.println(`${padRight('Total Item', 16)} ${padLeft(String(data.items.length) + ' item', 16)}`);
+  printer.println(`${padRight('Total Qty', 16)} ${padLeft(String(totalQty) + ' pcs', 16)}`);
+
   printer.drawLine();
 
   // ── SUMMARY ──────────────────────────────────────────────────────────────────

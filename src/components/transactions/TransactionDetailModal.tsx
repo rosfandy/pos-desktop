@@ -115,7 +115,7 @@ export function TransactionDetailModal({ open, onClose, transactionId, receiptCu
         receiptShowTaxBreakdown: receiptShowTaxBreakdown || false,
         receiptShowQr: receiptShowQr || false,
         invoiceNumber: tx.invoiceNumber,
-        createdAt: new Date(tx.createdAt).getTime(),
+        createdAt: tx.createdAt * 1000,
         cashierName: tx.userName || 'Kasir',
         paymentMethod: tx.paymentMethod,
         items: (tx.items || []).map((item) => ({

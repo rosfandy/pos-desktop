@@ -45,13 +45,14 @@ export function registerCustomerHandlers() {
     }
   });
 
-  ipcMain.handle('customer:create', async (_e, input: { name: string; phone?: string; email?: string; address?: string }) => {
+  ipcMain.handle('customer:create', async (_e, input: { name: string; phone?: string; email?: string; address?: string; points?: number }) => {
     try {
       const result = await createCustomer({
         name: input.name,
         phone: input.phone || undefined,
         email: input.email || undefined,
         address: input.address || undefined,
+        points: input.points,
       });
       if ('error' in result) return { ok: false, error: { code: 'CUST_CREATE', message: result.error } };
       return { ok: true, data: result };
@@ -60,7 +61,7 @@ export function registerCustomerHandlers() {
     }
   });
 
-  ipcMain.handle('customer:update', async (_e, id: string, input: Partial<{ name: string; phone: string; email: string; address: string }>) => {
+  ipcMain.handle('customer:update', async (_e, id: string, input: Partial<{ name: string; phone: string; email: string; address: string; points: number }>) => {
     try {
       const result = await updateCustomer(id, input);
       if ('error' in result) return { ok: false, error: { code: 'CUST_UPDATE', message: result.error } };
