@@ -48,6 +48,7 @@ import CustomersPage from '@/pages/CustomersPage';
 import ReportsPage from '@/pages/ReportsPage';
 import ShiftPage from '@/pages/ShiftPage';
 import { TransactionDetailModal } from '@/components/transactions/TransactionDetailModal';
+import UpdateDialog from '@/components/update/UpdateDialog';
 
 // ── Nav Config ──────────────────────────────────────────────────────────────
 
@@ -631,7 +632,7 @@ import { useAutoUpdater } from '@/hooks/useAutoUpdater';
 export default function App() {
   const checkAuth = useAuthStore((s) => s.checkAuth);
   const initTheme = useThemeStore((s) => s.initTheme);
-  const { checkUpdate } = useAutoUpdater();
+  const { status, info, showDialog, checkUpdate, downloadUpdate, installUpdate, skipUpdate } = useAutoUpdater();
   const fontSize = useSettingsStore((s) => s.fontSize);
   const loadSettings = useSettingsStore((s) => s.loadSettings);
 
@@ -682,6 +683,14 @@ export default function App() {
         />
       </Routes>
       <Toaster />
+      <UpdateDialog
+        open={showDialog}
+        status={status}
+        info={info}
+        onClose={skipUpdate}
+        onDownload={downloadUpdate}
+        onInstall={installUpdate}
+      />
     </HashRouter>
   );
 }

@@ -7,6 +7,14 @@ dan proyek ini mengikuti [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.2.0] — 2026-05-30
+
+### Changed
+- **Update notification**: Mengganti toast update dengan **UpdateDialog** modal yang menampilkan informasi versi, progress download, serta tombol **Update Sekarang** / **Skip** / **Restart & Pasang**.
+- **useAutoUpdater hook**: `toast()` dihapus, mengekspos `showDialog`, `skipUpdate()`, dan state lengkap untuk dialog.
+
+---
+
 ## [1.1.0] — 2026-05-30
 
 ### Added

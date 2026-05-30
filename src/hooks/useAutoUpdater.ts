@@ -1,24 +1,17 @@
-import { useEffect, useState } from 'react';
-import { toast } from '@/hooks/use-toast';
+import { useEffect, useState, useCallback } from 'react';
 
-type UpdaterStatus =
-  | 'idle'
-  | 'checking'
-  | 'available'
-  | 'not-available'
-  | 'downloading'
-  | 'downloaded'
-  | 'error';
+export type UpdateStatus = 'idle' | 'checking' | 'available' | 'not-available' | 'downloading' | 'downloaded' | 'error';
 
-interface UpdateInfo {
+export interface UpdateInfo {
   version?: string;
   percent?: number;
   message?: string;
 }
 
 export function useAutoUpdater() {
-  const [status, setStatus] = useState<UpdaterStatus>('idle');
+  const [status, setStatus] = useState<UpdateStatus>('idle');
   const [info, setInfo] = useState<UpdateInfo>({});
+  const [showDialog, setShowDialog] = useState(false);
 
   useEffect(() => {
     if (!(window as any).api?.onUpdaterEvent) return;
@@ -28,19 +21,20 @@ export function useAutoUpdater() {
         switch (event) {
           case 'updater:checking':
             setStatus('checking');
+            setShowDialog(true);
             break;
 
           case 'updater:available':
             setStatus('available');
             setInfo({ version: data?.version });
-            toast({
-              title: 'Update tersedia',
-              description: `Versi ${data?.version} siap diunduh.`,
-            });
+            setShowDialog(true);
             break;
 
           case 'updater:not-available':
             setStatus('not-available');
+            setShowDialog(true);
+            // Auto-close after 2 detik
+            setTimeout(() => setShowDialog(false), 2000);
             break;
 
           case 'updater:progress':
@@ -51,16 +45,12 @@ export function useAutoUpdater() {
           case 'updater:downloaded':
             setStatus('downloaded');
             setInfo({ version: data?.version });
-            toast({
-              title: 'Update siap dipasang',
-              description: `Versi ${data?.version} telah diunduh. Restart untuk memasang.`,
-              duration: 0, // persistent
-            });
             break;
 
           case 'updater:error':
             setStatus('error');
             setInfo({ message: data });
+            setShowDialog(true);
             break;
         }
       },
@@ -69,18 +59,23 @@ export function useAutoUpdater() {
     return cleanup;
   }, []);
 
-  const checkUpdate = async () => {
+  const checkUpdate = useCallback(async () => {
     await (window as any).api?.updaterCheck?.();
-  };
+  }, []);
 
-  const downloadUpdate = async () => {
+  const downloadUpdate = useCallback(async () => {
     setStatus('downloading');
     await (window as any).api?.updaterDownload?.();
-  };
+  }, []);
 
-  const installUpdate = () => {
+  const installUpdate = useCallback(() => {
     (window as any).api?.updaterInstall?.();
-  };
+  }, []);
 
-  return { status, info, checkUpdate, downloadUpdate, installUpdate };
+  const skipUpdate = useCallback(() => {
+    setShowDialog(false);
+    setStatus('idle');
+  }, []);
+
+  return { status, info, showDialog, checkUpdate, downloadUpdate, installUpdate, skipUpdate };
 }
