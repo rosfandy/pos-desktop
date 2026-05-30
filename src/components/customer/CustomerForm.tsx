@@ -155,8 +155,7 @@ export default function CustomerForm({ open, onOpenChange, customerId }: Custome
   const errors = useMemo(() => {
     const e: Record<string, string> = {};
     if (!form.name.trim()) e.name = 'Nama wajib diisi';
-    if (!form.phone.trim()) e.phone = 'Telepon wajib diisi';
-    else if (!/^[0-9+\-\s]+$/.test(form.phone)) e.phone = 'Telepon hanya boleh angka';
+    if (form.phone && !/^[0-9+\-\s]+$/.test(form.phone)) e.phone = 'Telepon hanya boleh angka';
     if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = 'Email tidak valid';
     return e;
   }, [form]);
@@ -166,7 +165,7 @@ export default function CustomerForm({ open, onOpenChange, customerId }: Custome
   // ── Submit ───────────────────────────────────────────────────────────────────
   const handleSubmit = useCallback(async () => {
     if (hasErrors) {
-      setTouched({ name: true, phone: true, email: true });
+      setTouched({ name: true, email: true });
       return;
     }
 
@@ -208,15 +207,15 @@ export default function CustomerForm({ open, onOpenChange, customerId }: Custome
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-[520px] max-h-[90vh] overflow-y-auto p-0">
-        <DialogHeader className="px-6 pt-6 pb-0">
+      <DialogContent className="max-w-[520px] max-h-[90vh] p-0 flex flex-col">
+        <DialogHeader className="px-6 pt-6 pb-0 shrink-0">
           <DialogTitle className="text-[15px] font-semibold flex items-center gap-2">
             <User className="w-4 h-4" />
             {isEdit ? 'Edit Pelanggan' : 'Tambah Pelanggan Baru'}
           </DialogTitle>
         </DialogHeader>
 
-        <div className="px-6 py-4 space-y-4">
+        <div className="px-6 py-4 space-y-4 overflow-y-auto flex-1">
           {/* ── Error Banner ─────────────────────────────────────────────────────── */}
           {error && (
             <div className="flex items-center gap-2 bg-red-50 text-red-700 text-[12px] px-3 py-2 rounded-md border border-red-200">
@@ -239,7 +238,7 @@ export default function CustomerForm({ open, onOpenChange, customerId }: Custome
 
           {/* ── Telepon ─────────────────────────────────────────────────────────── */}
           <div className="space-y-1">
-            <label className="text-[11px] font-medium text-neutral-600">Telepon *</label>
+            <label className="text-[11px] font-medium text-neutral-600">Telepon</label>
             <div className="relative">
               <Phone className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-neutral-400" />
               <Input
@@ -316,7 +315,7 @@ export default function CustomerForm({ open, onOpenChange, customerId }: Custome
           )}
         </div>
 
-        <DialogFooter className="px-6 py-3 border-t border-neutral-200 bg-neutral-50 flex-row-reverse gap-2">
+        <DialogFooter className="shrink-0 px-6 py-3 border-t border-neutral-200 bg-neutral-50 flex-row-reverse gap-2">
           <Button
             onClick={handleSubmit}
             disabled={loading || hasErrors}

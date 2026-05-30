@@ -98,7 +98,7 @@ export function ReceiptCard({ data, className }: ReceiptCardProps) {
     )}>
 
       {/* ══ HEADER ══════════════════════════════════════════════════════════ */}
-      <div className="px-5 pt-5 pb-3 text-center border-b border-dashed border-neutral-300">
+      <div className="px-4 pt-4 pb-2 text-center border-b border-dashed border-neutral-300">
         <p className="text-[15px] font-bold uppercase tracking-widest leading-tight">
           {data.storeName || 'Toko Saya'}
         </p>
@@ -113,16 +113,23 @@ export function ReceiptCard({ data, className }: ReceiptCardProps) {
         )}
 
         {/* invoice meta */}
-        <div className="mt-3 text-left space-y-0.5">
+        <div className="mt-2 text-left space-y-0.5">
           <MetaRow label="No. Invoice" value={data.invoiceNumber || 'PREVIEW'} />
           <MetaRow label="Tanggal"     value={dateStr} />
           {data.cashierName && <MetaRow label="Kasir" value={data.cashierName} />}
-          {data.customerName && <MetaRow label="Pembeli" value={data.customerName} />}
-          {data.pointsEarned !== undefined && data.pointsEarned > 0 && (
-            <MetaRow label="Poin Didapat" value={`+${data.pointsEarned.toLocaleString('id-ID')}`} />
-          )}
-          {data.customerPoints !== undefined && (
-            <MetaRow label="Saldo Poin" value={data.customerPoints.toLocaleString('id-ID')} />
+          {data.customerName && (
+            <MetaRow
+              label="Pembeli"
+              value={
+                data.customerName +
+                (data.customerPoints !== undefined
+                  ? ` (${data.customerPoints.toLocaleString('id-ID')})`
+                  : '') +
+                (data.pointsEarned !== undefined && data.pointsEarned > 0
+                  ? ` +${data.pointsEarned.toLocaleString('id-ID')}`
+                  : '')
+              }
+            />
           )}
           <div className="flex gap-1 items-center">
             <span className="w-28 shrink-0 text-neutral-400">Pembayaran</span>
@@ -143,7 +150,7 @@ export function ReceiptCard({ data, className }: ReceiptCardProps) {
       </div>
 
       {/* ══ BODY: items table ═══════════════════════════════════════════════ */}
-      <div className="px-5 py-3 border-b border-dashed border-neutral-300">
+      <div className="px-4 py-2 border-b border-dashed border-neutral-300">
         <table className="w-full border-collapse">
           <thead>
             <tr className="border-b border-neutral-300">
@@ -156,7 +163,7 @@ export function ReceiptCard({ data, className }: ReceiptCardProps) {
           <tbody>
             {data.items.map((item, i) => (
               <tr key={i} className="border-b border-dashed border-neutral-100 last:border-0">
-                <td className="py-1.5 pr-2 font-medium text-neutral-800 leading-tight">
+                <td className="py-1 pr-2 font-medium text-neutral-800 leading-tight">
                   {item.productName}
                   {(item.discount ?? 0) > 0 && (
                     <span className="block text-[9px] text-red-400">
@@ -164,13 +171,13 @@ export function ReceiptCard({ data, className }: ReceiptCardProps) {
                     </span>
                   )}
                 </td>
-                <td className="py-1.5 text-center tabular-nums text-neutral-500 whitespace-nowrap">
+                <td className="py-1 text-center tabular-nums text-neutral-500 whitespace-nowrap">
                   {item.quantity}&nbsp;{item.unit}
                 </td>
-                <td className="py-1.5 px-2 text-right tabular-nums text-neutral-500 whitespace-nowrap">
+                <td className="py-1 px-2 text-right tabular-nums text-neutral-500 whitespace-nowrap">
                   {fmt(item.price)}
                 </td>
-                <td className="py-1.5 text-right tabular-nums font-semibold text-neutral-800 whitespace-nowrap">
+                <td className="py-1 text-right tabular-nums font-semibold text-neutral-800 whitespace-nowrap">
                   {fmt(item.total)}
                 </td>
               </tr>
@@ -179,8 +186,8 @@ export function ReceiptCard({ data, className }: ReceiptCardProps) {
         </table>
 
         {/* ── Ringkasan item ───────────────────────────────────────────── */}
-        <div className="flex justify-between items-center pt-1.5 mt-1 border-t border-dashed border-neutral-200 text-[10px] text-neutral-500">
-          <span>Total Item</span>
+        <div className="flex justify-between items-center pt-1 mt-1 border-t border-dashed border-neutral-200 text-[10px] text-neutral-500">
+          <span>Total</span>
           <span className="font-semibold text-neutral-700 tabular-nums">
             {data.items.length} item · {data.items.reduce((s, i) => s + i.quantity, 0)} pcs
           </span>
@@ -188,7 +195,7 @@ export function ReceiptCard({ data, className }: ReceiptCardProps) {
       </div>
 
       {/* ══ FOOTER: summary + thank-you ═════════════════════════════════════ */}
-      <div className="px-5 pt-3 pb-5">
+      <div className="px-4 pt-2 pb-4">
         {/* summary rows */}
         <div className="space-y-1">
           <SumRow label="Subtotal" value={fmt(data.subtotal)} />
@@ -208,21 +215,21 @@ export function ReceiptCard({ data, className }: ReceiptCardProps) {
         </div>
 
         {/* TOTAL */}
-        <div className="flex justify-between items-baseline mt-2 pt-2 border-t border-neutral-300">
+        <div className="flex justify-between items-baseline mt-1.5 pt-1.5 border-t border-neutral-300">
           <span className="text-[13px] font-bold tracking-wide">TOTAL</span>
           <span className="text-[13px] font-bold tabular-nums text-indigo-600">{fmt(data.total)}</span>
         </div>
 
         {/* bayar / kembali */}
         {(data.amountPaid ?? 0) > 0 && (
-          <div className="mt-1.5 space-y-0.5">
+          <div className="mt-1 space-y-0.5">
             <SumRow label="Bayar"   value={fmt(data.amountPaid!)} />
             <SumRow label="Kembali" value={fmt(data.change ?? 0)} valueClass="text-emerald-600 font-semibold" />
           </div>
         )}
 
         {/* thank-you */}
-        <div className="mt-4 pt-3 border-t border-dashed border-neutral-300 text-center space-y-0.5">
+        <div className="mt-2 pt-2 border-t border-dashed border-neutral-300 text-center space-y-0.5">
           <p className="text-[12px] font-bold tracking-widest uppercase">
             {data.receiptFooter || 'Terima Kasih'}
           </p>

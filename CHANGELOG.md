@@ -14,6 +14,15 @@ dan proyek ini mengikuti [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.5.2] — 2026-05-31
+
+### Changed
+- **CustomerForm: no. telepon tidak wajib** — validasi `required` dihapus, label diganti dari "Telepon *" jadi "Telepon", format tetap divalidasi jika diisi.
+- **CustomerForm: tombol simpan fixed di bawah** — `DialogContent` diubah jadi `flex flex-col`, body form di-scroll, footer tetap di bawah (`shrink-0`).
+- **Struk ESC/POS lebih compact** — Total Item & Total Qty digabung jadi 1 baris (`Total → 1 item, 2 pcs`); spasi berlebih (`newLine`) sebelum dan sesudah bagian pembeli dihapus; `newLine` sebelum `cut()` dikurangi dari 2 jadi 1.
+- **Struk preview (ReceiptCard) lebih compact** — padding header/body/footer dikurangi (px-5→px-4, py-3→py-2, dll); cell tabel dikurangi (`py-1.5`→`py-1`); jarak Total dan footer dikurangi.
+- **Info pembeli di struk 1 baris** — nama pelanggan dan poin digabung: `Pembeli: B. Johan (150)`, termasuk poin earned jika ada. Diterapkan di ESC/POS dan ReceiptCard.
+
 ## [1.5.1] — 2026-05-31
 
 ### Added

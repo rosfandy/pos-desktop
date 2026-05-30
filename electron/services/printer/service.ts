@@ -122,20 +122,14 @@ function buildEscposBuffer(data: ReceiptData): Buffer {
 
   // ── PEMBELI & POIN ──────────────────────────────────────────────────────────
   if (data.customerName) {
-    printer.bold(true);
-    printer.newLine();
-    printer.println('PEMBELI');
-    printer.bold(false);
-    printer.println(data.customerName);
-    if (data.pointsEarned !== undefined && data.pointsEarned > 0) {
-      printer.print('Poin   : +');
-      printer.println(String(data.pointsEarned));
-    }
+    let ptVal = data.customerName;
     if (data.customerPoints !== undefined) {
-      printer.print('Saldo  : ');
-      printer.println(String(data.customerPoints));
+      ptVal += ` (${data.customerPoints.toLocaleString('id-ID')})`;
     }
-    printer.newLine();
+    if (data.pointsEarned !== undefined && data.pointsEarned > 0) {
+      ptVal += ` +${data.pointsEarned.toLocaleString('id-ID')}`;
+    }
+    printer.println(`${padRight('Pembeli', labelW)}: ${ptVal}`);
   }
 
   // ── ITEMS ────────────────────────────────────────────────────────────────────
@@ -162,10 +156,9 @@ function buildEscposBuffer(data: ReceiptData): Buffer {
     }
   }
 
-  // ── TOTAL ITEM / QTY ────────────────────────────────────────────────────────
+  // ── TOTAL ITEM / QTY ────────────────────────────────────────
   const totalQty = data.items.reduce((s, i) => s + i.quantity, 0);
-  printer.println(`${padRight('Total Item', 16)} ${padLeft(String(data.items.length) + ' item', 16)}`);
-  printer.println(`${padRight('Total Qty', 16)} ${padLeft(String(totalQty) + ' pcs', 16)}`);
+  printer.println(`${padRight('Total', 24)} ${padLeft(String(data.items.length) + ' item, ' + String(totalQty) + ' pcs', 8)}`);
 
   printer.drawLine();
 
@@ -212,7 +205,6 @@ function buildEscposBuffer(data: ReceiptData): Buffer {
     printer.println('[QR Code]');
   }
 
-  printer.newLine();
   printer.newLine();
   printer.cut();
 
