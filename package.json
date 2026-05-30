@@ -1,7 +1,7 @@
 {
   "name": "pos-desktop",
   "author": "rosfandy",
-  "version": "1.4.1",
+  "version": "1.5.0",
   "description": "POS Desktop - Aplikasi kasir untuk UMKM",
   "main": "dist-electron/main.js",
   "scripts": {
