@@ -19,7 +19,9 @@ import { registerUpdaterHandlers } from './ipc/updater.ts';
 import { migrate, getDb, seedAdmin } from './db/index.ts';
 
 const __dirname = join(__filename, '..');
-const iconPath = join(__dirname, '..', 'build-resources', 'icon.png');
+const iconPath = app.isPackaged
+  ? join(process.resourcesPath, 'icon.png')
+  : join(__dirname, '..', 'build-resources', 'icon.png');
 
 let mainWindow: BrowserWindow | null = null;
 

@@ -1,7 +1,7 @@
 {
   "name": "pos-desktop",
   "author": "rosfandy",
-  "version": "1.3.1",
+  "version": "1.3.2",
   "description": "POS Desktop - Aplikasi kasir untuk UMKM",
   "main": "dist-electron/main.js",
   "scripts": {
@@ -99,6 +99,10 @@
         "filter": [
           "**/*.sql"
         ]
+      },
+      {
+        "from": "build-resources/icon.png",
+        "to": "icon.png"
       }
     ],
     "win": {
@@ -116,7 +120,7 @@
           ]
         }
       ],
-      "icon": "build-resources/icon.ico",
+      "icon": "build-resources/icon.png",
       "publisherName": "POS Desktop",
       "signAndEditExecutable": false,
       "verifyUpdateCodeSignature": false

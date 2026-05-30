@@ -7,6 +7,17 @@ dan proyek ini mengikuti [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.3.2] — 2026-05-30
+
+### Fixed
+- **App icon**: Icon aplikasi sekarang menggunakan `build-resources/icon.png` yang di-*extraResources* agar tersedia saat runtime. `win.icon` diubah ke PNG (electron-builder auto-convert ke .ico). Di dev tetap pakai path lokal, di production pakai `process.resourcesPath`.
+- **Installer icon**: `win.icon` ganti dari `.ico` ke `.png` agar electron-builder menghasilkan .ico multi-resolusi yang benar.
+
+### Changed
+- **Version bump 1.3.2**: Testing auto-updater dengan NSIS `oneClick: true`.
+
+---
+
 ## [1.3.0] — 2026-05-30
 
 ### Fixed
