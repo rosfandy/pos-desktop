@@ -26,6 +26,7 @@ release
 .env
 *.xlsx
 *.csv
+data/pos.db
 
 # Database
 database/*.db
