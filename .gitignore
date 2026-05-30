@@ -24,6 +24,8 @@ release
 *.sln
 *.sw?
 .env
+*.xlsx
+*.csv
 
 # Database
 database/*.db
