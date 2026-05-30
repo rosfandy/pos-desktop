@@ -7,6 +7,16 @@ dan proyek ini mengikuti [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.3.0] — 2026-05-30
+
+### Added
+- **Export/Import pelanggan**: Tombol Export dan Import di halaman Manajemen Pelanggan.
+  - Export: format Excel (.xlsx) atau CSV (.csv), filter status aktif/nonaktif.
+  - Import: upload file Excel/CSV, preview + validasi, commit transaksional.
+  - Column aliases mendukung Bahasa Indonesia dan Inggris.
+
+---
+
 ## [1.2.0] — 2026-05-30
 
 ### Changed

@@ -10,6 +10,8 @@ import { registerBulkImportHandlers } from './ipc/bulk-import.ts';
 import { registerBulkExportHandlers } from './ipc/bulk-export.ts';
 import { registerCategoryHandlers } from './ipc/category.ts';
 import { registerCustomerHandlers } from './ipc/customer.ts';
+import { registerCustomerBulkExportHandlers } from './ipc/customer-bulk-export.ts';
+import { registerCustomerBulkImportHandlers } from './ipc/customer-bulk-import.ts';
 import { registerInventoryHandlers } from './ipc/inventory.ts';
 import { registerReportHandlers } from './ipc/report.ts';
 import { registerShiftHandlers } from './ipc/shift.ts';
@@ -83,6 +85,8 @@ app.whenReady().then(async () => {
   registerBulkExportHandlers();
   registerCategoryHandlers();
   registerCustomerHandlers();
+  registerCustomerBulkExportHandlers();
+  registerCustomerBulkImportHandlers();
   registerInventoryHandlers();
   registerReportHandlers();
   registerShiftHandlers();

@@ -410,6 +410,18 @@ export interface ImportRow {
   units: Array<{ unitName: string; conversionFactor: number; priceSell?: number; isDefault?: boolean }>;
 }
 
+export interface CustomerImportRow {
+  rowIndex: number;
+  name: string;
+  phone?: string;
+  email?: string;
+  address?: string;
+  points: number;
+  tier: string;
+  totalSpent: number;
+  isActive: boolean;
+}
+
 // ─── Customer Types ─────────────────────────────────────────────────────────────
 
 export interface CustomerRow {
@@ -547,6 +559,9 @@ export interface API {
   customerCalculatePoints: (amountCents: number, tier: string) => Promise<ApiResponse<{ points: number }>>;
   customerCalculateTier: (totalSpent: number) => Promise<ApiResponse<{ tier: CustomerRow['tier'] }>>;
   customerTransactions: (customerId: string, limit?: number) => Promise<ApiResponse<CustomerTransactionRow[]>>;
+  customerImportPreview: (data: Uint8Array) => Promise<ApiResponse<{ rows: CustomerImportRow[]; totalRows: number; errors: Array<{ row: number; message: string }> }>>;
+  customerImportCommit: (rows: CustomerImportRow[]) => Promise<ApiResponse<{ success: boolean; totalRows: number; imported: number; errors: Array<{ row: number; message: string }> }>>;
+  customerExport: (params: { filter?: { search?: string; isActive?: boolean }; format: 'csv' | 'xlsx' }) => Promise<ApiResponse<{ success: boolean; filePath?: string; error?: string }>>;
 
   // Inventory (INV-002)
   inventoryStockIn: (data: StockInInput) => Promise<ApiResponse<InventoryLogRow>>;

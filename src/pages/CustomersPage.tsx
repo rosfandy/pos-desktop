@@ -4,11 +4,15 @@ import { useState, useCallback } from 'react';
 import { useCustomerStore } from '@/stores/customerStore';
 import CustomerList from '@/components/customer/CustomerList';
 import CustomerForm from '@/components/customer/CustomerForm';
+import BulkExportDialog from '@/components/customer/BulkExportDialog';
+import BulkImportDialog from '@/components/customer/BulkImportDialog';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   Plus,
   Users,
+  Download,
+  Upload,
 } from 'phosphor-react';
 
 export default function CustomersPage() {
@@ -17,6 +21,8 @@ export default function CustomersPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showInactive, setShowInactive] = useState(false);
+  const [showExportDialog, setShowExportDialog] = useState(false);
+  const [showImportDialog, setShowImportDialog] = useState(false);
 
   const handleRefresh = useCallback(() => {
     fetchCustomers(showInactive ? undefined : { isActive: true });
@@ -31,6 +37,13 @@ export default function CustomersPage() {
     setFormOpen(false);
     setEditingId(null);
     handleRefresh();
+  }, [handleRefresh]);
+
+  const handleImportOpenChange = useCallback((open: boolean) => {
+    setShowImportDialog(open);
+    if (!open) {
+      handleRefresh();
+    }
   }, [handleRefresh]);
 
   return (
@@ -52,6 +65,24 @@ export default function CustomersPage() {
           Tampilkan nonaktif
         </label>
         <Button
+          variant="outline"
+          size="xs"
+          onClick={() => setShowExportDialog(true)}
+          className="flex items-center gap-1.5 text-[11px] h-7"
+        >
+          <Download className="w-3 h-3" />
+          Export
+        </Button>
+        <Button
+          variant="outline"
+          size="xs"
+          onClick={() => setShowImportDialog(true)}
+          className="flex items-center gap-1.5 text-[11px] h-7"
+        >
+          <Upload className="w-3 h-3" />
+          Import
+        </Button>
+        <Button
           onClick={() => { setEditingId(null); setFormOpen(true); }}
           size="sm"
           className="flex items-center gap-1.5 text-indigo-600 bg-indigo-600 hover:bg-indigo-700 text-white text-[11px]"
@@ -70,11 +101,20 @@ export default function CustomersPage() {
         />
       </div>
 
-      {/* ── Customer Form Dialog ─────────────────────────────────────────────── */}
+      {/* ── Dialogs ──────────────────────────────────────────────────────────── */}
       <CustomerForm
         open={formOpen}
         onOpenChange={handleCloseForm}
         customerId={editingId}
+      />
+      <BulkExportDialog
+        open={showExportDialog}
+        onOpenChange={setShowExportDialog}
+      />
+      <BulkImportDialog
+        open={showImportDialog}
+        onOpenChange={handleImportOpenChange}
+        onImportComplete={handleRefresh}
       />
     </div>
   );

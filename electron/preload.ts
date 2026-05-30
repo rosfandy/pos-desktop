@@ -93,6 +93,9 @@ const api = {
   customerCalculatePoints: (amountCents: number, tier: string) => ipcRenderer.invoke('customer:calculatePoints', amountCents, tier),
   customerCalculateTier: (totalSpent: number) => ipcRenderer.invoke('customer:calculateTier', totalSpent),
   customerTransactions: (customerId: string, limit?: number) => ipcRenderer.invoke('customer:transactions', customerId, limit),
+  customerImportPreview: (data: Uint8Array) => ipcRenderer.invoke('customer:import-preview', data),
+  customerImportCommit: (rows: any[]) => ipcRenderer.invoke('customer:import-commit', rows),
+  customerExport: (params: any) => ipcRenderer.invoke('customer:export', params),
 
   // Report channels (RPT)
   reportSales: (params: { startDate: number; endDate: number }) => ipcRenderer.invoke('report:sales', params),
