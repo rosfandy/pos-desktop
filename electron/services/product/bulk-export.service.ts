@@ -7,7 +7,6 @@ export interface ExportParams {
   filter?: {
     categoryId?: string;
     search?: string;
-    isActive?: boolean;
   };
   format: 'csv' | 'xlsx';
 }
@@ -23,7 +22,6 @@ function buildWhere(filter?: ExportParams['filter']): string {
     const q = `%${esc(filter.search)}%`;
     parts.push(`(name LIKE '%${q}' OR sku LIKE '%${q}' OR barcode LIKE '%${q}')`);
   }
-  if (filter?.isActive !== undefined) parts.push(`is_active = ${filter.isActive ? 1 : 0}`);
   return parts.length > 0 ? `WHERE ${parts.join(' AND ')}` : '';
 }
 
@@ -31,7 +29,7 @@ export async function exportProducts(params: ExportParams): Promise<{ success: b
   try {
     const db = await getDb();
     const where = buildWhere(params.filter);
-    const sql = `SELECT name, sku, barcode, category_id, price_buy, price_sell, stock, base_unit, min_stock, is_active FROM products ${where} ORDER BY name ASC`;
+    const sql = `SELECT name, sku, barcode, category_id, price_buy, price_sell, stock, base_unit, min_stock FROM products ${where} ORDER BY name ASC`;
     const result = db.exec(sql);
 
     const headers = ['Nama Produk', 'SKU', 'Barcode', 'Kategori', 'Harga Beli', 'Harga Jual', 'Stok', 'Satuan', 'Min Stok', 'Status'];

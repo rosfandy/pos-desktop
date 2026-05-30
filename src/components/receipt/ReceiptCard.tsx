@@ -34,7 +34,6 @@ export interface ReceiptCardData {
   createdAt: number;   // timestamp ms
   cashierName?: string;
   customerName?: string;
-  customerTier?: string;
   customerPoints?: number;
   pointsEarned?: number;
   paymentMethod: string;
@@ -122,7 +121,6 @@ export function ReceiptCard({ data, className }: ReceiptCardProps) {
           {data.pointsEarned !== undefined && data.pointsEarned > 0 && (
             <MetaRow label="Poin Didapat" value={`+${data.pointsEarned.toLocaleString('id-ID')}`} />
           )}
-          {data.customerTier && <MetaRow label="Level" value={data.customerTier} />}
           {data.customerPoints !== undefined && (
             <MetaRow label="Saldo Poin" value={data.customerPoints.toLocaleString('id-ID')} />
           )}
@@ -179,6 +177,14 @@ export function ReceiptCard({ data, className }: ReceiptCardProps) {
             ))}
           </tbody>
         </table>
+
+        {/* ── Ringkasan item ───────────────────────────────────────────── */}
+        <div className="flex justify-between items-center pt-1.5 mt-1 border-t border-dashed border-neutral-200 text-[10px] text-neutral-500">
+          <span>Total Item</span>
+          <span className="font-semibold text-neutral-700 tabular-nums">
+            {data.items.length} item · {data.items.reduce((s, i) => s + i.quantity, 0)} {data.items.reduce((s, i) => s + i.quantity, 0) > 1 ? 'pcs' : 'pcs'}
+          </span>
+        </div>
       </div>
 
       {/* ══ FOOTER: summary + thank-you ═════════════════════════════════════ */}
@@ -219,9 +225,6 @@ export function ReceiptCard({ data, className }: ReceiptCardProps) {
         <div className="mt-4 pt-3 border-t border-dashed border-neutral-300 text-center space-y-0.5">
           <p className="text-[12px] font-bold tracking-widest uppercase">
             {data.receiptFooter || 'Terima Kasih'}
-          </p>
-          <p className="text-[9px] text-neutral-400">
-            Barang yang sudah dibeli tidak dapat dikembalikan
           </p>
           {data.receiptShowQr && (
             <div className="mt-2 text-[9px] text-neutral-300">[QR Code]</div>

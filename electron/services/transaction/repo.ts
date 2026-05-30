@@ -188,7 +188,15 @@ export async function listTransactions(_filters?: {
   userId?: string;
 }): Promise<TransactionWithItems[]> {
   const db = await getDb();
-  const rows = db.exec(`SELECT t.*, u.name as user_name FROM transactions t LEFT JOIN users u ON t.user_id = u.id ORDER BY t.created_at DESC LIMIT 500`);
+
+  let where = '';
+  if (_filters?.status) {
+    const st = _filters.status.replace(/'/g, "''");
+    where += ` WHERE t.status = '${st}'`;
+  }
+
+  const sql = `SELECT t.*, u.name as user_name FROM transactions t LEFT JOIN users u ON t.user_id = u.id${where} ORDER BY t.created_at DESC LIMIT 500`;
+  const rows = db.exec(sql);
 
   if (!rows[0]) return [];
 

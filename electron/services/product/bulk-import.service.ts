@@ -14,7 +14,6 @@ export interface ImportRow {
   stock: number;
   baseUnit: string;
   minStock: number;
-  isActive: boolean;
   units: Array<{ unitName: string; conversionFactor: number; priceSell?: number; isDefault?: boolean }>;
 }
 
@@ -69,16 +68,6 @@ function parseNumber(value: any, fallback: number): number {
   return isNaN(n) ? fallback : Math.round(n);
 }
 
-function parseBool(value: any, fallback: boolean): boolean {
-  if (value === null || value === undefined || value === '') return fallback;
-  const v = String(value).toLowerCase().trim();
-  return v === '1' || v === 'true' || v === 'ya' || v === 'yes'
-    ? true
-    : v === '0' || v === 'false' || v === 'tidak'
-    ? false
-    : fallback;
-}
-
 // ─── Parse ─────────────────────────────────────────────────────────────────────
 
 function parseWorkbook(buffer: Buffer): ImportRow[] {
@@ -112,7 +101,6 @@ function parseWorkbook(buffer: Buffer): ImportRow[] {
       stock: parseNumber(rowObj.stock, 0),
       baseUnit: String(rowObj.baseUnit || 'pcs').trim(),
       minStock: parseNumber(rowObj.minStock, 0),
-      isActive: parseBool(rowObj.isActive ?? rowObj.is_active ?? true, true),
       units: [{ unitName: String(rowObj.baseUnit || 'pcs').trim(), conversionFactor: 1, isDefault: true }],
     };
   }).filter(Boolean) as ImportRow[];
@@ -203,10 +191,10 @@ export async function commitImport(rows: ImportRow[]): Promise<ImportResult> {
         const priceSellCents = Math.round(row.priceSell * 100);
 
         db.run(
-          `INSERT INTO products (id, name, sku, barcode, category_id, price_buy, price_sell, stock, base_unit, min_stock, is_active, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          `INSERT INTO products (id, name, sku, barcode, category_id, price_buy, price_sell, stock, base_unit, min_stock, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [id, row.name, row.sku || null, row.barcode || null, row.categoryId || null,
            priceBuyCents, priceSellCents, row.stock, row.baseUnit || 'pcs',
-           row.minStock, row.isActive ? 1 : 0, Date.now(), Date.now()]
+           row.minStock, Date.now(), Date.now()]
         );
 
         const unitId = `unit_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;

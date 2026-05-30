@@ -1,9 +1,8 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { useAuthStore } from '@/stores/authStore';
 import { useCartStore } from '@/stores/cartStore';
 import { LockKey, Warning, CheckCircle, X, Clock } from 'phosphor-react';
 import type { Transaction, TransactionItem } from '@/lib/api';
@@ -16,7 +15,6 @@ interface VoidRefundModalProps {
 }
 
 export default function VoidRefundModal({ open, onClose, onVoid, onRefund }: VoidRefundModalProps) {
-  const [mounted, setMounted] = useState(false);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
   const [pin, setPin] = useState('');
@@ -24,32 +22,23 @@ export default function VoidRefundModal({ open, onClose, onVoid, onRefund }: Voi
   const [refundItems, setRefundItems] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(false);
   const [mode, setMode] = useState<'void' | 'refund'>('refund');
-  const { user, verifyPin } = useAuthStore();
   const addItem = useCartStore((s) => s.addItem);
-  const wasOpenRef = useRef(open);
 
-  // Track open state transitions for reset
+  // Reset state every time modal opens
   useEffect(() => {
-    if (open && !wasOpenRef.current) {
-      // Just opened — reset everything
+    if (open) {
       setSelectedTx(null);
       setPin('');
       setAuthorized(false);
       setRefundItems({});
       setTransactions([]);
       setMode('refund');
-      setMounted(true);
-    } else if (!open && wasOpenRef.current) {
-      // Just closed — delay unmount so close animation plays
-      const timer = setTimeout(() => setMounted(false), 350);
-      return () => clearTimeout(timer);
     }
-    wasOpenRef.current = open;
   }, [open]);
 
   // Load transactions when modal opens
   useEffect(() => {
-    if (!open || !mounted) return;
+    if (!open) return;
     const loadTransactions = async () => {
       setLoading(true);
       try {
@@ -62,20 +51,27 @@ export default function VoidRefundModal({ open, onClose, onVoid, onRefund }: Voi
       setLoading(false);
     };
     loadTransactions();
-  }, [open, mounted]);
+  }, [open]);
 
   // Handle PIN verification
-  const handleVerifyPin = useCallback(() => {
+  const handleVerifyPin = useCallback(async () => {
     if (!pin || pin.length < 4) return;
-    if (user?.pin && verifyPin(pin)) {
-      if (user.role === 'admin' || user.role === 'manager') {
+    setLoading(true);
+    try {
+      const res = await window.api.authVerifyPin(pin);
+      if (res.ok && res.data?.ok) {
         setAuthorized(true);
-        return;
+      } else {
+        setPin('');
+        alert('PIN salah atau tidak memiliki izin (admin/manager)');
       }
+    } catch {
+      setPin('');
+      alert('Gagal memverifikasi PIN');
+    } finally {
+      setLoading(false);
     }
-    setPin('');
-    alert('PIN salah atau tidak memiliki izin');
-  }, [pin, user, verifyPin]);
+  }, [pin]);
 
   // Handle refund item qty change
   const setRefundQty = useCallback((item: TransactionItem, qty: number) => {
@@ -90,15 +86,17 @@ export default function VoidRefundModal({ open, onClose, onVoid, onRefund }: Voi
   const handleVoid = useCallback(async () => {
     if (!selectedTx || !authorized) return;
     try {
-      const res: any = await window.api.transactionVoid(selectedTx.id, `Void oleh ${user?.name || 'Admin'}`);
+      const res: any = await window.api.transactionVoid(selectedTx.id, 'Void oleh admin');
       if (res.ok) {
         onVoid?.(selectedTx, 'Void');
         onClose();
+      } else {
+        alert(res.error?.message || 'Gagal void transaksi');
       }
     } catch {
       alert('Gagal void transaksi');
     }
-  }, [selectedTx, authorized, user, onVoid, onClose]);
+  }, [selectedTx, authorized, onVoid, onClose]);
 
   // Submit refund
   const handleRefund = useCallback(async () => {
@@ -153,9 +151,6 @@ export default function VoidRefundModal({ open, onClose, onVoid, onRefund }: Voi
     const s = map[status] || { label: status, color: 'bg-neutral-100 text-neutral-700' };
     return <Badge className={`${s.color} text-[10px] h-5`}>{s.label}</Badge>;
   };
-
-  // Do not render anything until explicitly opened
-  if (!mounted) return null;
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => { if (!isOpen) onClose(); }} modal>

@@ -4,9 +4,10 @@ import ProductTable from '@/components/pos/ProductTable';
 import type { Product } from '@/components/pos/ProductTable';
 import CartPanel from '@/components/pos/CartPanel';
 import PaymentModal from '@/components/pos/PaymentModal';
-import ReceiptPreview from '@/components/pos/ReceiptPreview';
+import { TransactionDetailModal } from '@/components/transactions/TransactionDetailModal';
 import HoldBillModal from '@/components/pos/HoldBillModal';
 import VoidRefundModal from '@/components/pos/VoidRefundModal';
+import CashOutModal from '@/components/pos/CashOutModal';
 import CustomerSearch from '@/components/customer/CustomerSearch';
 import useBarcode from '@/hooks/useBarcode';
 import useKeyboardShortcuts from '@/hooks/useKeyboardShortcuts';
@@ -24,7 +25,7 @@ import {
 } from '@/components/ui/dialog';
 import {
   Storefront, Warning, ArrowCounterClockwise,
-  X, Users, Clock,
+  X, Users, Clock, CurrencyDollar,
 } from 'phosphor-react';
 import type { Transaction } from '@/lib/api';
 
@@ -37,14 +38,17 @@ export default function POSTerminalPage() {
   const [lastTransaction, setLastTransaction] = useState<Transaction | null>(null);
   const [showVoidRefund, setShowVoidRefund] = useState(false);
   const [showHoldBills, setShowHoldBills] = useState(false);
+  const [cashOutOpen, setCashOutOpen] = useState(false);
   const [holdConfirmOpen, setHoldConfirmOpen] = useState(false);
   const [shiftRequiredOpen, setShiftRequiredOpen] = useState(false);
   const [holdNotes, setHoldNotes] = useState('');
+  const [holdCustomerId, setHoldCustomerId] = useState<string | null>(null);
+  const [holdCustomerName, setHoldCustomerName] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [_paymentCustomerId, setPaymentCustomerId] = useState<string | null>(null);
   const [paymentCustomerName, setPaymentCustomerName] = useState<string | null>(null);
   const paymentCustomerRef = useRef<{ id: string; name: string } | null>(null);
-  const customerReceiptRef = useRef<{ name: string; tier: string; points: number; earned: number } | null>(null);
+  const [customerReceiptInfo, setCustomerReceiptInfo] = useState<{ name: string; points: number; earned: number } | null>(null);
 
   const navigate = useNavigate();
 
@@ -73,7 +77,7 @@ export default function POSTerminalPage() {
     setPaymentCustomerId(customer.id);
     setPaymentCustomerName(customer.name);
     paymentCustomerRef.current = { id: customer.id, name: customer.name };
-    customerReceiptRef.current = null; // reset data receipt sebelumnya
+    setCustomerReceiptInfo(null); // reset data receipt sebelumnya
     showToast(`Pelanggan: ${customer.name}`, 'info');
   }, [showToast]);
 
@@ -152,8 +156,8 @@ export default function POSTerminalPage() {
   }, [lastTransaction, print, testPrint, showToast]);
 
   // ── Build receipt data ──────────────────────────────────────────────────────
-  const buildReceiptData = useCallback((tx: Transaction, custInfo?: { name: string; tier: string; points: number; earned: number } | null): ReceiptData => {
-    const ci = custInfo ?? customerReceiptRef.current;
+  const buildReceiptData = useCallback((tx: Transaction, custInfo?: { name: string; points: number; earned: number } | null): ReceiptData => {
+    const ci = custInfo ?? customerReceiptInfo;
     return {
       storeName: settings.storeName || 'Toko Saya',
       storeAddress: settings.storeAddress || '',
@@ -181,11 +185,10 @@ export default function POSTerminalPage() {
       amountPaid: tx.amountPaid,
       change: tx.change,
       customerName: ci?.name ?? tx.customerName ?? undefined,
-      customerTier: ci?.tier,
       customerPoints: ci?.points,
       pointsEarned: ci?.earned,
     };
-  }, [settings, user]);
+  }, [settings, user, customerReceiptInfo]);
 
   // ── Print receipt for transaction ───────────────────────────────────────────
   const printReceiptForTransaction = useCallback(async (tx: Transaction) => {
@@ -228,18 +231,29 @@ export default function POSTerminalPage() {
           const recordRes = await window.api.customerRecordTransaction(custNow.id, tx.total);
           if (recordRes.ok && recordRes.data) {
             const { customer, earnedPoints } = recordRes.data;
-            customerReceiptRef.current = {
+            setCustomerReceiptInfo({
               name: custNow.name,
-              tier: customer.tier || 'Bronze',
               points: customer.points || 0,
               earned: earnedPoints,
-            };
+            });
             if (earnedPoints > 0) {
               showToast(`+${earnedPoints.toLocaleString('id-ID')} poin untuk ${custNow.name}`, 'success');
             }
           }
         } catch {
           // silent fail
+        }
+      }
+
+      // ── Catat cash flow per item (kas masuk — penjualan) ──────────────────
+      if (shiftId && tx.items) {
+        for (const item of tx.items) {
+          window.api.cashFlowRecordIn({
+            shiftId,
+            amount: item.total,
+            reason: `Penjualan: ${item.productName} (${tx.invoiceNumber})`,
+            userId: user.id,
+          }).catch(() => { /* silent */ });
         }
       }
 
@@ -254,27 +268,21 @@ export default function POSTerminalPage() {
     setPaymentCustomerId(null);
     setPaymentCustomerName(null);
     paymentCustomerRef.current = null;
-    // customerReceiptRef tetap diisi sampai preview ditutup atau customer baru dipilih
+    // customerReceiptInfo tetap ada sampai preview ditutup atau customer baru dipilih
   }, [cartStore, user, currentShift, shiftLoading, printReceiptForTransaction, showToast, setShiftRequiredOpen]);
 
-  // ── Handle print from ReceiptPreview ─────────────────────────────────────────
-  const handlePrintReceipt = useCallback(async () => {
-    if (!lastTransaction) return;
-    const result = await printReceiptForTransaction(lastTransaction);
-    if (result.ok) {
-      showToast('Struk dicetak ulang', 'success');
-    } else {
-      showToast(result.error?.message || 'Print gagal — periksa printer dan pengaturan', 'error');
-    }
-  }, [lastTransaction, printReceiptForTransaction, showToast]);
-
   // ── Handle void/refund ──────────────────────────────────────────────────────
-  const handleVoid = useCallback((tx: Transaction, reason: string) => {
-    showToast(`Transaksi ${tx.invoiceNumber} dibatalkan: ${reason}`, 'success');
-  }, [showToast]);
+  const handleVoid = useCallback((tx: Transaction, _reason: string) => {
+    showToast(`Transaksi ${tx.invoiceNumber} dibatalkan`, 'success');
+    // Jika transaksi yang di-void adalah lastTransaction (sedang ditampilkan), tutup modal
+    if (lastTransaction?.id === tx.id) {
+      setReceiptOpen(false);
+      setLastTransaction(null);
+    }
+  }, [showToast, lastTransaction]);
 
   const handleRefund = useCallback((tx: Transaction, items: any[]) => {
-    showToast(`Transaksi ${tx.invoiceNumber} diretur: ${items.length} item`, 'success');
+    showToast(`Retur ${items.length} item dari ${tx.invoiceNumber} — item ditambahkan ke keranjang`, 'success');
   }, [showToast]);
 
   // ── Handle hold bill ───────────────────────────────────────────────────────
@@ -284,18 +292,20 @@ export default function POSTerminalPage() {
       return;
     }
     setHoldNotes('');
+    setHoldCustomerId(cartStore.customerId || null);
+    setHoldCustomerName(null);
     setHoldConfirmOpen(true);
-  }, [cartStore.items.length, showToast]);
+  }, [cartStore.items.length, cartStore.customerId, showToast]);
 
   const handleHoldConfirm = useCallback(async () => {
     setHoldConfirmOpen(false);
-    const res = await cartStore.holdBill(holdNotes || undefined);
+    const res = await cartStore.holdBill(holdNotes || undefined, holdCustomerId);
     if (res.ok) {
       showToast('Bill ditahan', 'success');
     } else {
       showToast(res.error?.message || 'Gagal menahan bill', 'error');
     }
-  }, [cartStore, showToast, holdNotes]);
+  }, [cartStore, showToast, holdNotes, holdCustomerId]);
 
   // ── Lanjutkan bill tertahan ke payment ────────────────────────────────────
   const handleContinueHeldToPayment = useCallback((_billId: string) => {
@@ -317,6 +327,11 @@ export default function POSTerminalPage() {
       total: Math.round(product.price * 100),
     });
   }, [cartStore]);
+
+  // ── Cash out success ──────────────────────────────────────────────────────
+  const handleCashOutSuccess = useCallback(() => {
+    showToast('Pengeluaran kas berhasil dicatat', 'success');
+  }, [showToast]);
 
   // ── Cart total for payment modal ──────────────────────────────────────────
   const cartTotal = cartStore.total;
@@ -382,6 +397,16 @@ export default function POSTerminalPage() {
           <Clock weight="fill" className="w-3 h-3 text-amber-500" />
           Bill Ditahan
         </Button>
+        <Button
+          variant="ghost"
+          size="xs"
+          onClick={() => setCashOutOpen(true)}
+          title="Kas Keluar"
+          className="h-7 px-2 text-[10px]"
+        >
+          <CurrencyDollar weight="fill" className="w-3 h-3 text-red-500" />
+          Kas Keluar
+        </Button>
       </div>
 
       {/* ── Error bar ──────────────────────────────────────────────────────── */}
@@ -423,38 +448,13 @@ export default function POSTerminalPage() {
         />
       )}
 
-      {/* ── Receipt Preview (shown after successful payment) ───────────────── */}
-      {receiptOpen && lastTransaction && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center" onClick={() => setReceiptOpen(false)}>
-          <div onClick={(e) => e.stopPropagation()} className="w-[360px] max-h-[85vh] overflow-hidden rounded-xl shadow-2xl">
-            <ReceiptPreview
-              transaction={{
-                invoiceNumber: lastTransaction.invoiceNumber,
-                createdAt: new Date(lastTransaction.createdAt).getTime(),
-                cashierName: lastTransaction.userName || undefined,
-                customerName: lastTransaction.customerName ?? undefined,
-                customerTier: customerReceiptRef.current?.tier,
-                customerPoints: customerReceiptRef.current?.points,
-                pointsEarned: customerReceiptRef.current?.earned,
-                items: lastTransaction.items?.map((item) => ({
-                  productName: item.productName,
-                  quantity: item.quantity,
-                  unit: item.unit,
-                  total: item.total,
-                })) || [],
-                subtotal: lastTransaction.subtotal,
-                discount: lastTransaction.discount,
-                tax: lastTransaction.tax,
-                total: lastTransaction.total,
-                amountPaid: lastTransaction.amountPaid,
-                change: lastTransaction.change,
-                paymentMethod: lastTransaction.paymentMethod,
-              }}
-              onPrint={handlePrintReceipt}
-            />
-          </div>
-        </div>
-      )}
+      {/* ── Transaction Detail Modal (shown after successful payment) ──────── */}
+      <TransactionDetailModal
+        open={receiptOpen && !!lastTransaction}
+        onClose={() => setReceiptOpen(false)}
+        transactionId={lastTransaction?.id ?? null}
+        receiptCustInfo={customerReceiptInfo}
+      />
 
       {/* ── Hold Bills Modal ────────────────────────────────────────────────── */}
       <HoldBillModal
@@ -464,15 +464,12 @@ export default function POSTerminalPage() {
       />
 
       {/* ── Void / Refund Modal ─────────────────────────────────────────────── */}
-      {/* Only mount when needed to avoid any portal/animation side-effects on page load */}
-      {showVoidRefund && (
-        <VoidRefundModal
-          open={showVoidRefund}
-          onClose={() => setShowVoidRefund(false)}
-          onVoid={handleVoid}
-          onRefund={handleRefund}
-        />
-      )}
+      <VoidRefundModal
+        open={showVoidRefund}
+        onClose={() => setShowVoidRefund(false)}
+        onVoid={handleVoid}
+        onRefund={handleRefund}
+      />
 
       {/* ── Hold Confirmation Dialog ─────────────────────────────────────────── */}
       <Dialog open={holdConfirmOpen} onOpenChange={(isOpen) => { if (!isOpen) setHoldConfirmOpen(false); }}>
@@ -509,6 +506,36 @@ export default function POSTerminalPage() {
               />
             </div>
 
+            {/* ── Customer ──────────────────────────────────────────────── */}
+            <div className="space-y-0.5">
+              <label className="text-[10px] font-semibold text-neutral-600 uppercase tracking-wide">Pelanggan (opsional)</label>
+              {holdCustomerId && holdCustomerName ? (
+                <div className="flex items-center gap-2 rounded-lg bg-indigo-50 border border-indigo-200 px-2.5 py-2 text-[10px] text-indigo-700">
+                  <Users className="w-3 h-3 shrink-0" />
+                  <span className="flex-1 truncate">{holdCustomerName}</span>
+                  <button
+                    onClick={() => { setHoldCustomerId(null); setHoldCustomerName(null); }}
+                    className="text-indigo-400 hover:text-red-500 shrink-0"
+                    title="Hapus pelanggan"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ) : (
+                <CustomerSearch
+                  onSelect={(c) => { setHoldCustomerId(c.id); setHoldCustomerName(c.name); }}
+                  onCreateNew={async (name) => {
+                    const result = await customerStore.createCustomer({ name });
+                    if (result && 'error' in result) return;
+                    if (result) {
+                      setHoldCustomerId(result.id);
+                      setHoldCustomerName(result.name);
+                    }
+                  }}
+                />
+              )}
+            </div>
+
             <div className="flex items-center gap-2 rounded-lg bg-neutral-50 border border-neutral-200 px-2.5 py-2 text-[10px] text-neutral-600">
               <span className="font-medium text-neutral-700 shrink-0">Total:</span>
               <span className="font-bold text-neutral-800">Rp{(cartStore.total / 100).toLocaleString('id-ID')}</span>
@@ -537,6 +564,17 @@ export default function POSTerminalPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* ── Cash Out Modal ──────────────────────────────────────────────────── */}
+      {currentShift && user?.id && (
+        <CashOutModal
+          open={cashOutOpen}
+          onOpenChange={setCashOutOpen}
+          shiftId={currentShift.id}
+          userId={user.id}
+          onSuccess={handleCashOutSuccess}
+        />
+      )}
 
       {/* ── Shift Required Dialog ─────────────────────────────────────────────── */}
       <Dialog open={shiftRequiredOpen} onOpenChange={(isOpen) => { if (!isOpen) setShiftRequiredOpen(false); }}>

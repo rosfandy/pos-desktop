@@ -1,5 +1,5 @@
 import { ipcMain } from 'electron';
-import { loginPin, loginPassword, validateToken } from '../services/auth/service.ts';
+import { loginPin, loginPassword, validateToken, verifyAdminPin } from '../services/auth/service.ts';
 
 // ─── Error helpers ───────────────────────────────────────────────────────────
 
@@ -53,6 +53,15 @@ export function registerAuthHandlers(): void {
       return { ok: true, data: user };
     } catch {
       return { ok: true, data: null };
+    }
+  });
+
+  ipcMain.handle('auth:verifyPin', async (_event, pin: string) => {
+    try {
+      const result = await verifyAdminPin(pin);
+      return { ok: true, data: result };
+    } catch (err: any) {
+      return { ok: false, error: { code: 'AUTH_UNKNOWN', message: err.message } };
     }
   });
 }

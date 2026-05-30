@@ -59,7 +59,6 @@ CREATE TABLE IF NOT EXISTS products (
   base_unit   TEXT    NOT NULL DEFAULT 'pcs',
   image_path  TEXT,
   min_stock   INTEGER NOT NULL DEFAULT 0,
-  is_active   INTEGER NOT NULL DEFAULT 1,
   created_at  INTEGER NOT NULL DEFAULT (strftime('%s','now')),
   updated_at  INTEGER NOT NULL DEFAULT (strftime('%s','now'))
 );
@@ -123,12 +122,3 @@ CREATE TABLE IF NOT EXISTS drizzle_migrations (
   hash TEXT NOT NULL,
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
-
--- ─── Seed Categories ──────────────────────────────────────────────────────────
-INSERT OR IGNORE INTO categories (id, name, is_active)
-VALUES
-  ('cat-all',   'Semua',    1),
-  ('cat-minum', 'Minuman',  1),
-  ('cat-makan', 'Makanan',  1),
-  ('cat-snack', 'Snack',    1),
-  ('cat-rokok', 'Rokok',    1);

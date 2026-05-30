@@ -7,6 +7,7 @@ const api = {
     ipcRenderer.invoke('auth:login', credentials),
   authLogout: () => ipcRenderer.invoke('auth:logout'),
   authMe: (token?: string) => ipcRenderer.invoke('auth:me', token),
+  authVerifyPin: (pin: string) => ipcRenderer.invoke('auth:verifyPin', pin),
 
   // Settings channels (CORE-008)
   settingsGet: (key: string) => ipcRenderer.invoke('settings:get', key),
@@ -33,6 +34,7 @@ const api = {
   transactionUnhold: (id: string) => ipcRenderer.invoke('transaction:unhold', id),
   transactionListHeld: () => ipcRenderer.invoke('transaction:listHeld'),
   transactionVoid: (id: string, reason: string) => ipcRenderer.invoke('transaction:void', id, reason),
+  transactionBulkDeleteHeld: (ids: string[]) => ipcRenderer.invoke('transaction:bulkDeleteHeld', ids),
   transactionRefund: (id: string, items?: any[]) => ipcRenderer.invoke('transaction:refund', id, items),
 
   // Backup channels (CORE-011)
@@ -102,6 +104,18 @@ const api = {
   reportSales: (params: { startDate: number; endDate: number }) => ipcRenderer.invoke('report:sales', params),
   reportStock: () => ipcRenderer.invoke('report:stock'),
   reportFinance: (params: { startDate: number; endDate: number }) => ipcRenderer.invoke('report:finance', params),
+
+  // Cash flow channels
+  cashFlowRecordOut: (dto: { shiftId: string; amount: number; reason: string; userId: string }) =>
+    ipcRenderer.invoke('cashFlow:recordOut', dto),
+  cashFlowRecordIn: (dto: { shiftId: string; amount: number; reason: string; userId: string }) =>
+    ipcRenderer.invoke('cashFlow:recordIn', dto),
+  cashFlowList: (shiftId: string) => ipcRenderer.invoke('cashFlow:list', shiftId),
+  cashFlowSummary: (shiftId: string) => ipcRenderer.invoke('cashFlow:summary', shiftId),
+  cashFlowListByDate: (params: { startDate: number; endDate: number }) => ipcRenderer.invoke('cashFlow:listByDate', params),
+
+  // App channels
+  getDbPath: () => ipcRenderer.invoke('app:getDbPath'),
 
   // Updater channels
   updaterCheck: () => ipcRenderer.invoke('updater:check'),

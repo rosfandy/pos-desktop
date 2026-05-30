@@ -25,10 +25,17 @@ let _db: SqlJsDatabase | null = null;
 let _dbPath: string | null = null;
 let _dbMtime: number = 0;
 
+/** Returns the database file path on disk */
+export function getDbPath(): string {
+  return join(app.getPath('userData'), 'pos.db');
+}
+
 /** @returns {Promise<SqlJsDatabase>} */
 export async function getDb(): Promise<SqlJsDatabase> {
   const dbDir = app.getPath('userData');
   const dbPath = join(dbDir, 'pos.db');
+
+  console.log('[DB] path:', dbPath);
 
   if (!_sql) _sql = await initSqlJs({ locateFile: () => getSqlWasmPath() });
   const SQL = _sql;

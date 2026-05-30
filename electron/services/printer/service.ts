@@ -46,7 +46,6 @@ export interface ReceiptData {
 
   // Customer / loyalty info
   customerName?: string;
-  customerTier?: string;
   customerPoints?: number;       // saldo poin saat ini
   pointsEarned?: number;         // poin yg didapat dari transaksi ini
 }
@@ -128,10 +127,6 @@ function buildEscposBuffer(data: ReceiptData): Buffer {
     printer.println('PEMBELI');
     printer.bold(false);
     printer.println(data.customerName);
-    if (data.customerTier) {
-      printer.print('Level  : ');
-      printer.println(data.customerTier);
-    }
     if (data.pointsEarned !== undefined && data.pointsEarned > 0) {
       printer.print('Poin   : +');
       printer.println(String(data.pointsEarned));
@@ -206,7 +201,6 @@ function buildEscposBuffer(data: ReceiptData): Buffer {
   printer.bold(true);
   printer.println(data.receiptFooter || 'TERIMA KASIH');
   printer.bold(false);
-  printer.println('Barang yg dibeli tdk dapat dikembalikan');
 
   if (data.receiptShowQr) {
     printer.newLine();

@@ -7,6 +7,25 @@ dan proyek ini mengikuti [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [Unreleased]
+
+### Added
+- **Sidebar collapsible**: Sidebar bisa diciutkan ke mode ikon-only (`w-14`) atau diperluas kembali (`w-48`) via tombol toggle di toolbar. State disimpan ke `localStorage`.
+- **Cash flow per item**: Setiap item yang terjual dicatat sebagai entri `type='in'` di tabel kas (`Penjualan: <nama produk> (INV-xxx)`).
+- **Pelanggan di hold bill**: Dialog konfirmasi tahan bill kini memiliki field `CustomerSearch` opsional untuk mengaitkan pelanggan ke bill yang ditahan.
+- **Info pelanggan & poin di struk**: Struk termal (ESC/POS) dan preview struk menampilkan nama pelanggan, tier loyalitas, poin yang diperoleh, dan saldo poin.
+
+### Changed
+- **`holdBill` terima `overrideCustomerId`**: Signature diubah menjadi `holdBill(notes?, overrideCustomerId?)` sehingga dialog hold bisa mengirim pelanggan yang dipilih secara independen dari state keranjang.
+- **Sidebar & Toolbar dipindah ke fragments**: `Sidebar`, `Toolbar`, `StatusBar`, dan `navConfig` diekstrak dari `App.tsx` ke `src/components/fragments/` untuk menjaga App.tsx tetap ramping.
+- **Save bar Settings fixed**: Tombol "Simpan Pengaturan" di `SettingsPage` kini `shrink-0` di luar scroll area — tidak lagi ikut tergulir saat konten panjang.
+
+### Fixed
+- **Void/Refund button tidak bereaksi**: Syntax error JSX (`{showVoidRefund ?? showVoidRefund : "taek"}`) di `POSTerminalPage.tsx` menyebabkan `VoidRefundModal` tidak pernah di-render.
+- **`holdBill` userId placeholder**: `userId` di `holdBill` sekarang membaca dari `useAuthStore` (bukan string statis `'current-user-id'`).
+
+---
+
 ## [1.4.0] — 2026-05-30
 
 ### Fixed

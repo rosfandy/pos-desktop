@@ -43,7 +43,7 @@ export async function listCategories(): Promise<CategoryRow[]> {
       SELECT
         c.id, c.name, c.parent_id, p.name,
         c.is_active, c.created_at,
-        (SELECT COUNT(*) FROM products WHERE category_id = c.id AND is_active = 1) as product_count
+        (SELECT COUNT(*) FROM products WHERE category_id = c.id) as product_count
       FROM categories c
       LEFT JOIN categories p ON c.parent_id = p.id
       ORDER BY c.name ASC
@@ -72,7 +72,7 @@ export async function getCategoryById(id: string): Promise<CategoryRow | null> {
       SELECT
         c.id, c.name, c.parent_id, p.name,
         c.is_active, c.created_at,
-        (SELECT COUNT(*) FROM products WHERE category_id = c.id AND is_active = 1) as product_count
+        (SELECT COUNT(*) FROM products WHERE category_id = c.id) as product_count
       FROM categories c
       LEFT JOIN categories p ON c.parent_id = p.id
       WHERE c.id = '${esc(id)}'
@@ -183,7 +183,7 @@ export async function deleteCategory(id: string): Promise<{ success: boolean; er
     if (!existing) return { success: false, error: `CAT_003: Kategori dengan id '${id}' tidak ditemukan` };
 
     // Check if has products
-    const prodResult = db.exec(`SELECT COUNT(*) FROM products WHERE category_id = '${esc(id)}' AND is_active = 1 LIMIT 1`);
+    const prodResult = db.exec(`SELECT COUNT(*) FROM products WHERE category_id = '${esc(id)}' LIMIT 1`);
     const productCount = prodResult.length > 0 ? Number(prodResult[0]!.values[0]![0]) : 0;
 
     if (productCount > 0) {

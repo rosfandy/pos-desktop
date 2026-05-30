@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useShiftStore } from '@/stores/shiftStore';
-import { CurrencyDollar, Warning, XCircle } from 'phosphor-react';
+import { CurrencyDollar, Warning, ArrowDown } from 'phosphor-react';
 import type { Shift, ShiftSummary, ApiResponse } from '@/lib/api';
 
 interface CloseShiftModalProps {
@@ -16,19 +16,22 @@ interface CloseShiftModalProps {
 export default function CloseShiftModal({ open, onOpenChange, shift, onSuccess }: CloseShiftModalProps) {
   const [closingCash, setClosingCash] = useState('');
   const [notes, setNotes] = useState('');
-  const [confirmText, setConfirmText] = useState('');
+  const [showConfirm, setShowConfirm] = useState(false);
   const [txSummary, setTxSummary] = useState<{
     totalSales: number;
     totalCashSales: number;
     totalNonCashSales: number;
   } | null>(null);
+  const [cashOutData, setCashOutData] = useState<{ totalOut: number; items: { amount: number; reason: string }[] }>({ totalOut: 0, items: [] });
   const { closeShift, loading } = useShiftStore();
 
   const openingCashRp = shift.openingCash / 100;
 
-  // Fetch real transaction summary when modal opens
+  // Fetch real transaction summary + cash out data when modal opens
   useEffect(() => {
     if (!open) return;
+
+    // Load transaction summary
     window.api.shiftSummary(shift.id).then((res: ApiResponse<ShiftSummary>) => {
       if (res.ok && res.data) {
         setTxSummary({
@@ -51,23 +54,33 @@ export default function CloseShiftModal({ open, onOpenChange, shift, onSuccess }
         totalNonCashSales: shift.totalNonCashSales,
       });
     });
+
+    // Load cash out data
+    window.api.cashFlowSummary(shift.id).then((res: any) => {
+      if (res.ok && res.data) {
+        setCashOutData((prev) => ({ ...prev, totalOut: res.data.totalOut || 0 }));
+      }
+    }).catch(() => {});
   }, [open, shift.id]);
 
   const summary = useMemo(() => {
     const cashSales = (txSummary?.totalCashSales ?? 0) / 100;
     const nonCashSales = (txSummary?.totalNonCashSales ?? 0) / 100;
     const totalSales = (txSummary?.totalSales ?? 0) / 100;
-    const expectedCash = openingCashRp + cashSales;
+    const totalCashOut = cashOutData.totalOut / 100;
+    // Expected cash = opening + cash sales - cash out
+    const expectedCash = openingCashRp + cashSales - totalCashOut;
     const closingCashNum = Number(closingCash) || 0;
     const discrepancy = closingCashNum - expectedCash;
 
-    return { cashSales, nonCashSales, totalSales, expectedCash, discrepancy };
-  }, [txSummary, closingCash, openingCashRp]);
+    return { cashSales, nonCashSales, totalSales, totalCashOut, expectedCash, discrepancy };
+  }, [txSummary, cashOutData, closingCash, openingCashRp]);
 
   const handleClose = async () => {
     const cash = Math.round(Number(closingCash) * 100);
     const res = await closeShift(shift.id, cash, notes || undefined);
     if (res.ok) {
+      setShowConfirm(false);
       onOpenChange(false);
       onSuccess?.();
     }
@@ -76,11 +89,11 @@ export default function CloseShiftModal({ open, onOpenChange, shift, onSuccess }
   const handleCancel = () => {
     setClosingCash('');
     setNotes('');
-    setConfirmText('');
+    setShowConfirm(false);
     onOpenChange(false);
   };
 
-  const isValid = closingCash !== '' && Number(closingCash) >= 0 && confirmText === 'TUTUP';
+  const isValid = closingCash !== '' && Number(closingCash) >= 0;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -110,6 +123,15 @@ export default function CloseShiftModal({ open, onOpenChange, shift, onSuccess }
               <span className="text-neutral-500">Penjualan Non-Tunai</span>
               <span className="font-medium text-indigo-600 tabular-nums">Rp{summary.nonCashSales.toLocaleString('id-ID')}</span>
             </div>
+            {summary.totalCashOut > 0 && (
+              <div className="flex items-center justify-between">
+                <span className="text-neutral-500 flex items-center gap-1">
+                  <ArrowDown className="w-2.5 h-2.5 text-red-500" />
+                  Kas Keluar
+                </span>
+                <span className="font-medium text-red-600 tabular-nums">-Rp{summary.totalCashOut.toLocaleString('id-ID')}</span>
+              </div>
+            )}
             <div className="border-t border-neutral-200 pt-1 flex items-center justify-between font-medium">
               <span className="text-neutral-700">Total Penjualan</span>
               <span className="text-neutral-800 tabular-nums">Rp{summary.totalSales.toLocaleString('id-ID')}</span>
@@ -161,37 +183,39 @@ export default function CloseShiftModal({ open, onOpenChange, shift, onSuccess }
               className="w-full rounded-lg border border-neutral-300 px-2.5 py-1.5 text-[10px] bg-white focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500 resize-none placeholder:text-neutral-400"
             />
           </div>
-
-          {/* Confirmation */}
-          <div className="space-y-0.5">
-            <label className="text-[10px] font-semibold text-amber-700 uppercase tracking-wide">
-              <span className="flex items-center gap-1">
-                <XCircle weight="fill" className="w-3 h-3" />
-                Konfirmasi
-              </span>
-            </label>
-            <Input
-              type="text"
-              value={confirmText}
-              onChange={(e) => setConfirmText(e.target.value)}
-              placeholder='Ketik "TUTUP" untuk konfirmasi'
-              className="h-8 text-[11px] font-mono"
-            />
-          </div>
         </div>
 
         <div className="flex items-center justify-end gap-2 px-3 py-2.5 border-t border-neutral-200 bg-neutral-50 rounded-b-xl">
-          <Button variant="outline" size="xs" onClick={handleCancel} className="h-7 px-3 text-[10px]">
-            Batal
-          </Button>
-          <Button
-            size="xs"
-            onClick={handleClose}
-            disabled={!isValid || loading}
-            className="h-7 px-3 bg-amber-600 hover:bg-amber-700 text-[10px] text-white"
-          >
-            {loading ? 'Menutup...' : 'Tutup Shift'}
-          </Button>
+          {!showConfirm ? (
+            <>
+              <Button variant="outline" size="xs" onClick={handleCancel} className="h-7 px-3 text-[10px]">
+                Batal
+              </Button>
+              <Button
+                size="xs"
+                onClick={() => setShowConfirm(true)}
+                disabled={!isValid}
+                className="h-7 px-3 bg-amber-600 hover:bg-amber-700 text-[10px] text-white"
+              >
+                Tutup Shift
+              </Button>
+            </>
+          ) : (
+            <>
+              <span className="text-[10px] text-neutral-600 mr-auto">Yakin tutup shift?</span>
+              <Button variant="outline" size="xs" onClick={() => setShowConfirm(false)} className="h-7 px-3 text-[10px]">
+                Tidak
+              </Button>
+              <Button
+                size="xs"
+                onClick={handleClose}
+                disabled={loading}
+                className="h-7 px-3 bg-red-600 hover:bg-red-700 text-[10px] text-white"
+              >
+                {loading ? 'Menutup...' : 'Ya, Tutup'}
+              </Button>
+            </>
+          )}
         </div>
       </DialogContent>
     </Dialog>

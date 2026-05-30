@@ -3,7 +3,7 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useCartStore } from '@/stores/cartStore';
-import { Trash, Clock, CurrencyDollar } from 'phosphor-react';
+import { Trash, Clock, CurrencyDollar, User } from 'phosphor-react';
 
 interface HeldBill {
   id: string;
@@ -13,6 +13,8 @@ interface HeldBill {
   itemCount: number;
   createdAt: number;
   notes?: string | null;
+  customerId?: string | null;
+  customerName?: string | null;
 }
 
 interface Props {
@@ -27,8 +29,9 @@ export default function HoldBillModal({ open: openProp, onOpenChange, onContinue
   const [loading, setLoading] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<HeldBill | null>(null);
   const [bulkDeleteConfirm, setBulkDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const { deleteHeldBill } = useCartStore();
+  const { deleteHeldBill, bulkDeleteHeldBills } = useCartStore();
 
   const selectAll = bills.length > 0 && selectedIds.size === bills.length;
 
@@ -91,6 +94,8 @@ export default function HoldBillModal({ open: openProp, onOpenChange, onContinue
           itemCount: tx.items?.length || 0,
           createdAt: tx.createdAt,
           notes: tx.notes || null,
+          customerId: tx.customerId || null,
+          customerName: tx.customerName || null,
         })));
       }
     } catch {
@@ -105,6 +110,12 @@ export default function HoldBillModal({ open: openProp, onOpenChange, onContinue
       const tx = res.data;
       if (tx?.items) {
         useCartStore.setState({ items: [] });
+        // Restore customer if the bill had one
+        if (tx.customerId) {
+          useCartStore.getState().setCustomer(tx.customerId, 0);
+        } else {
+          useCartStore.setState({ customerId: null, loyaltyDiscountPercent: 0 });
+        }
         for (const item of tx.items) {
           useCartStore.getState().addItem({
             productId: item.productId,
@@ -146,12 +157,17 @@ export default function HoldBillModal({ open: openProp, onOpenChange, onContinue
   };
 
   const handleBulkDelete = async () => {
-    for (const id of selectedIds) {
-      await deleteHeldBill(id);
+    setDeleting(true);
+    try {
+      await bulkDeleteHeldBills(Array.from(selectedIds));
+      setBills(bills.filter((b) => !selectedIds.has(b.id)));
+      setSelectedIds(new Set());
+      setBulkDeleteConfirm(false);
+    } catch {
+      // ignore
+    } finally {
+      setDeleting(false);
     }
-    setBills(bills.filter((b) => !selectedIds.has(b.id)));
-    setSelectedIds(new Set());
-    setBulkDeleteConfirm(false);
   };
 
   const handleClose = () => setOpen(false);
@@ -215,6 +231,12 @@ export default function HoldBillModal({ open: openProp, onOpenChange, onContinue
                         <p className="text-[10px] text-neutral-500">
                           {bill.itemCount} item · Rp{(bill.total / 100).toLocaleString('id-ID')}
                         </p>
+                        {bill.customerName && (
+                          <p className="text-[10px] text-indigo-600 truncate max-w-[200px] leading-tight mt-0.5 flex items-center gap-1">
+                            <User className="w-2.5 h-2.5" />
+                            {bill.customerName}
+                          </p>
+                        )}
                         {bill.notes && (
                           <p className="text-[10px] text-amber-600 truncate max-w-[200px] leading-tight mt-0.5">
                             {bill.notes}
@@ -265,6 +287,7 @@ export default function HoldBillModal({ open: openProp, onOpenChange, onContinue
               <Button
                 size="sm"
                 onClick={() => setBulkDeleteConfirm(true)}
+                disabled={deleting}
                 className="h-7 px-3 text-[10px] bg-red-600 hover:bg-red-700 text-white"
               >
                 <Trash className="w-3 h-3 mr-1" />
@@ -310,9 +333,9 @@ export default function HoldBillModal({ open: openProp, onOpenChange, onContinue
               <Button variant="outline" size="sm" onClick={() => setBulkDeleteConfirm(false)} className="h-8 px-4 text-[11px]">
                 Batal
               </Button>
-              <Button size="sm" onClick={handleBulkDelete} className="h-8 px-4 bg-red-600 hover:bg-red-700 text-[11px] text-white">
+              <Button size="sm" onClick={handleBulkDelete} disabled={deleting} className="h-8 px-4 bg-red-600 hover:bg-red-700 text-[11px] text-white">
                 <Trash className="w-3.5 h-3.5 mr-1" />
-                Hapus {selectedIds.size} Bill
+                {deleting ? 'Menghapus...' : `Hapus ${selectedIds.size} Bill`}
               </Button>
             </div>
           </DialogContent>

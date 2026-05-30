@@ -17,6 +17,8 @@ interface TransactionDetailModalProps {
   open: boolean;
   onClose: () => void;
   transactionId: string | null;
+  /** Optional: pass customer points info after a fresh transaction (post-payment). */
+  receiptCustInfo?: { name: string; points: number; earned: number } | null;
 }
 
 function formatRupiah(cents: number) {
@@ -34,11 +36,12 @@ function formatDateTime(ts: number) {
   });
 }
 
-export function TransactionDetailModal({ open, onClose, transactionId }: TransactionDetailModalProps) {
+export function TransactionDetailModal({ open, onClose, transactionId, receiptCustInfo }: TransactionDetailModalProps) {
   const [tx, setTx] = useState<Transaction | null>(null);
   const [loading, setLoading] = useState(false);
   const [printLoading, setPrintLoading] = useState(false);
   const [printStatus, setPrintStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [custInfo, setCustInfo] = useState<{ name: string; points: number; earned: number } | null>(null);
 
   const settings = useSettingsStore();
   const { storeName, storeAddress, storePhone, receiptHeader, receiptFooter, receiptShowLogo, receiptShowTaxBreakdown, receiptShowQr, isLoading: settingsLoading, loadSettings } = settings;
@@ -54,16 +57,29 @@ export function TransactionDetailModal({ open, onClose, transactionId }: Transac
     if (!open || !transactionId) return;
     setLoading(true);
     setTx(null);
+    setCustInfo(null);
     setPrintStatus('idle');
     window.api.transactionGet(transactionId)
-      .then((res: any) => {
+      .then(async (res: any) => {
         if (res?.ok && res.data) {
-          setTx(res.data);
+          const txData = res.data;
+          setTx(txData);
+          // Only fetch from DB if no fresh custInfo was passed from parent
+          if (!receiptCustInfo && txData.customerId) {
+            const custRes = await window.api.customerGet(txData.customerId);
+            if (custRes.ok && custRes.data) {
+              const c = custRes.data;
+              setCustInfo({ name: c.name, points: c.points || 0, earned: 0 });
+            }
+          }
         }
       })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [open, transactionId]);
+
+  // Prefer fresh post-payment info (has earnedPoints) over DB fetch (earned: 0)
+  const resolvedCust = receiptCustInfo ?? custInfo;
 
   const PAYMENT_LABELS: Record<string, string> = {
     cash: 'Tunai',
@@ -79,18 +95,13 @@ export function TransactionDetailModal({ open, onClose, transactionId }: Transac
     setPrintStatus('idle');
 
     try {
-      // Fetch customer info (points, tier) if available
-      let custInfo: { name: string; tier: string; points: number; earned: number } | null = null;
-      if (tx.customerId) {
+      // Use already-resolved cust info; fall back to DB fetch for reprint cases
+      let printCust = resolvedCust;
+      if (!printCust && tx.customerId) {
         const custRes = await window.api.customerGet(tx.customerId);
         if (custRes.ok && custRes.data) {
           const c = custRes.data;
-          custInfo = {
-            name: c.name,
-            tier: c.tier || 'Bronze',
-            points: c.points || 0,
-            earned: 0, // tidak diketahui untuk cetak ulang
-          };
+          printCust = { name: c.name, points: c.points || 0, earned: 0 };
         }
       }
 
@@ -120,10 +131,9 @@ export function TransactionDetailModal({ open, onClose, transactionId }: Transac
         total: tx.total,
         amountPaid: tx.amountPaid,
         change: tx.change,
-        customerName: custInfo?.name ?? tx.customerName ?? undefined,
-        customerTier: custInfo?.tier,
-        customerPoints: custInfo?.points,
-        pointsEarned: custInfo?.earned,
+        customerName: printCust?.name ?? tx.customerName ?? undefined,
+        customerPoints: printCust?.points,
+        pointsEarned: printCust?.earned,
       };
 
       const result = await window.api.printerPrint(receiptData);
@@ -224,11 +234,25 @@ export function TransactionDetailModal({ open, onClose, transactionId }: Transac
                     <span className="text-neutral-400">:</span>
                     <span className="font-semibold">{tx.userName || '-'}</span>
                   </div>
-                  {tx.customerName && (
+                  {(tx.customerName || resolvedCust) && (
                     <div className="flex gap-1">
                       <span className="w-28 text-neutral-400">Pembeli</span>
                       <span className="text-neutral-400">:</span>
-                      <span className="font-semibold">{tx.customerName}</span>
+                      <span className="font-semibold">{resolvedCust?.name ?? tx.customerName}</span>
+                    </div>
+                  )}
+                  {resolvedCust && resolvedCust.points > 0 && (
+                    <div className="flex gap-1">
+                      <span className="w-28 text-neutral-400">Total Poin</span>
+                      <span className="text-neutral-400">:</span>
+                      <span className="font-semibold">{resolvedCust.points.toLocaleString('id-ID')} poin</span>
+                    </div>
+                  )}
+                  {resolvedCust && resolvedCust.earned > 0 && (
+                    <div className="flex gap-1">
+                      <span className="w-28 text-neutral-400">Poin Didapat</span>
+                      <span className="text-neutral-400">:</span>
+                      <span className="font-semibold text-emerald-600">+{resolvedCust.earned.toLocaleString('id-ID')} poin</span>
                     </div>
                   )}
                   <div className="flex gap-1 items-center">
@@ -283,6 +307,14 @@ export function TransactionDetailModal({ open, onClose, transactionId }: Transac
                     ))}
                   </tbody>
                 </table>
+
+                {/* ── Ringkasan item ─────────────────────────────────── */}
+                <div className="flex justify-between items-center pt-1.5 mt-1 border-t border-dashed border-neutral-200 text-[10px] text-neutral-500">
+                  <span>Total Item</span>
+                  <span className="font-semibold text-neutral-700 tabular-nums">
+                    {(tx.items || []).length} item · {(tx.items || []).reduce((s, i) => s + i.quantity, 0)} pcs
+                  </span>
+                </div>
               </div>
 
               {/* ── FOOTER: totals + thank you ── */}
@@ -333,9 +365,6 @@ export function TransactionDetailModal({ open, onClose, transactionId }: Transac
                 <div className="mt-4 pt-3 border-t border-dashed border-neutral-300 text-center space-y-0.5">
                   <p className="text-[12px] font-bold tracking-widest uppercase">
                     {receiptFooter || 'Terima Kasih'}
-                  </p>
-                  <p className="text-[9px] text-neutral-400">
-                    Barang yang sudah dibeli tidak dapat dikembalikan
                   </p>
                 </div>
               </div>

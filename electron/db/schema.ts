@@ -206,3 +206,17 @@ export const inventoryLogs = sqliteTable('inventory_logs', {
 
 export type InventoryLog = typeof inventoryLogs.$inferSelect;
 export type NewInventoryLog = typeof inventoryLogs.$inferInsert;
+
+// ─── Cash Flows (Kas Masuk / Keluar) ─────────────────────────────────────────────
+export const cashFlows = sqliteTable('cash_flows', {
+  id: text('id').primaryKey(),
+  shiftId: text('shift_id').references(() => shifts.id).notNull(),
+  type: text('type', { enum: ['in', 'out'] }).notNull(),
+  amount: integer('amount').notNull(),  // in cents
+  reason: text('reason').notNull(),
+  userId: text('user_id').references(() => users.id).notNull(),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+});
+
+export type CashFlow = typeof cashFlows.$inferSelect;
+export type NewCashFlow = typeof cashFlows.$inferInsert;

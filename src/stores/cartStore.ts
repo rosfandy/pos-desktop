@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { useAuthStore } from '@/stores/authStore';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -39,9 +40,10 @@ export interface CartState {
   setPayment: (method: PaymentMethod, amount: number) => void;
   calculateTotals: () => void;
   clearCart: () => void;
-  holdBill: (notes?: string) => Promise<any>;
+  holdBill: (notes?: string, overrideCustomerId?: string | null) => Promise<any>;
   loadHeldBill: (transaction: any) => void;
   deleteHeldBill: (id: string) => Promise<any>;
+  bulkDeleteHeldBills: (ids: string[]) => Promise<any>;
   pay: (userId?: string, shiftId?: string, payCustomerId?: string) => Promise<any>;
 }
 
@@ -174,13 +176,15 @@ export const useCartStore = create<CartState>((set, get) => ({
     });
   },
 
-  holdBill: async (notes?: string) => {
-    const { items, customerId, subtotal, discount, discountPercent, tax, taxPercent, total } = get();
+  holdBill: async (notes?: string, overrideCustomerId?: string | null) => {
+    const { items, customerId: cartCustomerId, subtotal, discount, discountPercent, tax, taxPercent, total } = get();
     const api = (window as any).api;
 
+    const authUser = useAuthStore.getState().user;
+    const finalCustomerId = overrideCustomerId !== undefined ? overrideCustomerId : cartCustomerId;
     const dto = {
-      userId: 'current-user-id', // TODO: get from authStore
-      customerId,
+      userId: authUser?.id || 'unknown',
+      customerId: finalCustomerId,
       subtotal,
       discount,
       discountPercent,
@@ -230,6 +234,11 @@ export const useCartStore = create<CartState>((set, get) => ({
   deleteHeldBill: async (id: string) => {
     const api = (window as any).api;
     await api.transactionVoid(id, 'Dihapus oleh kasir');
+  },
+
+  bulkDeleteHeldBills: async (ids: string[]) => {
+    const api = (window as any).api;
+    await api.transactionBulkDeleteHeld(ids);
   },
 
   pay: async (overrideUserId?: string, shiftId?: string, payCustomerId?: string) => {

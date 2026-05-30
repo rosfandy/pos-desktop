@@ -421,32 +421,37 @@ export default function SettingsPage() {
         </nav>
 
         {/* ── Content ─────────────────────────────────────────────────────────── */}
-        <div className="flex-1 overflow-y-auto bg-white">
-          <form onSubmit={handleSubmit} className="max-w-lg mx-auto p-6 space-y-6">
-            {/* Success */}
-            {showSuccess && (
-              <div className="flex items-center gap-2 rounded border border-emerald-200 bg-emerald-50 px-3 py-2 text-[11px] text-emerald-700">
-                <CheckCircle weight="fill" className="w-3.5 h-3.5 shrink-0" />
-                Pengaturan berhasil disimpan.
+        <div className="flex-1 flex flex-col min-h-0 bg-white">
+          <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
+            {/* Scrollable fields */}
+            <div className="flex-1 overflow-y-auto">
+              <div className="max-w-lg mx-auto p-6 space-y-6">
+                {/* Success */}
+                {showSuccess && (
+                  <div className="flex items-center gap-2 rounded border border-emerald-200 bg-emerald-50 px-3 py-2 text-[11px] text-emerald-700">
+                    <CheckCircle weight="fill" className="w-3.5 h-3.5 shrink-0" />
+                    Pengaturan berhasil disimpan.
+                  </div>
+                )}
+
+                {/* Error */}
+                {error && (
+                  <div className="flex items-center gap-2 rounded border border-red-200 bg-red-50 px-3 py-2 text-[11px] text-red-700">
+                    <Warning weight="fill" className="w-3.5 h-3.5 shrink-0" />
+                    {error}
+                  </div>
+                )}
+
+                {/* Active section */}
+                {activeTab === 'general' && renderGeneral()}
+                {activeTab === 'print' && renderPrint()}
+                {activeTab === 'inventory' && renderInventory()}
+                {activeTab === 'tampilan' && renderPreferences()}
               </div>
-            )}
+            </div>
 
-            {/* Error */}
-            {error && (
-              <div className="flex items-center gap-2 rounded border border-red-200 bg-red-50 px-3 py-2 text-[11px] text-red-700">
-                <Warning weight="fill" className="w-3.5 h-3.5 shrink-0" />
-                {error}
-              </div>
-            )}
-
-            {/* Active section */}
-            {activeTab === 'general' && renderGeneral()}
-            {activeTab === 'print' && renderPrint()}
-            {activeTab === 'inventory' && renderInventory()}
-            {activeTab === 'tampilan' && renderPreferences()}
-
-            {/* Save Button */}
-            <div className="pt-4 flex items-center justify-between border-t border-neutral-100">
+            {/* Fixed Save Bar */}
+            <div className="shrink-0 flex items-center justify-between px-6 py-3 border-t border-neutral-200 bg-white">
               <span className={cn('text-[10px]', hasChanges ? 'text-amber-600 font-medium' : 'text-neutral-400')}>
                 {hasChanges ? '● Ada perubahan yang belum disimpan' : '○ Semua perubahan tersimpan'}
               </span>
@@ -456,7 +461,7 @@ export default function SettingsPage() {
                 className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-semibold shadow-sm"
               >
                 <FloppyDisk className="w-3.5 h-3.5" />
-                Simpan Pengaturan
+                {isSaving ? 'Menyimpan…' : 'Simpan Pengaturan'}
               </Button>
             </div>
           </form>

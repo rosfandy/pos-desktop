@@ -1,4 +1,4 @@
-import { app, BrowserWindow, nativeImage } from 'electron';
+import { app, BrowserWindow, nativeImage, ipcMain } from 'electron';
 import { join } from 'path';
 import { registerAuthHandlers } from './ipc/auth.ts';
 import { registerSettingsHandlers } from './ipc/settings.ts';
@@ -15,8 +15,9 @@ import { registerCustomerBulkImportHandlers } from './ipc/customer-bulk-import.t
 import { registerInventoryHandlers } from './ipc/inventory.ts';
 import { registerReportHandlers } from './ipc/report.ts';
 import { registerShiftHandlers } from './ipc/shift.ts';
+import { registerCashFlowHandlers } from './ipc/cashFlow.ts';
 import { registerUpdaterHandlers } from './ipc/updater.ts';
-import { migrate, getDb, seedAdmin } from './db/index.ts';
+import { migrate, getDb, seedAdmin, getDbPath } from './db/index.ts';
 
 const __dirname = join(__filename, '..');
 const iconPath = app.isPackaged
@@ -92,6 +93,8 @@ app.whenReady().then(async () => {
   registerInventoryHandlers();
   registerReportHandlers();
   registerShiftHandlers();
+  registerCashFlowHandlers();
+  ipcMain.handle('app:getDbPath', () => getDbPath());
   console.log('[APP] IPC handlers registered');
 
   createWindow();

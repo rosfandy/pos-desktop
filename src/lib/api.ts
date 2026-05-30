@@ -488,6 +488,7 @@ export interface API {
   ) => Promise<ApiResponse<AuthLoginResult>>;
   authLogout: () => Promise<ApiOk<void>>;
   authMe: (token?: string) => Promise<ApiResponse<User | null>>;
+  authVerifyPin: (pin: string) => Promise<ApiResponse<{ ok: boolean; userId?: string; role?: string }>>;
 
   // Settings
   settingsGet: (key: string) => Promise<ApiResponse<string | null>>;
@@ -512,6 +513,7 @@ export interface API {
   transactionListHeld: () => Promise<ApiResponse<any[]>>;
   transactionUnhold: (id: string) => Promise<ApiResponse<any>>;
   transactionVoid: (id: string, reason: string) => Promise<ApiResponse<any>>;
+  transactionBulkDeleteHeld: (ids: string[]) => Promise<ApiResponse<any[]>>;
   transactionRefund: (id: string, items?: any[]) => Promise<ApiResponse<any>>;
 
   // Printer (POS-010)
@@ -572,6 +574,16 @@ export interface API {
   categoryCreate: (input: CategoryInput) => Promise<ApiResponse<CategoryRow>>;
   categoryUpdate: (id: string, input: CategoryInput) => Promise<ApiResponse<CategoryRow>>;
   categoryDelete: (id: string) => Promise<ApiResponse<{ success: boolean }>>;
+
+  // Cash Flow
+  cashFlowRecordOut: (dto: { shiftId: string; amount: number; reason: string; userId: string }) => Promise<ApiResponse<any>>;
+  cashFlowRecordIn: (dto: { shiftId: string; amount: number; reason: string; userId: string }) => Promise<ApiResponse<any>>;
+  cashFlowList: (shiftId: string) => Promise<ApiResponse<any[]>>;
+  cashFlowSummary: (shiftId: string) => Promise<ApiResponse<{ totalIn: number; totalOut: number }>>;
+  cashFlowListByDate: (params: { startDate: number; endDate: number }) => Promise<ApiResponse<any[]>>;
+
+  // App
+  getDbPath: () => Promise<string>;
 
   // Report (RPT)
   reportSales: (params: ReportParams) => Promise<ApiResponse<SalesReport>>;

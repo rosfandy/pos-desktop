@@ -341,7 +341,7 @@ export async function getStockReport(): Promise<StockReport> {
       p.price_buy     AS price_buy
     FROM products p
     LEFT JOIN categories c ON p.category_id = c.id
-    WHERE p.is_active = 1
+    WHERE c.is_active = 1 OR c.id IS NULL
     ORDER BY p.name ASC
   `));
 

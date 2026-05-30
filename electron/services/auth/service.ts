@@ -93,7 +93,29 @@ export async function validateToken(token: string): Promise<User | null> {
   }
 }
 
-// ─── Helpers ────────────────────────────────────────────────────────────────
+/**
+ * Verifies a PIN for a specific user (admin/manager authorization check).
+ * Returns true if the PIN matches an active admin or manager user.
+ */
+export async function verifyAdminPin(pin: string): Promise<{ ok: boolean; userId?: string; role?: string }> {
+  const db = await getDb();
+  const rows = db.exec(`SELECT id, name, pin, role, is_active FROM users WHERE role IN ('admin','manager') AND is_active = 1`);
+  if (!rows[0]?.values.length) return { ok: false };
+
+  const cols = rows[0].columns;
+  for (const rawRow of rows[0].values) {
+    const row = rawRow as unknown[];
+    const pinHash = row[cols.indexOf('pin')];
+    if (pinHash && (await bcrypt.compare(pin, String(pinHash)))) {
+      return {
+        ok: true,
+        userId: String(row[cols.indexOf('id')]),
+        role: String(row[cols.indexOf('role')]),
+      };
+    }
+  }
+  return { ok: false };
+}
 
 function generateToken(user: { id: string }): string {
   return jwt.sign({ sub: user.id }, JWT_SECRET, { expiresIn: JWT_EXPIRY });

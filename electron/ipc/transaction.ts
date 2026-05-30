@@ -6,6 +6,7 @@ import {
   listHeldTransactions,
   voidTransaction,
   refundTransaction,
+  bulkDeleteHeldTransactions,
   TRANS_ERR,
 } from '../services/transaction/service.ts';
 import { listTransactions } from '../services/transaction/repo.js';
@@ -106,6 +107,16 @@ export function registerTransactionHandlers(): void {
     try {
       const result = await refundTransaction(id, items);
       return { ok: true, data: result };
+    } catch (err: any) {
+      return { ok: false, error: { code: 'TRANS_UNKNOWN', message: err.message } };
+    }
+  });
+
+  // Bulk delete held bills
+  ipcMain.handle('transaction:bulkDeleteHeld', async (_event, ids: string[]) => {
+    try {
+      const results = await bulkDeleteHeldTransactions(ids);
+      return { ok: true, data: results };
     } catch (err: any) {
       return { ok: false, error: { code: 'TRANS_UNKNOWN', message: err.message } };
     }

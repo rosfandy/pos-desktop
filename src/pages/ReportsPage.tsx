@@ -28,6 +28,10 @@ import {
 const formatRupiah = (cents: number) =>
   `Rp ${(Math.round(cents) / 100).toLocaleString('id-ID')}`;
 
+/** Format a value already in Rupiah (not cents) for chart tooltips/data labels. */
+const formatRupiahDirect = (v: number) =>
+  `Rp ${Math.round(v).toLocaleString('id-ID')}`;
+
 const formatDate = (dateStr: string) => {
   const d = new Date(dateStr);
   return d.toLocaleDateString('id-ID', {
@@ -75,6 +79,10 @@ export default function ReportsPage() {
   const [financeLoading, setFinanceLoading] = useState(false);
   const [financeError, setFinanceError] = useState<string | null>(null);
 
+  // Cash flow (kas masuk/keluar)
+  const [cashFlows, setCashFlows] = useState<any[]>([]);
+  const [cashFlowLoading, setCashFlowLoading] = useState(false);
+
   // Transactions
   const [txList, setTxList] = useState<Transaction[]>([]);
   const [txLoading, setTxLoading] = useState(false);
@@ -113,14 +121,21 @@ export default function ReportsPage() {
 
   const fetchFinance = async () => {
     setFinanceLoading(true);
+    setCashFlowLoading(true);
     setFinanceError(null);
     try {
-      const res = await window.api.reportFinance({ startDate: startTs, endDate: endTs });
-      const data = unwrap<FinanceReport>(res);
+      const [finRes, cfRes] = await Promise.all([
+        window.api.reportFinance({ startDate: startTs, endDate: endTs }),
+        window.api.cashFlowListByDate({ startDate: startTs * 1000, endDate: endTs * 1000 }),
+      ]);
+      const data = unwrap<FinanceReport>(finRes);
       if (data) setFinanceData(data);
-      else setFinanceError((res as any)?.error?.message || 'Gagal memuat laporan keuangan');
+      else setFinanceError((finRes as any)?.error?.message || 'Gagal memuat laporan keuangan');
+
+      const cfData = unwrap<any[]>(cfRes);
+      if (cfData) setCashFlows(cfData);
     } catch { setFinanceError('Gagal memuat laporan keuangan'); }
-    finally { setFinanceLoading(false); }
+    finally { setFinanceLoading(false); setCashFlowLoading(false); }
   };
 
   // Auto-fetch on tab/date change
@@ -177,6 +192,18 @@ export default function ReportsPage() {
     } catch { setTxError('Gagal memuat transaksi'); }
     finally { setTxLoading(false); }
   };
+
+  // ── Cash flow totals ─────────────────────────────────────────────────────
+
+  const cashFlowSummary = useMemo(() => {
+    let totalIn = 0;
+    let totalOut = 0;
+    for (const cf of cashFlows) {
+      if (cf.type === 'in') totalIn += cf.amount;
+      else totalOut += cf.amount;
+    }
+    return { totalIn, totalOut };
+  }, [cashFlows]);
 
   // ── Stock search filter ──────────────────────────────────────────────────
 
@@ -444,8 +471,9 @@ export default function ReportsPage() {
                     <Chart
                       options={(() => {
                         const opts: ApexOptions = {
-                          chart: { type: 'bar', toolbar: { show: false }, fontFamily: 'inherit', sparkline: { enabled: false } },
-                          plotOptions: { bar: { columnWidth: '65%', borderRadius: 2 } },
+                          chart: { type: 'line', toolbar: { show: false }, fontFamily: 'inherit' },
+                          stroke: { curve: 'smooth', width: 2 },
+                          markers: { size: 0 },
                           xaxis: {
                             categories: salesData.byDay.map((d) => {
                               const dt = new Date(d.date + 'T00:00:00');
@@ -462,14 +490,14 @@ export default function ReportsPage() {
                             },
                           },
                           grid: { borderColor: '#f0f0f0', strokeDashArray: 4 },
-                          tooltip: { y: { formatter: (v: number) => formatRupiah(v) } },
+                          tooltip: { y: { formatter: (v: number) => formatRupiahDirect(v) } },
                           colors: ['#6366f1'],
                           dataLabels: { enabled: false },
                         };
                         return opts;
                       })()}
-                      series={[{ name: 'Pendapatan', data: salesData.byDay.map((d) => d.revenue) }]}
-                      type="bar"
+                      series={[{ name: 'Pendapatan', data: salesData.byDay.map((d) => d.revenue / 100) }]}
+                      type="line"
                       height={200}
                     />
                   ) : (
@@ -477,6 +505,31 @@ export default function ReportsPage() {
                   )}
                 </div>
               </div>
+
+              {/* Daily breakdown */}
+              <TablePanel title="Breakdown Harian">
+                <table className="w-full text-left border-separate border-spacing-0 min-w-[500px]">
+                  <thead className="sticky top-0 z-10">
+                    <tr className="bg-neutral-50 border-b border-neutral-200">
+                      <th className="px-3 py-2 text-[10px] font-semibold text-neutral-500 uppercase">Tanggal</th>
+                      <th className="px-3 py-2 text-[10px] font-semibold text-neutral-500 uppercase text-center">Transaksi</th>
+                      <th className="px-3 py-2 text-[10px] font-semibold text-neutral-500 uppercase text-right">Pendapatan</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {salesData.byDay.map((d) => (
+                      <tr key={d.date} className="border-b border-neutral-100 hover:bg-neutral-50">
+                        <td className="px-3 py-2 text-[11px] text-neutral-600">{formatDate(d.date)}</td>
+                        <td className="px-3 py-2 text-[11px] text-center tabular-nums text-neutral-600">{d.transactions}</td>
+                        <td className="px-3 py-2 text-[11px] text-right tabular-nums font-semibold text-neutral-800">{formatRupiah(d.revenue)}</td>
+                      </tr>
+                    ))}
+                    {salesData.byDay.length === 0 && (
+                      <tr><td colSpan={3} className="px-3 py-8 text-center text-[11px] text-neutral-400">Belum ada data</td></tr>
+                    )}
+                  </tbody>
+                </table>
+              </TablePanel>
 
               {/* Top products */}
               <TablePanel title="Produk Terlaris">
@@ -770,32 +823,26 @@ export default function ReportsPage() {
 
           {financeData && (
             <>
-              {/* Summary cards */}
+              {/* Summary cards — kas masuk/keluar, diskon & pajak */}
               <div className="grid grid-cols-4 gap-3">
-                <Card label="Pendapatan"        value={formatRupiah(financeData.revenue)}         icon={CurrencyDollar} color="text-emerald-600" />
-                <Card label="Total Diskon"       value={formatRupiah(financeData.discount)}        icon={ArrowDown}      color="text-red-500" />
-                <Card label="Pajak"              value={formatRupiah(financeData.tax)}             icon={ChartBar}       color="text-indigo-600" />
-                <Card label="Pendapatan Bersih"  value={formatRupiah(financeData.netRevenue)}      icon={ArrowUp}        color="text-emerald-600" />
+                <Card label="Kas Masuk"            value={formatRupiah(cashFlowSummary.totalIn)}     icon={CurrencyDollar} color="text-emerald-600" />
+                <Card label="Kas Keluar"           value={formatRupiah(cashFlowSummary.totalOut)}    icon={ArrowUp}        color="text-red-500" />
+                <Card label="Total Diskon"         value={formatRupiah(financeData.discount)}        icon={ArrowDown}      color="text-red-500" />
+                <Card label="Pajak"                value={formatRupiah(financeData.tax)}             icon={ChartBar}       color="text-indigo-600" />
               </div>
 
-              {/* Finance chart — ApexCharts */}
-              <div className="bg-white border border-neutral-200 rounded overflow-hidden">
-                <div className="h-8 flex items-center justify-between px-3 border-b border-neutral-100 bg-neutral-50 shrink-0">
-                  <span className="text-[11px] font-semibold text-neutral-700 uppercase tracking-wide">Trend Pendapatan Harian</span>
-                </div>
-                <div className="p-3">
-                  {financeData.byDay.length > 0 ? (
+              {/* Cash flow chart — total masuk vs keluar */}
+              <TablePanel title="Arus Kas">
+                <div className="pt-3">
+                  {(cashFlowSummary.totalIn > 0 || cashFlowSummary.totalOut > 0) ? (
                     <Chart
                       options={(() => {
                         const opts: ApexOptions = {
-                          chart: { type: 'bar', toolbar: { show: false }, fontFamily: 'inherit', sparkline: { enabled: false } },
-                          plotOptions: { bar: { columnWidth: '65%', borderRadius: 2 } },
+                          chart: { type: 'bar', toolbar: { show: false }, fontFamily: 'inherit' },
+                          plotOptions: { bar: { columnWidth: '45%', borderRadius: 3, horizontal: false, distributed: true } },
                           xaxis: {
-                            categories: financeData.byDay.map((d) => {
-                              const dt = new Date(d.date + 'T00:00:00');
-                              return `${dt.getDate()}/${dt.getMonth() + 1}`;
-                            }),
-                            labels: { style: { fontSize: '10px', colors: '#737373' } },
+                            categories: ['Kas Masuk', 'Kas Keluar'],
+                            labels: { style: { fontSize: '11px', fontWeight: 600, colors: ['#059669', '#dc2626'] } },
                             axisBorder: { show: false },
                             axisTicks: { show: false },
                           },
@@ -806,13 +853,17 @@ export default function ReportsPage() {
                             },
                           },
                           grid: { borderColor: '#f0f0f0', strokeDashArray: 4 },
-                          tooltip: { y: { formatter: (v: number) => formatRupiah(v) } },
-                          colors: ['#10b981'],
-                          dataLabels: { enabled: false },
+                          tooltip: { y: { formatter: (v: number) => formatRupiahDirect(v) } },
+                          colors: ['#10b981', '#ef4444'],
+                          dataLabels: {
+                            enabled: true,
+                            formatter: (v: number) => formatRupiahDirect(v),
+                            style: { fontSize: '10px', fontWeight: 600, colors: ['#fff'] },
+                          },
                         };
                         return opts;
                       })()}
-                      series={[{ name: 'Pendapatan', data: financeData.byDay.map((d) => d.revenue) }]}
+                      series={[{ name: 'Total', data: [cashFlowSummary.totalIn / 100, cashFlowSummary.totalOut / 100] }]}
                       type="bar"
                       height={200}
                     />
@@ -820,31 +871,61 @@ export default function ReportsPage() {
                     <div className="flex items-center justify-center h-32 text-[11px] text-neutral-400">Tidak ada data untuk periode ini</div>
                   )}
                 </div>
-              </div>
+              </TablePanel>
 
-              {/* Daily breakdown */}
-              <TablePanel title="Breakdown Harian">
-                <table className="w-full text-left border-separate border-spacing-0 min-w-[500px]">
-                  <thead className="sticky top-0 z-10">
-                    <tr className="bg-neutral-50 border-b border-neutral-200">
-                      <th className="px-3 py-2 text-[10px] font-semibold text-neutral-500 uppercase">Tanggal</th>
-                      <th className="px-3 py-2 text-[10px] font-semibold text-neutral-500 uppercase text-center">Transaksi</th>
-                      <th className="px-3 py-2 text-[10px] font-semibold text-neutral-500 uppercase text-right">Pendapatan</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {financeData.byDay.map((d) => (
-                      <tr key={d.date} className="border-b border-neutral-100 hover:bg-neutral-50">
-                        <td className="px-3 py-2 text-[11px] text-neutral-600">{formatDate(d.date)}</td>
-                        <td className="px-3 py-2 text-[11px] text-center tabular-nums text-neutral-600">{d.transactions}</td>
-                        <td className="px-3 py-2 text-[11px] text-right tabular-nums font-semibold text-neutral-800">{formatRupiah(d.revenue)}</td>
+              {/* Cash flow table */}
+              <TablePanel title="Kas Masuk / Keluar">
+                {cashFlowLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Spinner className="w-4 h-4 text-indigo-500 animate-spin" />
+                    <span className="ml-2 text-[11px] text-neutral-400">Memuat…</span>
+                  </div>
+                ) : (
+                  <table className="w-full text-left border-separate border-spacing-0 min-w-[500px]">
+                    <thead className="sticky top-0 z-10">
+                      <tr className="bg-neutral-50 border-b border-neutral-200">
+                        <th className="px-3 py-2 text-[10px] font-semibold text-neutral-500 uppercase w-10">No</th>
+                        <th className="px-3 py-2 text-[10px] font-semibold text-neutral-500 uppercase">Tanggal</th>
+                        <th className="px-3 py-2 text-[10px] font-semibold text-neutral-500 uppercase">Tipe</th>
+                        <th className="px-3 py-2 text-[10px] font-semibold text-neutral-500 uppercase">Alasan</th>
+                        <th className="px-3 py-2 text-[10px] font-semibold text-neutral-500 uppercase">Kasir</th>
+                        <th className="px-3 py-2 text-[10px] font-semibold text-neutral-500 uppercase text-right">Jumlah</th>
                       </tr>
-                    ))}
-                    {financeData.byDay.length === 0 && (
-                      <tr><td colSpan={3} className="px-3 py-8 text-center text-[11px] text-neutral-400">Belum ada data</td></tr>
-                    )}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {cashFlows.length === 0 ? (
+                        <tr><td colSpan={6} className="px-3 py-8 text-center text-[11px] text-neutral-400">Belum ada data kas</td></tr>
+                      ) : (
+                        cashFlows.map((cf, i) => (
+                          <tr key={cf.id} className="border-b border-neutral-100 hover:bg-neutral-50">
+                            <td className="px-3 py-2 text-[11px] text-neutral-400 tabular-nums">{i + 1}</td>
+                            <td className="px-3 py-2 text-[11px] text-neutral-600 tabular-nums">
+                              {new Date(cf.createdAt).toLocaleDateString('id-ID', {
+                                day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit',
+                              })}
+                            </td>
+                            <td className="px-3 py-2 text-[11px]">
+                              <span className={cn(
+                                'inline-block px-1.5 py-0.5 rounded text-[10px] font-semibold',
+                                cf.type === 'in' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
+                              )}>
+                                {cf.type === 'in' ? 'Masuk' : 'Keluar'}
+                              </span>
+                            </td>
+                            <td className="px-3 py-2 text-[11px] text-neutral-600">{cf.reason}</td>
+                            <td className="px-3 py-2 text-[11px] text-neutral-600">{cf.userName || '-'}</td>
+                            <td className={cn(
+                              'px-3 py-2 text-[11px] text-right tabular-nums font-semibold',
+                              cf.type === 'in' ? 'text-emerald-600' : 'text-red-600'
+                            )}>
+                              {cf.type === 'in' ? '' : '-'}{formatRupiah(cf.amount)}
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                )}
               </TablePanel>
             </>
           )}

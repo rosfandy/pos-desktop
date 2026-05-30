@@ -115,6 +115,18 @@ export async function voidTransaction(id: string, reason: string): Promise<Trans
   return updateTransactionStatus(id, 'voided', reason);
 }
 
+export async function bulkDeleteHeldTransactions(ids: string[]): Promise<TransactionWithItems[]> {
+  const results: TransactionWithItems[] = [];
+  for (const id of ids) {
+    const tx = await getTransactionById(id);
+    if (!tx) continue;
+    // Held bills don't need stock restoration
+    const updated = await updateTransactionStatus(id, 'voided', 'Dihapus oleh kasir');
+    if (updated) results.push(updated);
+  }
+  return results;
+}
+
 export async function refundTransaction(
   id: string,
   items?: Array<{ productId: string; quantity: number }>,
