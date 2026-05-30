@@ -14,10 +14,13 @@ dan proyek ini mengikuti [Semantic Versioning](https://semver.org/).
 
 ---
 
-## [1.5.3] — 2026-05-31
+## [1.5.4] — 2026-05-31
+
+### Changed
+- **Qty keranjang bisa diedit langsung + decimal** — di `CartPanel`, qty item berubah dari `<span>` statis menjadi `<Input type="number" step="any">` sehingga pengguna bisa mengetik nilai desimal (misal 0.5, 1.5). Tombol ± tetap ada untuk increment/decrement 1.
+- **Pencarian produk langsung ke DB** — `InlineProductTable` tidak lagi filter client-side; pencarian & filter kategori query langsung ke database via `product:list` dengan parameter `search`/`categoryId`, memastikan data selalu sinkron.
 
 ### Fixed
-- **Pencarian produk langsung ke DB** — `InlineProductTable` tidak lagi filter client-side dari data yang sudah dimuat; pencarian & filter kategori langsung query ke database via `product:list` dengan parameter `search`/`categoryId`, memastikan data selalu sinkron.
 - **SQL search bug** — `buildWhere` di service produk: sebelumnya string `%` di-double wrap (`LIKE '%%term%'`), diperbaiki jadi `LIKE '%term%'`.
 
 ---
