@@ -87,7 +87,6 @@ function emptyForm() {
     baseUnit: 'pcs',
     minStock: '',
     imagePath: '',
-    isActive: true,
     units: [createUnitRow()],
   };
 }
@@ -133,7 +132,6 @@ export default function ProductForm({ open, onOpenChange, productId }: ProductFo
           baseUnit: selectedProduct.baseUnit || 'pcs',
           minStock: String(selectedProduct.minStock),
           imagePath: selectedProduct.imagePath || '',
-          isActive: selectedProduct.isActive,
           units: (selectedProduct.units || []).map((u) => ({
             id: u.id,
             unitName: u.unitName,
@@ -249,7 +247,6 @@ export default function ProductForm({ open, onOpenChange, productId }: ProductFo
           baseUnit: form.baseUnit,
           minStock: Number(form.minStock),
           imagePath: form.imagePath || null,
-          isActive: form.isActive,
           units,
         });
       } else {
@@ -264,7 +261,6 @@ export default function ProductForm({ open, onOpenChange, productId }: ProductFo
           baseUnit: form.baseUnit,
           minStock: Number(form.minStock),
           imagePath: form.imagePath || undefined,
-          isActive: form.isActive,
           units,
         });
       }
@@ -535,16 +531,7 @@ export default function ProductForm({ open, onOpenChange, productId }: ProductFo
         </div>
 
         <DialogFooter className="px-6 py-4 border-t border-neutral-200 flex items-center justify-between">
-          <div className="flex items-center gap-1.5">
-            <Checkbox
-              id="form-isActive"
-              defaultChecked={form.isActive}
-              onCheckedChange={(checked) => updateField('isActive', checked)}
-            />
-            <label htmlFor="form-isActive" className="text-[11px] text-neutral-600 cursor-pointer">
-              Produk aktif
-            </label>
-          </div>
+
             <div className="flex items-center gap-2">
               <Button
                 variant="outline"

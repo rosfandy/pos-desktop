@@ -28,7 +28,7 @@ export default function LowStockWidget({ className }: LowStockWidgetProps) {
       const threshold = minStockThreshold > 0 ? minStockThreshold : undefined;
       const res = await window.api.productLowStock(threshold);
       if (res?.ok && Array.isArray(res.data)) {
-        setCount(res.data.filter((p: any) => p.isActive).length);
+        setCount(res.data.length);
       } else {
         setCount(0);
       }

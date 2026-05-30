@@ -13,7 +13,6 @@ import {
   Trash,
   Eye,
   XCircle,
-  CheckCircle,
   Tag,
   Barcode,
   WarningCircle,
@@ -27,7 +26,6 @@ export interface ProductListProps {
   className?: string;
   onEdit?: (productId: string) => void;
   onView?: (productId: string) => void;
-  showInactive?: boolean;
 }
 
 // ─── Sort ──────────────────────────────────────────────────────────────────────
@@ -52,9 +50,9 @@ export default function ProductList({
   className,
   onEdit,
   onView,
-  showInactive = false,
 }: ProductListProps) {
   const { products, categories, isLoading, hasMore, fetchProducts, loadMoreProducts } = useProductStore();
+
   const sentinelRef = useRef<HTMLDivElement>(null);
 
   const [search, setSearch] = useState('');
@@ -66,17 +64,12 @@ export default function ProductList({
 
   // Initial load
   useEffect(() => {
-    fetchProducts(showInactive ? undefined : { isActive: true });
-  }, [fetchProducts, showInactive]);
+    fetchProducts();
+  }, [fetchProducts]);
 
   // When debounced search changes → query backend
   useEffect(() => {
     const filter: any = {};
-    if (showInactive) {
-      // no isActive filter = show all
-    } else {
-      filter.isActive = true;
-    }
     if (debouncedSearch.trim()) {
       filter.search = debouncedSearch.trim();
     }
@@ -84,7 +77,7 @@ export default function ProductList({
       filter.categoryId = categoryFilter;
     }
     fetchProducts(Object.keys(filter).length > 0 ? filter : undefined);
-  }, [fetchProducts, debouncedSearch, categoryFilter, showInactive]);
+  }, [fetchProducts, debouncedSearch, categoryFilter]);
 
   // ── Infinite scroll via IntersectionObserver ───────────────────────────────
 
@@ -144,7 +137,7 @@ export default function ProductList({
 
   const activeCategories = useMemo(() => categories.filter((c) => c.isActive), [categories]);
   const lowStockCount = useMemo(
-    () => products.filter((p) => p.stock <= p.minStock && p.isActive).length,
+    () => products.filter((p) => p.stock <= p.minStock).length,
     [products]
   );
 
@@ -233,7 +226,7 @@ export default function ProductList({
             {sorted.map((product, idx) => (
               <tr
                 key={product.id}
-                className={cn('border-b border-neutral-100 transition-colors', product.isActive ? 'hover:bg-neutral-50' : 'bg-neutral-50/50 opacity-60')}
+                className={cn('border-b border-neutral-100 transition-colors hover:bg-neutral-50')}
               >
                 <td className="px-3 py-2 text-[11px] text-neutral-400 tabular-nums">{idx + 1}</td>
                 <td className="px-3 py-2 text-[11px] text-neutral-500 font-mono">{product.sku || '—'}</td>
@@ -246,11 +239,7 @@ export default function ProductList({
                   {product.stock} {product.baseUnit}
                 </td>
                 <td className="px-3 py-2 text-center">
-                  {product.isActive ? (
-                    <CheckCircle className="w-4 h-4 text-emerald-500 mx-auto" />
-                  ) : (
-                    <XCircle className="w-4 h-4 text-neutral-300 mx-auto" />
-                  )}
+                  <div className="w-4 h-4 rounded-full bg-neutral-200 mx-auto" />
                 </td>
                 <td className="px-3 py-2">
                   <div className="flex items-center justify-center gap-1">

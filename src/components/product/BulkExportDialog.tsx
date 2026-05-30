@@ -49,7 +49,6 @@ export default function BulkExportDialog({ open, onOpenChange }: BulkExportDialo
       const res = await window.api.productExport({
         filter: {
           categoryId: categoryFilter !== 'all' ? categoryFilter : undefined,
-          isActive: includeInactive ? undefined : true,
         },
         format,
       });
@@ -77,7 +76,6 @@ export default function BulkExportDialog({ open, onOpenChange }: BulkExportDialo
   }, [onOpenChange]);
 
   const filteredCount = products.filter((p) => {
-    if (!includeInactive && !p.isActive) return false;
     if (categoryFilter !== 'all' && p.categoryId !== categoryFilter) return false;
     return true;
   }).length;

@@ -211,7 +211,6 @@ export interface ProductRow {
   baseUnit: string;
   imagePath: string | null;
   minStock: number;
-  isActive: boolean;
 }
 
 export interface ProductUnitRow {
@@ -242,7 +241,6 @@ export interface ProductCounts {
 export interface ProductFilter {
   categoryId?: string;
   search?: string;
-  isActive?: boolean;
   cursor?: string;
   limit?: number;
   lowStock?: boolean;
@@ -260,7 +258,6 @@ export interface CreateProductInput {
   baseUnit: string;
   imagePath?: string;
   minStock: number;
-  isActive?: boolean;
   units: Array<{
     id?: string;
     unitName: string;
@@ -281,7 +278,6 @@ export interface UpdateProductInput {
   baseUnit?: string;
   imagePath?: string | null;
   minStock?: number;
-  isActive?: boolean;
   units?: Array<{
     id?: string;
     unitName: string;
@@ -406,7 +402,6 @@ export interface ImportRow {
   stock: number;
   baseUnit: string;
   minStock: number;
-  isActive: boolean;
   units: Array<{ unitName: string; conversionFactor: number; priceSell?: number; isDefault?: boolean }>;
 }
 
@@ -539,7 +534,7 @@ export interface API {
   productHistory: (productId: string) => Promise<ApiResponse<ProductHistoryEntry[]>>;
   productImportPreview: (data: Uint8Array) => Promise<ApiResponse<{ rows: ImportRow[]; totalRows: number; errors: Array<{ row: number; message: string }> }>>;
   productImportCommit: (rows: ImportRow[]) => Promise<ApiResponse<{ success: boolean; totalRows: number; imported: number; errors: Array<{ row: number; message: string }> }>>;
-  productExport: (params: { filter?: { categoryId?: string; search?: string; isActive?: boolean }; format: 'csv' | 'xlsx' }) => Promise<ApiResponse<{ success: boolean; filePath?: string; error?: string }>>;
+  productExport: (params: { filter?: { categoryId?: string; search?: string }; format: 'csv' | 'xlsx' }) => Promise<ApiResponse<{ success: boolean; filePath?: string; error?: string }>>;
   productBulkSave: (rows: any[]) => Promise<ApiResponse<{ success: number; errors: { row: number; message: string }[] }>>;
   productCount: () => Promise<ApiResponse<ProductCounts>>;
 

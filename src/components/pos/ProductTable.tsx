@@ -93,7 +93,7 @@ export default function ProductTable({
     }
 
     setLoading(true);
-    window.api.productList({ search: debouncedSearch.trim(), isActive: true, limit: 0 }).then((res: any) => {
+    window.api.productList({ search: debouncedSearch.trim(), limit: 0 }).then((res: any) => {
       const page = unwrap<ProductPageResult>(res, { data: [], nextCursor: null, hasMore: false });
       if (page && page.data) {
         const raw: ProductRaw[] = page.data.map((p) => ({

@@ -4,7 +4,6 @@ import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Checkbox } from '@/components/ui/checkbox';
 import type { ProductRow, CategoryRow, ProductPageResult } from '@/lib/api';
 import {
   MagnifyingGlass,
@@ -31,7 +30,6 @@ interface EditingRow {
   stock: string;
   baseUnit: string;
   minStock: string;
-  isActive: boolean;
 }
 
 const EMPTY_NEW_ROW = (): Omit<EditingRow, 'id' | 'isNew'> => ({
@@ -44,7 +42,6 @@ const EMPTY_NEW_ROW = (): Omit<EditingRow, 'id' | 'isNew'> => ({
   stock: '0',
   baseUnit: 'pcs',
   minStock: '0',
-  isActive: true,
 });
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
@@ -69,7 +66,6 @@ export default function InlineProductTable({ refreshKey }: { refreshKey?: number
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [editingRows, setEditingRows] = useState<Map<string, EditingRow>>(new Map());
   const [savingIds, setSavingIds] = useState<Set<string>>(new Set());
-  const [showInactive, setShowInactive] = useState(false);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(false);
   const loadMoreTriggerRef = useRef<HTMLDivElement>(null);
@@ -80,9 +76,7 @@ export default function InlineProductTable({ refreshKey }: { refreshKey?: number
     setNextCursor(null);   // reset cursor
     setHasMore(false);     // reset hasMore
     try {
-      const res = await window.api.productList(
-        showInactive ? { cursor: undefined, limit: 10 } : { isActive: true, cursor: undefined, limit: 10 }
-      );
+      const res = await window.api.productList({ cursor: undefined, limit: 10 });
       const page = unwrap<ProductPageResult>(res, { data: [], nextCursor: null, hasMore: false });
       if (page) {
         setProducts(page.data ?? []);
@@ -100,7 +94,7 @@ export default function InlineProductTable({ refreshKey }: { refreshKey?: number
     } finally {
       setLoading(false);
     }
-  }, [showInactive]);
+  }, []);
 
   // ── Load more (cursor-based pagination) ──────────────────────────────────────
   const loadMore = useCallback(async () => {
@@ -108,7 +102,7 @@ export default function InlineProductTable({ refreshKey }: { refreshKey?: number
     setLoadingMore(true);
     try {
       const res = await window.api.productList(
-        showInactive ? { cursor: nextCursor, limit: 10 } : { isActive: true, cursor: nextCursor, limit: 10 }
+        { cursor: nextCursor, limit: 10 }
       );
       const page = unwrap<ProductPageResult>(res, { data: [], nextCursor: null, hasMore: false });
       if (page && page.data) {
@@ -121,7 +115,7 @@ export default function InlineProductTable({ refreshKey }: { refreshKey?: number
     } finally {
       setLoadingMore(false);
     }
-  }, [nextCursor, loadingMore, showInactive]);
+  }, [nextCursor, loadingMore]);
 
   // ── Load categories (direct API, no store) ───────────────────────────────────
   const loadCategories = useCallback(async () => {
@@ -178,9 +172,9 @@ export default function InlineProductTable({ refreshKey }: { refreshKey?: number
     return list;
   }, [products, search, categoryFilter]);
 
-  const activeCategories = useMemo(() => categories.filter((c) => c.isActive), [categories]);
+  const activeCategories = useMemo(() => categories, [categories]);
   const lowStockCount = useMemo(
-    () => products.filter((p) => p.isActive && p.stock <= p.minStock).length,
+    () => products.filter((p) => p.stock <= p.minStock).length,
     [products]
   );
 
@@ -201,7 +195,6 @@ export default function InlineProductTable({ refreshKey }: { refreshKey?: number
         stock: String(product.stock),
         baseUnit: product.baseUnit,
         minStock: String(product.minStock),
-        isActive: product.isActive,
       });
       return next;
     });
@@ -239,7 +232,6 @@ export default function InlineProductTable({ refreshKey }: { refreshKey?: number
         stock: Number(row.stock) || 0,
         baseUnit: row.baseUnit.trim() || 'pcs',
         minStock: Number(row.minStock) || 0,
-        isActive: row.isActive,
       };
     });
 
@@ -307,7 +299,6 @@ export default function InlineProductTable({ refreshKey }: { refreshKey?: number
             stock: Number(row.stock) || 0,
             baseUnit: row.baseUnit.trim() || 'pcs',
             minStock: Number(row.minStock) || 0,
-            isActive: row.isActive,
             units: [{ unitName: row.baseUnit.trim() || 'pcs', conversionFactor: 1, priceSell: priceSellCents, isDefault: true }],
           });
           if (res && typeof res === 'object' && 'ok' in res && !res.ok) {
@@ -325,7 +316,6 @@ export default function InlineProductTable({ refreshKey }: { refreshKey?: number
             stock: Number(row.stock) || 0,
             baseUnit: row.baseUnit.trim(),
             minStock: Number(row.minStock) || 0,
-            isActive: row.isActive,
           });
           if (res && typeof res === 'object' && 'ok' in res && !res.ok) {
             alert((res as any).error?.message || 'Gagal memperbarui produk');
@@ -467,14 +457,6 @@ export default function InlineProductTable({ refreshKey }: { refreshKey?: number
               {lowStockCount} stok rendah
             </span>
           )}
-
-          <label className="flex items-center gap-1.5 text-[11px] text-neutral-500 cursor-pointer">
-            <Checkbox
-              defaultChecked={showInactive}
-              onCheckedChange={(checked) => setShowInactive(checked as boolean)}
-            />
-            Nonaktif
-          </label>
         </div>
       </div>
 
@@ -493,7 +475,6 @@ export default function InlineProductTable({ refreshKey }: { refreshKey?: number
               <th className="px-2 py-1.5 text-[10px] font-semibold text-neutral-500 uppercase text-center w-[80px]">Stok</th>
               <th className="px-2 py-1.5 text-[10px] font-semibold text-neutral-500 uppercase text-center w-[72px]">Satuan</th>
               <th className="px-2 py-1.5 text-[10px] font-semibold text-neutral-500 uppercase text-center w-[60px]">Min</th>
-              <th className="px-2 py-1.5 text-[10px] font-semibold text-neutral-500 uppercase text-center w-[56px]">Aktif</th>
               <th className="px-2 py-1.5 text-[10px] font-semibold text-neutral-500 uppercase text-center w-24 sticky right-0 bg-neutral-50 z-20 border-l border-neutral-200">Aksi</th>
             </tr>
           </thead>
@@ -533,12 +514,6 @@ export default function InlineProductTable({ refreshKey }: { refreshKey?: number
                   </td>
                   <td className="px-1.5 py-1.5">
                     <Input type="number" min="0" value={row.minStock} onChange={(e) => updateField(id, 'minStock', e.target.value)} onKeyDown={(e) => handleKeyDown(e, id)} className="w-16 h-7 text-[11px] text-center tabular-nums" />
-                  </td>
-                  <td className="px-3 py-1.5 text-center">
-                    <Checkbox
-                      defaultChecked={row.isActive}
-                      onCheckedChange={(checked) => updateField(id, 'isActive', checked as boolean)}
-                    />
                   </td>
                   <td className="px-1.5 py-1.5 sticky right-0 z-10 bg-indigo-50 border-l border-indigo-100">
                     <div className="flex items-center justify-center gap-1">
@@ -593,13 +568,7 @@ export default function InlineProductTable({ refreshKey }: { refreshKey?: number
                       <Input value={editing.baseUnit} onChange={(e) => updateField(product.id, 'baseUnit', e.target.value)} onKeyDown={(e) => handleKeyDown(e, product.id)} className="w-16 h-7 text-[11px] text-center" />
                     </td>
                     <td className="px-1.5 py-1.5">
-                      <Input type="number" min="0" value={editing.minStock} onChange={(e) => updateField(product.id, 'minStock', e.target.value)} onKeyDown={(e) => handleKeyDown(e, product.id)} className="w-16 h-7 text-[11px] text-center tabular-nums" />
-                    </td>
-                    <td className="px-3 py-1.5 text-center">
-                      <Checkbox
-                        defaultChecked={editing.isActive}
-                        onCheckedChange={(checked) => updateField(product.id, 'isActive', checked as boolean)}
-                      />
+                    <Input type="number" min="0" value={editing.minStock} onChange={(e) => updateField(product.id, 'minStock', e.target.value)} onKeyDown={(e) => handleKeyDown(e, product.id)} className="w-16 h-7 text-[11px] text-center tabular-nums" />
                     </td>
                     <td className="px-1.5 py-1.5 sticky right-0 z-10 bg-amber-50 border-l border-amber-100">
                       <div className="flex items-center justify-center gap-1">
@@ -621,7 +590,7 @@ export default function InlineProductTable({ refreshKey }: { refreshKey?: number
               return (
                 <tr
                   key={product.id}
-                  className={cn('border-b border-neutral-100 transition-colors hover:bg-neutral-50', !product.isActive && 'opacity-50 bg-neutral-50/50')}
+                  className="border-b border-neutral-100 transition-colors hover:bg-neutral-50"
                 >
                   <td className="px-2 py-1.5 text-[11px] text-neutral-400 tabular-nums">{idx + 1}</td>
                   <td className="px-2 py-1.5 text-[11px] text-neutral-500 font-mono">{product.sku || '—'}</td>
@@ -643,14 +612,7 @@ export default function InlineProductTable({ refreshKey }: { refreshKey?: number
                   </td>
                   <td className="px-2 py-1.5 text-[11px] text-neutral-500 text-center">{product.baseUnit}</td>
                   <td className="px-2 py-1.5 text-[11px] text-neutral-400 text-center tabular-nums">{product.minStock}</td>
-                  <td className="px-2 py-1.5 text-center">
-                    {product.isActive ? (
-                      <span className="inline-block w-2 h-2 rounded-full bg-emerald-500" title="Aktif" />
-                    ) : (
-                      <span className="inline-block w-2 h-2 rounded-full bg-neutral-300" title="Nonaktif" />
-                    )}
-                  </td>
-                  <td className={cn('px-2 py-1.5 sticky right-0 z-10 border-l border-neutral-200', !product.isActive ? 'bg-neutral-50/50' : 'bg-white')}>
+                  <td className="px-2 py-1.5 sticky right-0 z-10 border-l border-neutral-200 bg-white">
                     {editingRows.size === 0 ? (
                       <div className="flex items-center justify-center gap-1">
                         <Button
@@ -680,7 +642,7 @@ export default function InlineProductTable({ refreshKey }: { refreshKey?: number
 
             {filtered.length === 0 && editingRows.size === 0 && (
               <tr>
-                <td colSpan={12} className="py-12 text-center">
+                <td colSpan={11} className="py-12 text-center">
                   <div className="flex flex-col items-center text-neutral-400">
                     <MagnifyingGlass className="w-8 h-8 mb-2 opacity-30" />
                     <p className="text-[13px] font-medium">Tidak ada produk</p>

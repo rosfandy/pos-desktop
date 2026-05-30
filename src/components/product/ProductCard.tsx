@@ -28,7 +28,6 @@ export default function ProductCard({ productId, onEdit, onDelete, onClick, clas
       className={cn(
         'group relative flex flex-col bg-white rounded-lg border border-neutral-200 p-3 transition-all cursor-pointer',
         'hover:shadow-md hover:border-indigo-200',
-        !product.isActive && 'opacity-50 bg-neutral-50',
         className
       )}
     >

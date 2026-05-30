@@ -218,7 +218,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
 
   checkLowStock: () => {
     const { products } = get();
-    const alerts = products.filter((p) => p.stock <= p.minStock && p.isActive);
+    const alerts = products.filter((p) => p.stock <= p.minStock);
     set({ lowStockAlerts: alerts });
   },
 

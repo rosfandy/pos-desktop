@@ -44,7 +44,7 @@ export default function ProductSearchInput({
     if (!q.trim()) { setResults([]); setOpen(false); return; }
     setLoading(true);
     try {
-      const res = await window.api.productList({ isActive: true, search: q, limit: 20 });
+      const res = await window.api.productList({ search: q, limit: 20 });
       const data = unwrapPage(res);
       setResults(data);
       setOpen(true);

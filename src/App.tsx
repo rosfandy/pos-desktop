@@ -358,7 +358,7 @@ function DashboardPage() {
 
         // Low stock
         const lowStockData = unwrap<ProductRow[]>(lowStockRes) ?? [];
-        const activeLow = lowStockData.filter((p: ProductRow) => p.isActive);
+        const activeLow = lowStockData;
         setLowStockCount(activeLow.length);
         setLowStockProducts(activeLow.slice(0, 5));
 

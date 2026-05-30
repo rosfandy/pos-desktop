@@ -57,7 +57,6 @@ export interface CreateProductInput {
   baseUnit: string;
   imagePath?: string;
   minStock: number;
-  isActive?: boolean;
   units: Array<{
     id?: string;
     unitName: string;
@@ -78,7 +77,6 @@ export interface UpdateProductInput {
   baseUnit?: string;
   imagePath?: string | null;
   minStock?: number;
-  isActive?: boolean;
   units?: Array<{
     id?: string;
     unitName: string;
@@ -130,14 +128,14 @@ const BASE_SQL = `
     p.id, p.name, p.sku, p.barcode,
     p.category_id, c.name,
     p.price_buy, p.price_sell,
-    p.stock, p.base_unit, p.image_path, p.min_stock, p.is_active,
+    p.stock, p.base_unit, p.image_path, p.min_stock,
     p.created_at, p.updated_at
   FROM products p
   LEFT JOIN categories c ON p.category_id = c.id
 `;
 
 const LEGACY_BASE_SQL = `
-  SELECT id, name, barcode, category, price, cost, stock, unit, unit_conversion, is_active
+  SELECT id, name, barcode, category, price, cost, stock, unit, unit_conversion
   FROM products
 `;
 
@@ -195,7 +193,7 @@ export async function listProducts(filter?: ProductFilter): Promise<ProductPageR
     if (!unlimited && rows.length === limit) {
       // Fetch created_at of the last row to build a proper cursor
       const lastRaw = result[0]!.values[rows.length - 1] as any[];
-      const createdAtIdx = hasNewSchema ? 13 : 11; // created_at index: new schema=13 (after is_active=12), legacy=11
+      const createdAtIdx = hasNewSchema ? 13 : 11; // created_at index: new schema=13, legacy=10
       const lastCreatedAt = Number(lastRaw[createdAtIdx]);
       nextCursor = makeCursor(lastCreatedAt, rows[rows.length - 1].id);
       hasMore = true;
@@ -223,7 +221,6 @@ function mapNewRow(row: any[]): ProductRow {
     baseUnit: String(row[9] || 'pcs'),
     imagePath: row[10] != null ? String(row[10]) : null,
     minStock: Number(row[11]) || 0,
-    isActive: Boolean(row[12]),
   };
 }
 
@@ -242,11 +239,12 @@ function mapLegacyRow(row: any[]): ProductRow {
     baseUnit: String(row[7] || 'pcs'),
     imagePath: null,
     minStock: 0,
-    isActive: Boolean(row[8]),
   };
 }
 
-/** Cari produk by barcode */
+// ─── Lookup ────────────────────────────────────────────────────────────────────
+
+/** Cari produk by barcode (new + legacy) */
 export async function getProductByBarcode(barcode: string): Promise<ProductRow | null> {
   try {
     const db = await getDb();
@@ -254,11 +252,11 @@ export async function getProductByBarcode(barcode: string): Promise<ProductRow |
     const isNew = info.length > 0 && info[0]!.values.some((r: any[]) => ['sku', 'min_stock', 'category_id'].includes(String(r[1])));
 
     const whereBarcode = isNew
-      ? `WHERE p.barcode = '${barcode.replace(/'/g, "''")}'`
-      : `WHERE barcode = '${barcode.replace(/'/g, "''")}'`;
+      ? `WHERE p.barcode = '${esc(barcode)}'`
+      : `WHERE barcode = '${esc(barcode)}'`;
     const select = isNew
-      ? `SELECT p.id, p.name, p.sku, p.barcode, p.category_id, c.name, p.price_buy, p.price_sell, p.stock, p.base_unit, p.image_path, p.min_stock, p.is_active FROM products p LEFT JOIN categories c ON p.category_id = c.id`
-      : `SELECT id, name, barcode, category, price, cost, stock, unit, unit_conversion, is_active FROM products`;
+      ? `SELECT p.id, p.name, p.sku, p.barcode, p.category_id, c.name, p.price_buy, p.price_sell, p.stock, p.base_unit, p.image_path, p.min_stock FROM products p LEFT JOIN categories c ON p.category_id = c.id`
+      : `SELECT id, name, barcode, category, price, cost, stock, unit, unit_conversion FROM products`;
 
     const result = db.exec(`${select} ${whereBarcode} LIMIT 1`);
     if (result.length > 0 && result[0]!.values.length > 0) {
@@ -276,11 +274,11 @@ export async function getProductById(id: string): Promise<ProductRow | null> {
     const isNew = info.length > 0 && info[0]!.values.some((r: any[]) => ['sku', 'min_stock', 'category_id'].includes(String(r[1])));
 
     const whereId = isNew
-      ? `WHERE p.id = '${id.replace(/'/g, "''")}'`
-      : `WHERE id = '${id.replace(/'/g, "''")}'`;
+      ? `WHERE p.id = '${esc(id)}'`
+      : `WHERE id = '${esc(id)}'`;
     const select = isNew
-      ? `SELECT p.id, p.name, p.sku, p.barcode, p.category_id, c.name, p.price_buy, p.price_sell, p.stock, p.base_unit, p.image_path, p.min_stock, p.is_active FROM products p LEFT JOIN categories c ON p.category_id = c.id`
-      : `SELECT id, name, barcode, category, price, cost, stock, unit, unit_conversion, is_active FROM products`;
+      ? `SELECT p.id, p.name, p.sku, p.barcode, p.category_id, c.name, p.price_buy, p.price_sell, p.stock, p.base_unit, p.image_path, p.min_stock FROM products p LEFT JOIN categories c ON p.category_id = c.id`
+      : `SELECT id, name, barcode, category, price, cost, stock, unit, unit_conversion FROM products`;
 
     const result = db.exec(`${select} ${whereId} LIMIT 1`);
     if (result.length > 0 && result[0]!.values.length > 0) {
@@ -290,11 +288,11 @@ export async function getProductById(id: string): Promise<ProductRow | null> {
   return null;
 }
 
-/** Update stok produk */
+/** Update stok produk (digunakan oleh transaksi) */
 export async function updateProductStock(productId: string, quantityChange: number): Promise<boolean> {
   try {
     const db = await getDb();
-    db.run(`UPDATE products SET stock = MAX(0, stock + ${quantityChange}), updated_at = ${Date.now()} WHERE id = '${productId.replace(/'/g, "''")}'`);
+    db.run(`UPDATE products SET stock = MAX(0, stock + ${quantityChange}), updated_at = ${Date.now()} WHERE id = '${esc(productId)}'`);
     return true;
   } catch {
     // DB error
@@ -325,8 +323,8 @@ export async function getProductWithUnits(id: string): Promise<ProductWithUnits 
     const isNew = info.length > 0 && info[0]!.values.some((r: any[]) => ['sku', 'min_stock', 'category_id'].includes(String(r[1])));
 
     const productSql = isNew
-      ? `SELECT p.id, p.name, p.sku, p.barcode, p.category_id, c.name, p.price_buy, p.price_sell, p.stock, p.base_unit, p.image_path, p.min_stock, p.is_active FROM products p LEFT JOIN categories c ON p.category_id = c.id WHERE p.id = '${esc(id)}' LIMIT 1`
-      : `SELECT id, name, barcode, category, price, cost, stock, unit, unit_conversion, is_active FROM products WHERE id = '${esc(id)}' LIMIT 1`;
+      ? `SELECT p.id, p.name, p.sku, p.barcode, p.category_id, c.name, p.price_buy, p.price_sell, p.stock, p.base_unit, p.image_path, p.min_stock FROM products p LEFT JOIN categories c ON p.category_id = c.id WHERE p.id = '${esc(id)}' LIMIT 1`
+      : `SELECT id, name, barcode, category, price, cost, stock, unit, unit_conversion FROM products WHERE id = '${esc(id)}' LIMIT 1`;
 
     const productResult = db.exec(productSql);
     if (productResult.length === 0 || productResult[0]!.values.length === 0) return null;
@@ -372,7 +370,7 @@ export async function createProduct(input: CreateProductInput, userId?: string):
 
     try {
       db.run(
-        `INSERT INTO products (id, name, sku, barcode, category_id, price_buy, price_sell, stock, base_unit, image_path, min_stock, is_active, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO products (id, name, sku, barcode, category_id, price_buy, price_sell, stock, base_unit, image_path, min_stock, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           id,
           input.name,
@@ -385,7 +383,6 @@ export async function createProduct(input: CreateProductInput, userId?: string):
           input.baseUnit || 'pcs',
           input.imagePath || null,
           input.minStock || 0,
-          input.isActive !== false ? 1 : 0,
           Date.now(),
           Date.now(),
         ]
@@ -419,7 +416,6 @@ export async function createProduct(input: CreateProductInput, userId?: string):
       id, name: input.name, sku: input.sku ?? null, barcode: input.barcode ?? null,
       categoryId: input.categoryId ?? null, priceBuy: input.priceBuy, priceSell: input.priceSell,
       stock: input.stock, baseUnit: input.baseUnit || 'pcs', minStock: input.minStock || 0,
-      isActive: input.isActive !== false,
     };
     void writeHistory(id, 'create', null, newSnapshot, userId);
 
@@ -463,7 +459,6 @@ export async function updateProduct(id: string, input: UpdateProductInput, userI
     if (input.baseUnit !== undefined) { sets.push('base_unit = ?'); params.push(input.baseUnit); }
     if (input.imagePath !== undefined) { sets.push('image_path = ?'); params.push(input.imagePath); }
     if (input.minStock !== undefined) { sets.push('min_stock = ?'); params.push(input.minStock); }
-    if (input.isActive !== undefined) { sets.push('is_active = ?'); params.push(input.isActive ? 1 : 0); }
     sets.push('updated_at = ?');
     params.push(Date.now());
 
@@ -508,7 +503,6 @@ export async function updateProduct(id: string, input: UpdateProductInput, userI
       priceSell: input.priceSell ?? existing.priceSell,
       stock: updatedStock, baseUnit: input.baseUnit ?? existing.baseUnit,
       minStock: input.minStock ?? existing.minStock,
-      isActive: input.isActive ?? existing.isActive,
     };
     void writeHistory(id, 'update', oldSnapshot, newSnapshot, userId);
 
@@ -592,8 +586,6 @@ export async function bulkSaveProducts(
       continue;
     }
 
-    const isActive = row.isActive !== false; // default true
-
     // ── Build product data ──
     // IMPORTANT: Determine isUpdate from the ORIGINAL row.id BEFORE we overwrite it below.
     // If row.id is falsy (undefined/null/''), this is a brand-new row → INSERT.
@@ -644,7 +636,6 @@ export async function bulkSaveProducts(
       stock,
       baseUnit,
       minStock,
-      isActive,
       _isUpdate: isUpdate,  // carry over the isUpdate flag into the write phase
       units: row.units || [],
     };
@@ -681,7 +672,6 @@ export async function bulkSaveProducts(
         if (product.stock !== undefined) { sets.push('stock = ?'); params.push(product.stock); }
         if (product.baseUnit !== undefined) { sets.push('base_unit = ?'); params.push(product.baseUnit); }
         if (product.minStock !== undefined) { sets.push('min_stock = ?'); params.push(product.minStock); }
-        if (product.isActive !== undefined) { sets.push('is_active = ?'); params.push(product.isActive ? 1 : 0); }
         sets.push('updated_at = ?');
         params.push(Date.now());
         params.push(product.id);
@@ -713,12 +703,11 @@ export async function bulkSaveProducts(
           id: product.id, name: product.name, sku: product.sku, barcode: product.barcode,
           categoryId: product.categoryId, priceBuy: product.priceBuy, priceSell: product.priceSell,
           stock: product.stock, baseUnit: product.baseUnit, minStock: product.minStock,
-          isActive: product.isActive,
         }, userId, 'Bulk save update');
       } else {
         // INSERT new product
         db.run(
-          `INSERT INTO products (id, name, sku, barcode, category_id, price_buy, price_sell, stock, base_unit, min_stock, is_active, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          `INSERT INTO products (id, name, sku, barcode, category_id, price_buy, price_sell, stock, base_unit, min_stock, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [
             product.id,
             product.name,
@@ -730,7 +719,6 @@ export async function bulkSaveProducts(
             product.stock,
             product.baseUnit,
             product.minStock,
-            product.isActive ? 1 : 0,
             Date.now(),
             Date.now(),
           ],
@@ -760,7 +748,6 @@ export async function bulkSaveProducts(
           id: product.id, name: product.name, sku: product.sku, barcode: product.barcode,
           categoryId: product.categoryId, priceBuy: product.priceBuy, priceSell: product.priceSell,
           stock: product.stock, baseUnit: product.baseUnit, minStock: product.minStock,
-          isActive: product.isActive,
         }, userId, 'Bulk save create');
       }
 
@@ -794,9 +781,9 @@ export async function deleteProduct(id: string, userId?: string): Promise<{ succ
     const txCount = txResult.length > 0 ? Number(txResult[0]!.values[0]![0]) : 0;
 
     if (txCount > 0) {
-      // Soft delete
-      db.run(`UPDATE products SET is_active = 0, updated_at = ? WHERE id = ?`, [Date.now(), id]);
-      void writeHistory(id, 'delete', oldSnapshot, null, userId, 'Soft delete — produk memiliki transaksi');
+      // Hard delete (transactions reference allowed since FK may not be enforced)
+      db.run(`DELETE FROM products WHERE id = ?`, [id]);
+      void writeHistory(id, 'delete', oldSnapshot, null, userId, 'Hard delete — produk memiliki transaksi');
       return { success: true };
     }
 
@@ -834,7 +821,7 @@ export async function checkStock(id: string): Promise<StockCheckResult | null> {
   }
 }
 
-/** Return all active products where stock <= min_stock (or threshold if provided) */
+/** Return all products where stock <= min_stock (or threshold if provided) */
 export async function getLowStockProducts(threshold?: number): Promise<ProductRow[]> {
   try {
     const db = await getDb();
@@ -844,13 +831,13 @@ export async function getLowStockProducts(threshold?: number): Promise<ProductRo
     // If a global threshold is provided (> 0), use it; otherwise fall back to per-product min_stock
     const whereClause = isNew
       ? (threshold && threshold > 0)
-        ? `p.is_active = 1 AND p.stock <= ${threshold}`
-        : `p.is_active = 1 AND p.stock <= p.min_stock`
-      : `is_active = 1 AND stock <= 0`;
+        ? `p.stock <= ${threshold}`
+        : `p.stock <= p.min_stock`
+      : `stock <= 0`;
 
     const sql = isNew
-      ? `SELECT p.id, p.name, p.sku, p.barcode, p.category_id, c.name, p.price_buy, p.price_sell, p.stock, p.base_unit, p.image_path, p.min_stock, p.is_active FROM products p LEFT JOIN categories c ON p.category_id = c.id WHERE ${whereClause} ORDER BY p.name ASC`
-      : `SELECT id, name, barcode, category, price, cost, stock, unit, unit_conversion, is_active FROM products WHERE ${whereClause} ORDER BY name ASC`;
+      ? `SELECT p.id, p.name, p.sku, p.barcode, p.category_id, c.name, p.price_buy, p.price_sell, p.stock, p.base_unit, p.image_path, p.min_stock FROM products p LEFT JOIN categories c ON p.category_id = c.id WHERE ${whereClause} ORDER BY p.name ASC`
+      : `SELECT id, name, barcode, category, price, cost, stock, unit, unit_conversion FROM products WHERE ${whereClause} ORDER BY name ASC`;
 
     const result = db.exec(sql);
     if (result.length > 0 && result[0]!.values.length > 0) {
@@ -903,8 +890,8 @@ export interface ProductCounts {
 /**
  * Hitung statistik produk dalam 1 query hemat (tanpa load semua baris).
  * total    = semua produk
- * active   = produk is_active = 1
- * lowStock = produk is_active = 1 DAN stock <= min_stock
+ * active   = semua produk (is_active tidak digunakan lagi)
+ * lowStock = produk dengan stock <= min_stock
  */
 export async function productCount(): Promise<ProductCounts> {
   try {
@@ -917,8 +904,8 @@ export async function productCount(): Promise<ProductCounts> {
       const result = db.exec(`
         SELECT
           COUNT(*)                              AS total,
-          SUM(CASE WHEN p.is_active = 1 THEN 1 ELSE 0 END) AS active,
-          SUM(CASE WHEN p.is_active = 1 AND p.stock <= p.min_stock THEN 1 ELSE 0 END) AS lowStock
+          COUNT(*)                              AS active,
+          SUM(CASE WHEN p.stock <= p.min_stock THEN 1 ELSE 0 END) AS lowStock
         FROM products p
       `);
       if (result.length > 0 && result[0]!.values.length > 0) {
@@ -934,8 +921,8 @@ export async function productCount(): Promise<ProductCounts> {
       const result = db.exec(`
         SELECT
           COUNT(*)                              AS total,
-          SUM(CASE WHEN is_active = 1 THEN 1 ELSE 0 END) AS active,
-          SUM(CASE WHEN is_active = 1 AND stock <= 0 THEN 1 ELSE 0 END) AS lowStock
+          COUNT(*)                              AS active,
+          SUM(CASE WHEN stock <= 0 THEN 1 ELSE 0 END) AS lowStock
         FROM products
       `);
       if (result.length > 0 && result[0]!.values.length > 0) {
@@ -964,7 +951,6 @@ function productSnapshot(p: ProductRow): Record<string, unknown> {
     stock: p.stock,
     baseUnit: p.baseUnit,
     minStock: p.minStock,
-    isActive: p.isActive,
   };
 }
 

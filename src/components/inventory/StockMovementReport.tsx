@@ -34,7 +34,7 @@ export default function StockMovementReport() {
     let cancelled = false;
     async function load() {
       try {
-        const res: any = await window.api.productList({ isActive: true, limit: 200 });
+        const res: any = await window.api.productList({ limit: 200 });
         const page = unwrap<{ data: ProductRow[] }>(res, { data: [] });
         if (!cancelled && page?.data) {
           setProducts(page.data);

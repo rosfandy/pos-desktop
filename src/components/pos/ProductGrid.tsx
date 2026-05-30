@@ -70,7 +70,7 @@ export default function ProductGrid({ className, activeCategory: externalCategor
   useEffect(() => {
     const loadProducts = async () => {
       try {
-        const res: any = await window.api.productList({ isActive: true });
+        const res: any = await window.api.productList({});
         if (res.ok && res.data && res.data.data && res.data.data.length > 0) {
           setProducts(res.data.data);
         } else {

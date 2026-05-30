@@ -27,7 +27,7 @@ export const useDashboardStore = create<DashboardState>((set) => ({
       const threshold = minStockThreshold > 0 ? minStockThreshold : undefined;
       const res = await window.api.productLowStock(threshold);
       const data = unwrap<ProductRow[]>(res);
-      const active = (data ?? []).filter((p) => p.isActive);
+      const active = data ?? [];
       set({ lowStockCount: active.length, lowStockProducts: active });
     } catch {
       set({ lowStockCount: 0, lowStockProducts: [] });
