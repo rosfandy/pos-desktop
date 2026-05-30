@@ -10,7 +10,6 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 import { FileXls, FileCsv, Download, XCircle, CheckCircle, Spinner } from 'phosphor-react';
 
 interface BulkExportDialogProps {
@@ -20,7 +19,6 @@ interface BulkExportDialogProps {
 
 export default function BulkExportDialog({ open, onOpenChange }: BulkExportDialogProps) {
   const [format, setFormat] = useState<'xlsx' | 'csv'>('xlsx');
-  const [includeInactive, setIncludeInactive] = useState(false);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<{ success: boolean; filePath?: string; error?: string } | null>(null);
   const [customerCount, setCustomerCount] = useState<number>(0);
@@ -30,14 +28,14 @@ export default function BulkExportDialog({ open, onOpenChange }: BulkExportDialo
     if (open) {
       setResult(null);
       setLoading(true);
-      window.api.customerList({ isActive: includeInactive ? undefined : true }).then((res: any) => {
+      window.api.customerList({}).then((res: any) => {
         if (res.ok && Array.isArray(res.data)) {
           setCustomerCount(res.data.length);
         }
         setLoading(false);
       }).catch(() => setLoading(false));
     }
-  }, [open, includeInactive]);
+  }, [open]);
 
   const handleExport = useCallback(async () => {
     setLoading(true);
@@ -45,21 +43,20 @@ export default function BulkExportDialog({ open, onOpenChange }: BulkExportDialo
 
     try {
       const res = await window.api.customerExport({
-        filter: { isActive: includeInactive ? undefined : true },
         format,
       });
 
       if (res.ok) {
         setResult({ success: true, filePath: res.data.filePath });
       } else {
-        setResult({ success: false, error: res.error?.message || 'Gagal export' });
+        setResult({ success: false, error: (res as any).error?.message || 'Gagal export' });
       }
     } catch (err: any) {
       setResult({ success: false, error: err.message || 'Gagal export' });
     } finally {
       setLoading(false);
     }
-  }, [format, includeInactive]);
+  }, [format]);
 
   const handleClose = useCallback(() => {
     setResult(null);
@@ -76,7 +73,7 @@ export default function BulkExportDialog({ open, onOpenChange }: BulkExportDialo
             Export Pelanggan
           </DialogTitle>
           <DialogDescription className="text-[12px] text-neutral-500 mt-1">
-            Pilih format dan filter, lalu export data pelanggan.
+            Pilih format, lalu export data pelanggan.
           </DialogDescription>
         </DialogHeader>
 
@@ -124,19 +121,6 @@ export default function BulkExportDialog({ open, onOpenChange }: BulkExportDialo
                     CSV (.csv)
                   </Button>
                 </div>
-              </div>
-
-              {/* ── Filter ─────────────────────────────────────────────── */}
-              <div>
-                <label className="text-[11px] font-medium text-neutral-600 mb-2 block">Filter</label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <Checkbox
-                    checked={includeInactive}
-                    onCheckedChange={(checked) => setIncludeInactive(checked === true)}
-                    className="w-3.5 h-3.5"
-                  />
-                  <span className="text-[12px] text-neutral-600">Sertakan pelanggan nonaktif</span>
-                </label>
               </div>
 
               {/* ── Count ─────────────────────────────────────────────── */}

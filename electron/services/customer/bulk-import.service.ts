@@ -12,7 +12,6 @@ export interface CustomerImportRow {
   points: number;
   tier: string;
   totalSpent: number;
-  isActive: boolean;
 }
 
 export interface CustomerImportResult {
@@ -64,16 +63,6 @@ function parseNumber(value: any, fallback: number): number {
   return isNaN(n) ? fallback : Math.round(n);
 }
 
-function parseBool(value: any, fallback: boolean): boolean {
-  if (value === null || value === undefined || value === '') return fallback;
-  const v = String(value).toLowerCase().trim();
-  return v === '1' || v === 'true' || v === 'ya' || v === 'yes'
-    ? true
-    : v === '0' || v === 'false' || v === 'tidak'
-    ? false
-    : fallback;
-}
-
 const VALID_TIERS = new Set(['bronze', 'silver', 'gold', 'platinum']);
 
 function normalizeTier(value: any): string {
@@ -118,7 +107,6 @@ function parseWorkbook(buffer: Buffer): CustomerImportRow[] {
       points: parseNumber(rowObj.points, 0),
       tier: normalizeTier(rowObj.tier),
       totalSpent: parseNumber(rowObj.totalSpent, 0),
-      isActive: parseBool(rowObj.isActive ?? true, true),
     };
   }).filter(Boolean) as CustomerImportRow[];
 }
@@ -203,7 +191,7 @@ export async function commitImport(rows: CustomerImportRow[]): Promise<CustomerI
         }
 
         db.run(
-          `INSERT INTO customers (id, name, phone, email, address, points, tier, total_spent, is_active, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          `INSERT INTO customers (id, name, phone, email, address, points, tier, total_spent, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [
             id,
             row.name,
@@ -213,7 +201,6 @@ export async function commitImport(rows: CustomerImportRow[]): Promise<CustomerI
             row.points,
             row.tier,
             row.totalSpent,
-            row.isActive ? 1 : 0,
             now,
           ]
         );

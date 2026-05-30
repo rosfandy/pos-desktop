@@ -7,26 +7,27 @@ import CustomerForm from '@/components/customer/CustomerForm';
 import BulkExportDialog from '@/components/customer/BulkExportDialog';
 import BulkImportDialog from '@/components/customer/BulkImportDialog';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 import {
   Plus,
   Users,
   Download,
   Upload,
+  Trash,
 } from 'phosphor-react';
 
 export default function CustomersPage() {
-  const { fetchCustomers } = useCustomerStore();
+  const { fetchCustomers, bulkDeleteCustomers } = useCustomerStore();
 
   const [formOpen, setFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [showInactive, setShowInactive] = useState(false);
   const [showExportDialog, setShowExportDialog] = useState(false);
   const [showImportDialog, setShowImportDialog] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [deleting, setDeleting] = useState(false);
 
   const handleRefresh = useCallback(() => {
-    fetchCustomers(showInactive ? undefined : { isActive: true });
-  }, [fetchCustomers, showInactive]);
+    fetchCustomers();
+  }, [fetchCustomers]);
 
   const handleEdit = useCallback((id: string) => {
     setEditingId(id);
@@ -46,6 +47,27 @@ export default function CustomersPage() {
     }
   }, [handleRefresh]);
 
+  const handleBulkDelete = useCallback(async () => {
+    if (selectedIds.size === 0) return;
+    if (!confirm(`Hapus ${selectedIds.size} pelanggan? Tindakan ini tidak bisa dibatalkan.`)) return;
+
+    setDeleting(true);
+    try {
+      const result = await bulkDeleteCustomers(Array.from(selectedIds));
+      if (result.success) {
+        setSelectedIds(new Set());
+      } else {
+        alert(`Gagal menghapus ${result.errors.length} pelanggan.`);
+      }
+    } finally {
+      setDeleting(false);
+    }
+  }, [selectedIds, bulkDeleteCustomers]);
+
+  const handleSelectionChange = useCallback((ids: Set<string>) => {
+    setSelectedIds(ids);
+  }, []);
+
   return (
     <div className="flex flex-col h-full">
       {/* ── Header ──────────────────────────────────────────────────────────── */}
@@ -53,17 +75,28 @@ export default function CustomersPage() {
         <Users className="w-4 h-4 text-indigo-600" />
         <span className="text-[13px] font-semibold text-neutral-800">Manajemen Pelanggan</span>
         <div className="flex-1" />
-        <label className="flex items-center gap-1.5 text-[11px] text-neutral-500 cursor-pointer">
-          <Checkbox
-            checked={showInactive}
-            onCheckedChange={(checked) => {
-              setShowInactive(checked === true);
-              fetchCustomers(checked ? undefined : { isActive: true });
-            }}
-            className="w-3.5 h-3.5"
-          />
-          Tampilkan nonaktif
-        </label>
+        {selectedIds.size > 0 && (
+          <div className="flex items-center gap-2 mr-2">
+            <span className="text-[11px] text-neutral-500">{selectedIds.size} dipilih</span>
+            <Button
+              variant="outline"
+              size="xs"
+              onClick={() => setSelectedIds(new Set())}
+              className="text-[11px] h-7"
+            >
+              Batal
+            </Button>
+            <Button
+              size="xs"
+              onClick={handleBulkDelete}
+              disabled={deleting}
+              className="flex items-center gap-1.5 text-[11px] h-7 bg-red-600 hover:bg-red-700 text-white"
+            >
+              <Trash className="w-3 h-3" />
+              {deleting ? 'Menghapus…' : `Hapus ${selectedIds.size}`}
+            </Button>
+          </div>
+        )}
         <Button
           variant="outline"
           size="xs"
@@ -97,7 +130,8 @@ export default function CustomersPage() {
         <CustomerList
           className="h-full"
           onEdit={handleEdit}
-          showInactive={showInactive}
+          selectedIds={selectedIds}
+          onSelectionChange={handleSelectionChange}
         />
       </div>
 

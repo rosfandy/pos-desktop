@@ -81,12 +81,13 @@ const api = {
   categoryDelete: (id: string) => ipcRenderer.invoke('category:delete', id),
 
   // Customer channels (CRM)
-  customerList: (filter?: { search?: string; isActive?: boolean }) => ipcRenderer.invoke('customer:list', filter),
+  customerList: (filter?: { search?: string }) => ipcRenderer.invoke('customer:list', filter),
   customerGet: (id: string) => ipcRenderer.invoke('customer:get', id),
   customerGetByPhone: (phone: string) => ipcRenderer.invoke('customer:getByPhone', phone),
   customerCreate: (input: { name: string; phone?: string; email?: string; address?: string }) => ipcRenderer.invoke('customer:create', input),
   customerUpdate: (id: string, input: any) => ipcRenderer.invoke('customer:update', id, input),
   customerDelete: (id: string) => ipcRenderer.invoke('customer:delete', id),
+  customerBulkDelete: (ids: string[]) => ipcRenderer.invoke('customer:bulkDelete', ids),
   customerAddPoints: (id: string, points: number) => ipcRenderer.invoke('customer:addPoints', id, points),
   customerRedeemPoints: (id: string, points: number) => ipcRenderer.invoke('customer:redeemPoints', id, points),
   customerRecordTransaction: (id: string, totalCents: number) => ipcRenderer.invoke('customer:recordTransaction', id, totalCents),

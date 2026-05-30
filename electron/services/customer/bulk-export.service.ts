@@ -6,7 +6,6 @@ import { getDb } from '../../db/index.ts';
 export interface CustomerExportParams {
   filter?: {
     search?: string;
-    isActive?: boolean;
   };
   format: 'csv' | 'xlsx';
 }
@@ -17,9 +16,6 @@ function esc(s: string): string {
 
 function buildWhere(filter?: CustomerExportParams['filter']): string {
   const parts: string[] = [];
-  if (filter?.isActive !== undefined) {
-    parts.push(`is_active = ${filter.isActive ? 1 : 0}`);
-  }
   if (filter?.search) {
     const q = `%${esc(filter.search)}%`;
     parts.push(`(name LIKE '%${q}' OR phone LIKE '%${q}')`);
@@ -31,10 +27,10 @@ export async function exportCustomers(params: CustomerExportParams): Promise<{ s
   try {
     const db = await getDb();
     const where = buildWhere(params.filter);
-    const sql = `SELECT name, phone, email, address, points, tier, total_spent, is_active FROM customers ${where} ORDER BY name ASC`;
+    const sql = `SELECT name, phone, email, address, points, tier, total_spent FROM customers ${where} ORDER BY name ASC`;
     const result = db.exec(sql);
 
-    const headers = ['Nama', 'Telepon', 'Email', 'Alamat', 'Poin', 'Tier', 'Total Belanja', 'Status'];
+    const headers = ['Nama', 'Telepon', 'Email', 'Alamat', 'Poin', 'Tier', 'Total Belanja'];
     const rows: (string | number | null)[][] = [headers];
 
     if (result.length > 0 && result[0]!.values.length > 0) {
@@ -47,7 +43,6 @@ export async function exportCustomers(params: CustomerExportParams): Promise<{ s
           Number(r[4]) || 0,
           String(r[5]) || 'bronze',
           Number(r[6]) || 0,
-          Number(r[7]) === 1 ? 'Aktif' : 'Nonaktif',
         ]);
       }
     }

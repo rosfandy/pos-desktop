@@ -419,7 +419,6 @@ export interface CustomerImportRow {
   points: number;
   tier: string;
   totalSpent: number;
-  isActive: boolean;
 }
 
 // ─── Customer Types ─────────────────────────────────────────────────────────────
@@ -433,13 +432,11 @@ export interface CustomerRow {
   points: number;
   tier: 'bronze' | 'silver' | 'gold' | 'platinum';
   totalSpent: number;
-  isActive: boolean;
   createdAt: number;
 }
 
 export interface CustomerFilter {
   search?: string;
-  isActive?: boolean;
 }
 
 export interface AddPointsResult {
@@ -547,12 +544,13 @@ export interface API {
   productCount: () => Promise<ApiResponse<ProductCounts>>;
 
   // Customer (CRM)
-  customerList: (filter?: CustomerFilter) => Promise<ApiResponse<CustomerRow[]>>;
+  customerList: (filter?: { search?: string }) => Promise<ApiResponse<CustomerRow[]>>;
   customerGet: (id: string) => Promise<ApiResponse<CustomerRow>>;
   customerGetByPhone: (phone: string) => Promise<ApiResponse<CustomerRow>>;
   customerCreate: (input: { name: string; phone?: string; email?: string; address?: string }) => Promise<ApiResponse<CustomerRow>>;
   customerUpdate: (id: string, input: Partial<{ name: string; phone: string; email: string; address: string }>) => Promise<ApiResponse<CustomerRow>>;
   customerDelete: (id: string) => Promise<ApiResponse<{ success: boolean }>>;
+  customerBulkDelete: (ids: string[]) => Promise<ApiResponse<{ success: boolean; deleted: number; errors: Array<{ id: string; message: string }> }>>;
   customerAddPoints: (id: string, points: number) => Promise<ApiResponse<CustomerRow>>;
   customerRedeemPoints: (id: string, points: number) => Promise<ApiResponse<RedeemPointsResult>>;
   customerRecordTransaction: (id: string, totalCents: number) => Promise<ApiResponse<{ customer: CustomerRow; earnedPoints: number }>>;
@@ -561,7 +559,7 @@ export interface API {
   customerTransactions: (customerId: string, limit?: number) => Promise<ApiResponse<CustomerTransactionRow[]>>;
   customerImportPreview: (data: Uint8Array) => Promise<ApiResponse<{ rows: CustomerImportRow[]; totalRows: number; errors: Array<{ row: number; message: string }> }>>;
   customerImportCommit: (rows: CustomerImportRow[]) => Promise<ApiResponse<{ success: boolean; totalRows: number; imported: number; errors: Array<{ row: number; message: string }> }>>;
-  customerExport: (params: { filter?: { search?: string; isActive?: boolean }; format: 'csv' | 'xlsx' }) => Promise<ApiResponse<{ success: boolean; filePath?: string; error?: string }>>;
+  customerExport: (params: { filter?: { search?: string }; format: 'csv' | 'xlsx' }) => Promise<ApiResponse<{ success: boolean; filePath?: string; error?: string }>>;
 
   // Inventory (INV-002)
   inventoryStockIn: (data: StockInInput) => Promise<ApiResponse<InventoryLogRow>>;

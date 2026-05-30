@@ -5,6 +5,7 @@ import { useCustomerStore } from '@/stores/customerStore';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   MagnifyingGlass,
   CaretUp,
@@ -20,7 +21,8 @@ import {
 export interface CustomerListProps {
   className?: string;
   onEdit?: (customerId: string) => void;
-  showInactive?: boolean;
+  selectedIds?: Set<string>;
+  onSelectionChange?: (ids: Set<string>) => void;
 }
 
 type SortKey = 'name' | 'points' | 'totalSpent' | 'tier';
@@ -47,7 +49,8 @@ const TIER_LABEL: Record<string, string> = {
 export default function CustomerList({
   className,
   onEdit,
-  showInactive = false,
+  selectedIds = new Set(),
+  onSelectionChange,
 }: CustomerListProps) {
   const { customers, fetchCustomers, deleteCustomer } = useCustomerStore();
 
@@ -58,8 +61,8 @@ export default function CustomerList({
 
   // Load customers on mount
   useEffect(() => {
-    fetchCustomers(showInactive ? undefined : { isActive: true });
-  }, [fetchCustomers, showInactive]);
+    fetchCustomers();
+  }, [fetchCustomers]);
 
   // Filtered + sorted
   const filtered = useMemo(() => {
@@ -96,6 +99,31 @@ export default function CustomerList({
 
     return list;
   }, [customers, search, sortKey, sortDir]);
+
+  // ── Selection ───────────────────────────────────────────────────────────────
+
+  const isAllSelected = filtered.length > 0 && filtered.every((c) => selectedIds.has(c.id));
+  const isIndeterminate = !isAllSelected && filtered.some((c) => selectedIds.has(c.id));
+
+  const toggleSelect = useCallback((id: string) => {
+    if (!onSelectionChange) return;
+    const next = new Set(selectedIds);
+    if (next.has(id)) {
+      next.delete(id);
+    } else {
+      next.add(id);
+    }
+    onSelectionChange(next);
+  }, [selectedIds, onSelectionChange]);
+
+  const toggleSelectAll = useCallback(() => {
+    if (!onSelectionChange) return;
+    if (isAllSelected) {
+      onSelectionChange(new Set());
+    } else {
+      onSelectionChange(new Set(filtered.map((c) => c.id)));
+    }
+  }, [filtered, isAllSelected, onSelectionChange]);
 
   // ── Sort toggle ─────────────────────────────────────────────────────────────
   const toggleSort = (key: SortKey) => {
@@ -139,6 +167,16 @@ export default function CustomerList({
         <table className="w-full text-left border-collapse [&_td]:border-r [&_th]:border-r [&_td]:border-neutral-200 [&_th]:border-neutral-200">
           <thead className="sticky top-0 z-10">
             <tr className="bg-neutral-50 border-b-2 border-neutral-300">
+              <th className="px-3 py-2 text-[10px] font-semibold text-neutral-500 uppercase tracking-wider w-10">
+                {onSelectionChange && (
+                  <Checkbox
+                    checked={isAllSelected}
+                    indeterminate={isIndeterminate}
+                    onCheckedChange={toggleSelectAll}
+                    className="w-3.5 h-3.5"
+                  />
+                )}
+              </th>
               <th className="px-3 py-2 text-[10px] font-semibold text-neutral-500 uppercase tracking-wider w-10">
                 No
               </th>
@@ -199,15 +237,25 @@ export default function CustomerList({
             {filtered.map((customer, idx) => {
               const tierStyle = TIER_COLORS[customer.tier] || TIER_COLORS.bronze;
               const isDeleting = deletingId === customer.id;
+              const checked = selectedIds.has(customer.id);
 
               return (
                 <tr
                   key={customer.id}
                   className={cn(
-                    'border-b transition-colors',
-                    customer.isActive ? 'hover:bg-neutral-50' : 'opacity-50 bg-neutral-50/50'
+                    'border-b transition-colors hover:bg-neutral-50',
+                    checked && 'bg-indigo-50/40'
                   )}
                 >
+                  <td className="px-3 py-1">
+                    {onSelectionChange && (
+                      <Checkbox
+                        checked={checked}
+                        onCheckedChange={() => toggleSelect(customer.id)}
+                        className="w-3.5 h-3.5"
+                      />
+                    )}
+                  </td>
                   <td className="px-3 py-1 text-[11px] text-neutral-400 tabular-nums">
                     {idx + 1}
                   </td>
@@ -291,10 +339,6 @@ export default function CustomerList({
       {/* ── Footer ────────────────────────────────────────────────────────────── */}
       <div className="shrink-0 h-7 flex items-center justify-between px-3 border-t border-neutral-200 bg-white text-[10px] text-neutral-500">
         <span>{filtered.length} pelanggan</span>
-        <span className="flex items-center gap-3">
-          <span>↑↓ navigasi</span>
-          <span>Enter tambah ke keranjang</span>
-        </span>
       </div>
     </div>
   );

@@ -7,6 +7,21 @@ dan proyek ini mengikuti [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.4.0] — 2026-05-30
+
+### Fixed
+- **Import customer hanya commit 10 baris**: Bug kritis — preview menyimpan hanya 10 baris (slice untuk display) tapi data yang di-commit juga 10 baris itu. Sekarang `allRows` menyimpan SEMUA baris hasil preview, sementara `previewRows` hanya untuk display. Commit pakai `allRows`.
+- **ProductList search tdk ke seluruh DB**: Sebelumnya search hanya filter in-memory dari produk yang sudah diload (default 50). Sekarang search dikirim ke backend (debounce 300ms) via `fetchProducts({ search })`.
+- **ProductList infinite scroll**: Ditambahkan `IntersectionObserver` di bagian bawah tabel. Saat scroll mendekati akhir, `loadMoreProducts()` dipanggil dengan cursor-based pagination.
+- **Soft delete → Hard delete**: `deleteCustomer` sekarang `DELETE FROM` (hard delete), bukan set `is_active = 0`.
+- **Konsep active/inactive customer dihapus**: `isActive` dihapus dari `CustomerRow`, `CustomerFilter`, semua query backend, export, import, UI (checkbox Tampilkan nonaktif), dan store.
+
+### Added
+- **Bulk delete customer**: Checkbox per baris + select all di tabel customer. Tombol "Hapus N" muncul di header saat ada yang dipilih. Konfirmasi sebelum hapus. Backend `customer:bulkDelete` dengan transaksi SQL.
+- **Export/Import pelanggan**: File .xlsx/.csv tanpa kolom Status.
+
+---
+
 ## [1.3.2] — 2026-05-30
 
 ### Fixed

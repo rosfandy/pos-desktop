@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useProductStore } from '@/stores/productStore';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -18,6 +18,7 @@ import {
   Barcode,
   WarningCircle,
   Funnel,
+  Spinner,
 } from 'phosphor-react';
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
@@ -34,6 +35,17 @@ export interface ProductListProps {
 type SortKey = 'name' | 'priceSell' | 'stock' | 'sku' | 'barcode';
 type SortDir = 'asc' | 'desc';
 
+// ─── Debounce ───────────────────────────────────────────────────────────────────
+
+function useDebounce<T>(value: T, delay: number): T {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const timer = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(timer);
+  }, [value, delay]);
+  return debounced;
+}
+
 // ─── Component ──────────────────────────────────────────────────────────────────
 
 export default function ProductList({
@@ -42,40 +54,60 @@ export default function ProductList({
   onView,
   showInactive = false,
 }: ProductListProps) {
-  const { products, categories, isLoading, fetchProducts } = useProductStore();
+  const { products, categories, isLoading, hasMore, fetchProducts, loadMoreProducts } = useProductStore();
+  const sentinelRef = useRef<HTMLDivElement>(null);
 
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [sortKey, setSortKey] = useState<SortKey>('name');
   const [sortDir, setSortDir] = useState<SortDir>('asc');
 
-  // Load products on mount
+  const debouncedSearch = useDebounce(search, 300);
+
+  // Initial load
   useEffect(() => {
     fetchProducts(showInactive ? undefined : { isActive: true });
   }, [fetchProducts, showInactive]);
 
-  // Filtered + sorted
-  const filtered = useMemo(() => {
-    let list = products;
-
-    // Search: name OR sku OR barcode
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      list = list.filter(
-        (p) =>
-          p.name.toLowerCase().includes(q) ||
-          (p.sku?.toLowerCase().includes(q) ?? false) ||
-          (p.barcode?.includes(q) ?? false)
-      );
+  // When debounced search changes → query backend
+  useEffect(() => {
+    const filter: any = {};
+    if (showInactive) {
+      // no isActive filter = show all
+    } else {
+      filter.isActive = true;
     }
-
-    // Category filter
+    if (debouncedSearch.trim()) {
+      filter.search = debouncedSearch.trim();
+    }
     if (categoryFilter !== 'all') {
-      list = list.filter((p) => p.categoryId === categoryFilter);
+      filter.categoryId = categoryFilter;
     }
+    fetchProducts(Object.keys(filter).length > 0 ? filter : undefined);
+  }, [fetchProducts, debouncedSearch, categoryFilter, showInactive]);
 
-    // Sort
-    list = [...list].sort((a, b) => {
+  // ── Infinite scroll via IntersectionObserver ───────────────────────────────
+
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting && hasMore && !isLoading) {
+          loadMoreProducts();
+        }
+      },
+      { rootMargin: '200px' }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [hasMore, isLoading, loadMoreProducts]);
+
+  // ── Client-side sort (only sorts currently loaded items) ───────────────────
+
+  const sorted = useMemo(() => {
+    const list = [...products];
+    list.sort((a, b) => {
       let cmp = 0;
       switch (sortKey) {
         case 'name':
@@ -96,9 +128,8 @@ export default function ProductList({
       }
       return sortDir === 'asc' ? cmp : -cmp;
     });
-
     return list;
-  }, [products, search, categoryFilter, sortKey, sortDir]);
+  }, [products, sortKey, sortDir]);
 
   const toggleSort = useCallback((key: SortKey) => {
     setSortKey((prev) => {
@@ -113,7 +144,7 @@ export default function ProductList({
 
   const activeCategories = useMemo(() => categories.filter((c) => c.isActive), [categories]);
   const lowStockCount = useMemo(
-    () => products.filter((p) => p.isActive && p.stock <= p.minStock).length,
+    () => products.filter((p) => p.stock <= p.minStock && p.isActive).length,
     [products]
   );
 
@@ -173,7 +204,7 @@ export default function ProductList({
           </span>
         )}
 
-        <span className="ml-auto text-[10px] text-neutral-400">{filtered.length} produk</span>
+        <span className="ml-auto text-[10px] text-neutral-400">{products.length} produk</span>
       </div>
 
       {/* ── Table ─────────────────────────────────────────────────────────────── */}
@@ -199,7 +230,7 @@ export default function ProductList({
             </tr>
           </thead>
           <tbody>
-            {filtered.map((product, idx) => (
+            {sorted.map((product, idx) => (
               <tr
                 key={product.id}
                 className={cn('border-b border-neutral-100 transition-colors', product.isActive ? 'hover:bg-neutral-50' : 'bg-neutral-50/50 opacity-60')}
@@ -243,7 +274,20 @@ export default function ProductList({
           </tbody>
         </table>
 
-        {filtered.length === 0 && (
+        {/* ── Infinite scroll sentinel ───────────────────────────────────────── */}
+        <div ref={sentinelRef} className="flex items-center justify-center py-4">
+          {isLoading && (
+            <div className="flex items-center gap-2 text-[12px] text-neutral-400">
+              <Spinner className="w-4 h-4 animate-spin" />
+              Memuat lebih banyak…
+            </div>
+          )}
+          {!hasMore && products.length > 0 && (
+            <span className="text-[10px] text-neutral-300">Semua produk telah dimuat</span>
+          )}
+        </div>
+
+        {sorted.length === 0 && !isLoading && (
           <div className="flex flex-col items-center justify-center h-48 text-neutral-400">
             <MagnifyingGlass className="w-10 h-10 mb-3 opacity-30" />
             <p className="text-[13px] font-medium">Produk tidak ditemukan</p>

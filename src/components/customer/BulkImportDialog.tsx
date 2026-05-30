@@ -28,7 +28,8 @@ export default function BulkImportDialog({ open, onOpenChange, onImportComplete 
 
   const [step, setStep] = useState<Step>('idle');
   const [fileName, setFileName] = useState<string>('');
-  const [previewRows, setPreviewRows] = useState<CustomerImportRow[]>([]);
+  const [allRows, setAllRows] = useState<CustomerImportRow[]>([]); // full rows for commit
+  const [previewRows, setPreviewRows] = useState<CustomerImportRow[]>([]); // first 10 for display
   const [totalRows, setTotalRows] = useState(0);
   const [errors, setErrors] = useState<Array<{ row: number; message: string }>>([]);
   const [result, setResult] = useState<{ success: boolean; imported: number; totalRows: number; errors: Array<{ row: number; message: string }> } | null>(null);
@@ -37,6 +38,7 @@ export default function BulkImportDialog({ open, onOpenChange, onImportComplete 
   const reset = useCallback(() => {
     setStep('idle');
     setFileName('');
+    setAllRows([]);
     setPreviewRows([]);
     setTotalRows(0);
     setErrors([]);
@@ -66,16 +68,20 @@ export default function BulkImportDialog({ open, onOpenChange, onImportComplete 
 
       const res: any = await window.api.customerImportPreview(uint8);
       if (res.ok && res.data) {
-        setPreviewRows(res.data.rows?.slice(0, MAX_PREVIEW_ROWS) ?? []);
+        const fullRows = res.data.rows ?? [];
+        setAllRows(fullRows);
         setTotalRows(res.data.totalRows ?? 0);
         setErrors(res.data.errors ?? []);
+        setPreviewRows(fullRows.slice(0, MAX_PREVIEW_ROWS));
       } else {
         setErrors([{ row: 0, message: res.error?.message || 'Gagal membaca file' }]);
+        setAllRows([]);
         setPreviewRows([]);
         setTotalRows(0);
       }
     } catch (err: any) {
       setErrors([{ row: 0, message: err.message || 'Gagal membaca file' }]);
+      setAllRows([]);
       setPreviewRows([]);
       setTotalRows(0);
     } finally {
@@ -90,7 +96,7 @@ export default function BulkImportDialog({ open, onOpenChange, onImportComplete 
     setLoading(true);
 
     try {
-      const res: any = await window.api.customerImportCommit(previewRows);
+      const res: any = await window.api.customerImportCommit(allRows);
       if (res.ok && res.data) {
         setResult({
           success: res.data.success,
@@ -117,7 +123,7 @@ export default function BulkImportDialog({ open, onOpenChange, onImportComplete 
       setLoading(false);
       setStep('result');
     }
-  }, [previewRows, totalRows]);
+  }, [allRows, totalRows]);
 
   // ── Render ─────────────────────────────────────────────────────────────────
 
@@ -203,7 +209,6 @@ export default function BulkImportDialog({ open, onOpenChange, onImportComplete 
                           <th className="text-left px-2 py-1.5 font-medium border-b border-neutral-200">Email</th>
                           <th className="text-right px-2 py-1.5 font-medium border-b border-neutral-200">Poin</th>
                           <th className="text-center px-2 py-1.5 font-medium border-b border-neutral-200">Tier</th>
-                          <th className="text-center px-2 py-1.5 font-medium border-b border-neutral-200">Status</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -211,17 +216,12 @@ export default function BulkImportDialog({ open, onOpenChange, onImportComplete 
                           <tr key={i} className="border-b border-neutral-100 last:border-b-0 hover:bg-neutral-50">
                             <td className="px-2 py-1.5 text-neutral-400">{row.rowIndex}</td>
                             <td className="px-2 py-1.5 font-medium text-neutral-800">{row.name}</td>
-                            <td className="px-2 py-1.5 text-neutral-600">{row.phone || '-'}</td>
+                            <td className="px-2 py-1.5 text-neutral-600 font-mono">{row.phone || '-'}</td>
                             <td className="px-2 py-1.5 text-neutral-600">{row.email || '-'}</td>
                             <td className="px-2 py-1.5 text-right tabular-nums">{row.points.toLocaleString('id-ID')}</td>
                             <td className="px-2 py-1.5 text-center">
                               <span className="capitalize text-[10px] px-1.5 py-0.5 rounded bg-neutral-100 text-neutral-600">
                                 {row.tier}
-                              </span>
-                            </td>
-                            <td className="px-2 py-1.5 text-center">
-                              <span className={`text-[10px] px-1.5 py-0.5 rounded ${row.isActive ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-500'}`}>
-                                {row.isActive ? 'Aktif' : 'Nonaktif'}
                               </span>
                             </td>
                           </tr>

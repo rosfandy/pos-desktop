@@ -17,8 +17,11 @@ interface ProductState {
   isLoadingCategories: boolean;
   error: string | null;
   lowStockAlerts: ProductRow[];
+  nextCursor: string | null;
+  hasMore: boolean;
 
   fetchProducts: (filter?: ProductFilter) => Promise<void>;
+  loadMoreProducts: () => Promise<void>;
   fetchCategories: () => Promise<void>;
   fetchProductById: (id: string) => Promise<ProductWithUnits | null>;
   createProduct: (input: any) => Promise<ProductWithUnits | { error: string }>;
@@ -58,6 +61,8 @@ export const useProductStore = create<ProductState>((set, get) => ({
   isLoadingCategories: false,
   error: null,
   lowStockAlerts: [],
+  nextCursor: null,
+  hasMore: false,
 
   fetchProducts: async (filter?: ProductFilter) => {
     set({ isLoading: true, error: null });
@@ -65,7 +70,12 @@ export const useProductStore = create<ProductState>((set, get) => ({
       const res = await window.api.productList(filter);
       const pageResult = unwrap<ProductPageResult>(res);
       const list = pageResult?.data ?? [];
-      set({ products: list, error: unwrapErr(res) });
+      set({
+        products: list,
+        nextCursor: pageResult?.nextCursor ?? null,
+        hasMore: pageResult?.hasMore ?? false,
+        error: unwrapErr(res),
+      });
     } catch (err: any) {
       console.error('[STORE] fetchProducts error:', err);
       set({ error: err.message || 'Gagal memuat produk' });
@@ -74,12 +84,31 @@ export const useProductStore = create<ProductState>((set, get) => ({
     }
   },
 
-fetchCategories: async () => {
+  loadMoreProducts: async () => {
+    const { nextCursor, hasMore } = get();
+    if (!hasMore || !nextCursor) return;
+    set({ isLoading: true });
+    try {
+      const res = await window.api.productList({ cursor: nextCursor });
+      const pageResult = unwrap<ProductPageResult>(res);
+      const newItems = pageResult?.data ?? [];
+      set((state) => ({
+        products: [...state.products, ...newItems],
+        nextCursor: pageResult?.nextCursor ?? null,
+        hasMore: pageResult?.hasMore ?? false,
+      }));
+    } catch (err: any) {
+      console.error('[STORE] loadMoreProducts error:', err);
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  fetchCategories: async () => {
     set({ isLoadingCategories: true, error: null });
     try {
       const res = await window.api.categoryList();
       const data = unwrap<CategoryRow[]>(res, []);
-      console.log('[STORE] fetchCategories res:', JSON.stringify(res)?.slice(0, 200), 'data:', data?.length);
       set({ categories: data ?? [], error: unwrapErr(res) });
     } catch (err: any) {
       console.error('[STORE] fetchCategories error:', err);

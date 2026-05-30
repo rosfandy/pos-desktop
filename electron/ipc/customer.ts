@@ -6,6 +6,7 @@ import {
   createCustomer,
   updateCustomer,
   deleteCustomer,
+  bulkDeleteCustomers,
   addPoints,
   redeemPoints,
   recordTransactionPoints,
@@ -15,7 +16,7 @@ import { getTransactionsByCustomerId } from '../services/transaction/repo.ts';
 import type { CustomerTransactionRow } from '../services/transaction/repo.ts';
 
 export function registerCustomerHandlers() {
-  ipcMain.handle('customer:list', async (_e, filter?: { search?: string; isActive?: boolean }) => {
+  ipcMain.handle('customer:list', async (_e, filter?: { search?: string }) => {
     try {
       const data = await listCustomers(filter);
       return { ok: true, data };
@@ -71,11 +72,20 @@ export function registerCustomerHandlers() {
 
   ipcMain.handle('customer:delete', async (_e, id: string) => {
     try {
-      const result = await deleteCustomer(id, true);
+      const result = await deleteCustomer(id);
       if (!result.success) return { ok: false, error: { code: 'CUST_DELETE', message: result.error || 'Gagal menghapus pelanggan' } };
       return { ok: true, data: { success: true } };
     } catch (err: any) {
       return { ok: false, error: { code: 'CUST_DELETE', message: err?.message || 'Gagal menghapus pelanggan' } };
+    }
+  });
+
+  ipcMain.handle('customer:bulkDelete', async (_e, ids: string[]) => {
+    try {
+      const result = await bulkDeleteCustomers(ids);
+      return { ok: true, data: result };
+    } catch (err: any) {
+      return { ok: false, error: { code: 'CUST_BULK_DELETE', message: err?.message || 'Gagal menghapus massal' } };
     }
   });
 

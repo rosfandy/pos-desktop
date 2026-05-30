@@ -12,7 +12,6 @@ export interface CustomerRow {
   points: number;
   tier: 'bronze' | 'silver' | 'gold' | 'platinum';
   totalSpent: number;
-  isActive: boolean;
   createdAt: number;
 }
 
@@ -32,8 +31,7 @@ function rowToCustomer(row: unknown[]): CustomerRow {
     points: Number(row[5]) || 0,
     tier: (String(row[6]) as CustomerRow['tier']) || 'bronze',
     totalSpent: Number(row[7]) || 0,
-    isActive: Boolean(row[8]),
-    createdAt: Number(row[9]) || 0,
+    createdAt: Number(row[8]) || 0,
   };
 }
 
@@ -41,22 +39,18 @@ function rowToCustomer(row: unknown[]): CustomerRow {
 
 export async function listCustomers(filter?: {
   search?: string;
-  isActive?: boolean;
 }): Promise<CustomerRow[]> {
   try {
     const db = await getDb();
-    const parts: string[] = ['1=1'];
+    const parts: string[] = [];
 
-    if (filter?.isActive !== undefined) {
-      parts.push(`is_active = ${filter.isActive ? 1 : 0}`);
-    }
     if (filter?.search) {
       const q = `%${esc(filter.search)}%`;
       parts.push(`(name LIKE '%${q}' OR phone LIKE '%${q}')`);
     }
 
     const where = parts.length > 0 ? `WHERE ${parts.join(' AND ')}` : '';
-    const sql = `SELECT id, name, phone, email, address, points, tier, total_spent, is_active, created_at FROM customers ${where} ORDER BY name ASC`;
+    const sql = `SELECT id, name, phone, email, address, points, tier, total_spent, created_at FROM customers ${where} ORDER BY name ASC`;
 
     const result = db.exec(sql);
     if (result.length > 0 && result[0]!.values.length > 0) {
@@ -71,7 +65,7 @@ export async function listCustomers(filter?: {
 export async function getCustomerById(id: string): Promise<CustomerRow | null> {
   try {
     const db = await getDb();
-    const result = db.exec(`SELECT id, name, phone, email, address, points, tier, total_spent, is_active, created_at FROM customers WHERE id = '${esc(id)}' LIMIT 1`);
+    const result = db.exec(`SELECT id, name, phone, email, address, points, tier, total_spent, created_at FROM customers WHERE id = '${esc(id)}' LIMIT 1`);
     if (result.length > 0 && result[0]!.values.length > 0) {
       return rowToCustomer(result[0]!.values[0] as unknown[]);
     }
@@ -84,7 +78,7 @@ export async function getCustomerById(id: string): Promise<CustomerRow | null> {
 export async function getCustomerByPhone(phone: string): Promise<CustomerRow | null> {
   try {
     const db = await getDb();
-    const result = db.exec(`SELECT id, name, phone, email, address, points, tier, total_spent, is_active, created_at FROM customers WHERE phone = '${esc(phone)}' LIMIT 1`);
+    const result = db.exec(`SELECT id, name, phone, email, address, points, tier, total_spent, created_at FROM customers WHERE phone = '${esc(phone)}' LIMIT 1`);
     if (result.length > 0 && result[0]!.values.length > 0) {
       return rowToCustomer(result[0]!.values[0] as unknown[]);
     }
@@ -110,7 +104,7 @@ export async function createCustomer(input: Omit<NewCustomer, 'id'>): Promise<Cu
     const now = Math.floor(Date.now() / 1000);
 
     db.run(
-      `INSERT INTO customers (id, name, phone, email, address, points, tier, total_spent, is_active, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO customers (id, name, phone, email, address, points, tier, total_spent, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         id,
         input.name,
@@ -120,7 +114,6 @@ export async function createCustomer(input: Omit<NewCustomer, 'id'>): Promise<Cu
         input.points ?? 0,
         input.tier || 'bronze',
         input.totalSpent || 0,
-        input.isActive !== false ? 1 : 0,
         now,
       ]
     );
@@ -148,7 +141,6 @@ export async function updateCustomer(id: string, input: Partial<NewCustomer>): P
     if (input.points !== undefined) { sets.push('points = ?'); params.push(input.points); }
     if (input.tier !== undefined) { sets.push('tier = ?'); params.push(input.tier); }
     if (input.totalSpent !== undefined) { sets.push('total_spent = ?'); params.push(input.totalSpent); }
-    if (input.isActive !== undefined) { sets.push('is_active = ?'); params.push(input.isActive ? 1 : 0); }
 
     if (sets.length > 0) {
       db.run(`UPDATE customers SET ${sets.join(', ')} WHERE id = ?`, [...params, id]);
@@ -161,22 +153,46 @@ export async function updateCustomer(id: string, input: Partial<NewCustomer>): P
   }
 }
 
-export async function deleteCustomer(id: string, soft = true): Promise<{ success: boolean; error?: string }> {
+export async function deleteCustomer(id: string): Promise<{ success: boolean; error?: string }> {
   try {
     const db = await getDb();
     const existing = await getCustomerById(id);
     if (!existing) return { success: false, error: `CUST_003: Pelanggan dengan id '${id}' tidak ditemukan` };
-
-    if (soft) {
-      db.run(`UPDATE customers SET is_active = 0 WHERE id = ?`, [id]);
-      return { success: true };
-    }
 
     db.run(`DELETE FROM customers WHERE id = ?`, [id]);
     return { success: true };
   } catch (err: any) {
     return { success: false, error: err.message || 'Gagal menghapus pelanggan' };
   }
+}
+
+export async function bulkDeleteCustomers(ids: string[]): Promise<{ success: boolean; deleted: number; errors: Array<{ id: string; message: string }> }> {
+  const db = await getDb();
+  const errors: Array<{ id: string; message: string }> = [];
+  let deleted = 0;
+
+  db.run('BEGIN TRANSACTION');
+  try {
+    for (const id of ids) {
+      try {
+        const existing = await getCustomerById(id);
+        if (!existing) {
+          errors.push({ id, message: 'Pelanggan tidak ditemukan' });
+          continue;
+        }
+        db.run(`DELETE FROM customers WHERE id = ?`, [id]);
+        deleted++;
+      } catch (err: any) {
+        errors.push({ id, message: err.message || 'Gagal menghapus' });
+      }
+    }
+    db.run('COMMIT');
+  } catch (err: any) {
+    db.run('ROLLBACK');
+    return { success: false, deleted, errors: [{ id: '', message: err.message || 'Gagal menghapus massal' }] };
+  }
+
+  return { success: errors.length === 0, deleted, errors };
 }
 
 export async function addPoints(id: string, points: number): Promise<CustomerRow | { error: string }> {

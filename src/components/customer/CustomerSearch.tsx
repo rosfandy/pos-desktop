@@ -54,9 +54,9 @@ export default function CustomerSearch({ className, onSelect, onCreateNew }: Cus
   const wrapperRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Load all active customers on mount
+  // Load all customers on mount
   useEffect(() => {
-    fetchCustomers({ isActive: true });
+    fetchCustomers();
   }, [fetchCustomers]);
 
   // Close dropdown when clicking outside
@@ -71,12 +71,11 @@ export default function CustomerSearch({ className, onSelect, onCreateNew }: Cus
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Filtered customers — only show active ones
+  // Filtered customers — show all, limit to 10
   const filtered = useMemo(() => {
-    const activeCustomers = customers.filter((c) => c.isActive);
-    if (!query.trim()) return activeCustomers.slice(0, 10);
+    if (!query.trim()) return customers.slice(0, 10);
     const q = query.toLowerCase();
-    return activeCustomers.filter(
+    return customers.filter(
       (c) =>
         c.name.toLowerCase().includes(q) ||
         (c.phone?.toLowerCase().includes(q) ?? false)
@@ -185,8 +184,7 @@ export default function CustomerSearch({ className, onSelect, onCreateNew }: Cus
                   onClick={() => handleSelect(customer)}
                   className={cn(
                     'w-full px-3 py-1.5 text-left flex items-center gap-2 transition-colors justify-start',
-                    isHighlighted ? 'bg-indigo-50' : 'hover:bg-neutral-50',
-                    !customer.isActive && 'opacity-50'
+                    isHighlighted ? 'bg-indigo-50' : 'hover:bg-neutral-50'
                   )}
                   onMouseEnter={() => setHighlightedIndex(idx)}
                 >

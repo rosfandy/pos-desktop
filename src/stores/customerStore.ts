@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { CustomerRow, CustomerFilter } from '@/lib/api';
+import type { CustomerRow } from '@/lib/api';
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
@@ -10,11 +10,12 @@ interface CustomerState {
   isLoading: boolean;
   error: string | null;
 
-  fetchCustomers: (filter?: CustomerFilter) => Promise<void>;
+  fetchCustomers: (filter?: { search?: string }) => Promise<void>;
   searchCustomers: (query: string) => Promise<void>;
   createCustomer: (input: { name: string; phone?: string; email?: string; address?: string }) => Promise<CustomerRow | { error: string }>;
   updateCustomer: (id: string, input: Partial<{ name: string; phone: string; email: string; address: string }>) => Promise<CustomerRow | { error: string }>;
   deleteCustomer: (id: string) => Promise<{ success: boolean; error?: string }>;
+  bulkDeleteCustomers: (ids: string[]) => Promise<{ success: boolean; deleted: number; errors: Array<{ id: string; message: string }> }>;
   selectCustomer: (customer: CustomerRow | null) => void;
   setSearchQuery: (query: string) => void;
   clearError: () => void;
@@ -47,7 +48,7 @@ export const useCustomerStore = create<CustomerState>((set, get) => ({
   isLoading: false,
   error: null,
 
-  fetchCustomers: async (filter?: CustomerFilter) => {
+  fetchCustomers: async (filter?: { search?: string }) => {
     set({ isLoading: true, error: null });
     try {
       const res = await window.api.customerList(filter);
@@ -63,7 +64,7 @@ export const useCustomerStore = create<CustomerState>((set, get) => ({
   searchCustomers: async (query: string) => {
     set({ searchQuery: query, isLoading: true, error: null });
     try {
-      const res = await window.api.customerList({ search: query, isActive: true });
+      const res = await window.api.customerList({ search: query });
       const data = unwrap<CustomerRow[]>(res, []);
       set({ customers: data ?? [], error: unwrapErr(res) });
     } catch (err: any) {
@@ -151,6 +152,29 @@ export const useCustomerStore = create<CustomerState>((set, get) => ({
       const msg = err.message || 'Gagal menghapus pelanggan';
       set({ error: msg });
       return { success: false, error: msg };
+    }
+  },
+
+  bulkDeleteCustomers: async (ids) => {
+    set({ error: null, isLoading: true });
+    try {
+      const res = await window.api.customerBulkDelete(ids);
+      if (res && typeof res === 'object' && 'ok' in res) {
+        if (res.ok) {
+          await get().fetchCustomers();
+          return res.data;
+        }
+        const msg = (res as any).error?.message || 'Gagal menghapus massal';
+        set({ error: msg });
+        return { success: false, deleted: 0, errors: [{ id: '', message: msg }] };
+      }
+      return { success: false, deleted: 0, errors: [{ id: '', message: 'Gagal menghapus massal' }] };
+    } catch (err: any) {
+      const msg = err.message || 'Gagal menghapus massal';
+      set({ error: msg });
+      return { success: false, deleted: 0, errors: [{ id: '', message: msg }] };
+    } finally {
+      set({ isLoading: false });
     }
   },
 
