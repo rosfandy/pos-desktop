@@ -14,6 +14,14 @@ dan proyek ini mengikuti [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.5.3] — 2026-05-31
+
+### Fixed
+- **Pencarian produk langsung ke DB** — `InlineProductTable` tidak lagi filter client-side dari data yang sudah dimuat; pencarian & filter kategori langsung query ke database via `product:list` dengan parameter `search`/`categoryId`, memastikan data selalu sinkron.
+- **SQL search bug** — `buildWhere` di service produk: sebelumnya string `%` di-double wrap (`LIKE '%%term%'`), diperbaiki jadi `LIKE '%term%'`.
+
+---
+
 ## [1.5.2] — 2026-05-31
 
 ### Changed

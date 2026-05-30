@@ -107,8 +107,8 @@ function buildWhere(filter?: ProductFilter): string {
     parts.push(`p.category_id = '${esc(filter.categoryId)}'`);
   }
   if (filter?.search) {
-    const q = `%${esc(filter.search)}%`;
-    parts.push(`(p.name LIKE '%${q}' OR p.sku LIKE '%${q}' OR p.barcode LIKE '%${q}')`);
+    const q = esc(filter.search);
+    parts.push(`(p.name LIKE '%${q}%' OR p.sku LIKE '%${q}%' OR p.barcode LIKE '%${q}%')`);
   }
 
   // Low stock filter

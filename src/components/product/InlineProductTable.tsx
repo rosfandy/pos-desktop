@@ -63,6 +63,7 @@ export default function InlineProductTable({ refreshKey }: { refreshKey?: number
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [editingRows, setEditingRows] = useState<Map<string, EditingRow>>(new Map());
   const [savingIds, setSavingIds] = useState<Set<string>>(new Set());
@@ -70,13 +71,24 @@ export default function InlineProductTable({ refreshKey }: { refreshKey?: number
   const [hasMore, setHasMore] = useState(false);
   const loadMoreTriggerRef = useRef<HTMLDivElement>(null);
 
-  // ── Load products (direct API, no store) ─────────────────────────────────────
-  const loadProducts = useCallback(async () => {
+  // Debounce search — 300ms
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search), 300);
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  // ── Load products from DB (pass search & categoryId to server) ──────────────
+  const loadProducts = useCallback(async (searchTerm?: string, catFilter?: string) => {
     setLoading(true);
-    setNextCursor(null);   // reset cursor
-    setHasMore(false);     // reset hasMore
+    setNextCursor(null);
+    setHasMore(false);
     try {
-      const res = await window.api.productList({ cursor: undefined, limit: 10 });
+      const res = await window.api.productList({
+        cursor: undefined,
+        limit: 10,
+        search: searchTerm || undefined,
+        categoryId: catFilter && catFilter !== 'all' ? catFilter : undefined,
+      });
       const page = unwrap<ProductPageResult>(res, { data: [], nextCursor: null, hasMore: false });
       if (page) {
         setProducts(page.data ?? []);
@@ -102,7 +114,7 @@ export default function InlineProductTable({ refreshKey }: { refreshKey?: number
     setLoadingMore(true);
     try {
       const res = await window.api.productList(
-        { cursor: nextCursor, limit: 10 }
+        { cursor: nextCursor, limit: 10, search: debouncedSearch || undefined, categoryId: categoryFilter !== 'all' ? categoryFilter : undefined }
       );
       const page = unwrap<ProductPageResult>(res, { data: [], nextCursor: null, hasMore: false });
       if (page && page.data) {
@@ -115,7 +127,7 @@ export default function InlineProductTable({ refreshKey }: { refreshKey?: number
     } finally {
       setLoadingMore(false);
     }
-  }, [nextCursor, loadingMore]);
+  }, [nextCursor, loadingMore, debouncedSearch, categoryFilter]);
 
   // ── Load categories (direct API, no store) ───────────────────────────────────
   const loadCategories = useCallback(async () => {
@@ -129,8 +141,8 @@ export default function InlineProductTable({ refreshKey }: { refreshKey?: number
   }, []);
 
   useEffect(() => {
-    loadProducts();
-  }, [loadProducts, refreshKey]);
+    loadProducts(debouncedSearch, categoryFilter);
+  }, [loadProducts, refreshKey, debouncedSearch, categoryFilter]);
 
   useEffect(() => {
     loadCategories();
@@ -153,24 +165,6 @@ export default function InlineProductTable({ refreshKey }: { refreshKey?: number
     observer.observe(sentinel);
     return () => observer.disconnect();
   }, [hasMore, loadingMore, loadMore]);
-
-  // ── Filtered products ──────────────────────────────────────────────────────
-  const filtered = useMemo(() => {
-    let list = products;
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      list = list.filter(
-        (p) =>
-          p.name.toLowerCase().includes(q) ||
-          (p.sku?.toLowerCase().includes(q) ?? false) ||
-          (p.barcode?.includes(q) ?? false)
-      );
-    }
-    if (categoryFilter !== 'all') {
-      list = list.filter((p) => p.categoryId === categoryFilter);
-    }
-    return list;
-  }, [products, search, categoryFilter]);
 
   const activeCategories = useMemo(() => categories, [categories]);
   const lowStockCount = useMemo(
@@ -407,7 +401,7 @@ export default function InlineProductTable({ refreshKey }: { refreshKey?: number
             )}
           </div>
 
-          <span className="ml-auto text-[10px] text-neutral-400 tabular-nums">{filtered.length} produk</span>
+          <span className="ml-auto text-[10px] text-neutral-400 tabular-nums">{products.length} produk</span>
 
           {!hasExistingEdit && (
             <Button
@@ -531,7 +525,7 @@ export default function InlineProductTable({ refreshKey }: { refreshKey?: number
               ))}
 
             {/* ── Existing rows ──── */}
-            {filtered.map((product, idx) => {
+            {products.map((product, idx) => {
               const editing = editingRows.get(product.id);
               const isEditing = !!editing;
               const isSaving = savingIds.has(product.id);
@@ -640,7 +634,7 @@ export default function InlineProductTable({ refreshKey }: { refreshKey?: number
               );
             })}
 
-            {filtered.length === 0 && editingRows.size === 0 && (
+            {products.length === 0 && editingRows.size === 0 && (
               <tr>
                 <td colSpan={11} className="py-12 text-center">
                   <div className="flex flex-col items-center text-neutral-400">
