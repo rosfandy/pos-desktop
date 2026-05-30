@@ -1,0 +1,56 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": ["AGENTS.md"],
+
+  "provider": {
+    "9router": {
+      "npm": "@ai-sdk/openai-compatible",
+      "options": {
+        "baseURL": "http://router.ailj.id:20128/v1",
+        "apiKey": "sk-ae10bd20d3703700-x6vfcb-c218965f"
+      },
+      "models": {
+        "provider/model-id": {
+          "name": "provider/model-id"
+        },
+	"gh/claude-sonnet-4.6": {
+	  "name":"gh/claude-sonnet-4.6"
+	},
+        "stepfun/step-3.5-flash-2603": {
+          "name": "stepfun/step-3.5-flash-2603"
+        }
+      }
+    },
+
+    "stepfun": {
+      "npm": "@ai-sdk/openai-compatible",
+
+      "options": {
+        "baseURL": "https://api.stepfun.ai/v1",
+        "apiKey": "3NjP1UZCFkNqd5uuyeyPCbRRdri2FEjJSCkKqyymRQOGBdiBFXRbMhEn9TAEUCaVk"
+      },
+
+      "models": {
+        "step-3.5-flash": {
+          "name": "step-3.5-flash"
+        },
+
+        "step-3.5-flash-2603": {
+          "name": "step-3.5-flash-2603"
+        },
+
+        "step-2-16k": {
+          "name": "step-2-16k"
+        },
+
+        "step-2-mini": {
+          "name": "step-2-mini"
+        },
+
+        "step-1-8k": {
+          "name": "step-1-8k"
+        }
+      }
+    }
+  },
+}

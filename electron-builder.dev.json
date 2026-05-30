@@ -1,0 +1,25 @@
+{
+  "appId": "com.posdesktop.app",
+  "productName": "POS Desktop",
+  "copyright": "Copyright © 2026",
+  "asar": false,
+  "files": [
+    "dist/**/*",
+    "dist-electron/**/*",
+    "!**/*.map",
+    "node_modules/**/*"
+  ],
+  "extraResources": [
+    {
+      "from": "database/migrations",
+      "to": "migrations",
+      "filter": ["**/*.sql"]
+    }
+  ],
+  "win": {
+    "target": ["portable"],
+    "icon": "build-resources/icon.ico",
+    "publisherName": "POS Desktop",
+    "publish": null
+  }
+}
