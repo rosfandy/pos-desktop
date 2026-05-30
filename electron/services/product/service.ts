@@ -15,7 +15,6 @@ interface ProductRow {
   baseUnit: string;
   imagePath: string | null;
   minStock: number;
-  isActive: boolean;
   _isUpdate?: boolean; // internal flag for bulkSaveProducts write phase
 }
 
@@ -35,9 +34,8 @@ interface ProductWithUnits extends ProductRow {
 export interface ProductFilter {
   categoryId?: string;
   search?: string;
-  isActive?: boolean;
   cursor?: string;   // opaque cursor for pagination (base64 encoded created_at+id)
-  limit?: number;    // max rows per page (default 50, max 200)
+  limit?: number;    // max rows per page (default 50, 0 = unlimited)
   lowStock?: boolean;
   lowStockThreshold?: number;
 }
@@ -114,18 +112,13 @@ function buildWhere(filter?: ProductFilter): string {
     const q = `%${esc(filter.search)}%`;
     parts.push(`(p.name LIKE '%${q}' OR p.sku LIKE '%${q}' OR p.barcode LIKE '%${q}')`);
   }
-  // Only add is_active filter if explicitly requested by caller.
-  // When filter.isActive is omitted → no is_active filter → show all (active + inactive).
-  if (filter?.isActive !== undefined) {
-    parts.push(`p.is_active = ${filter.isActive ? 1 : 0}`);
-  }
 
-  // Low stock filter — implicitly applies is_active = 1
+  // Low stock filter
   if (filter?.lowStock) {
     if (filter.lowStockThreshold && filter.lowStockThreshold > 0) {
-      parts.push(`p.is_active = 1 AND p.stock <= ${filter.lowStockThreshold}`);
+      parts.push(`p.stock <= ${filter.lowStockThreshold}`);
     } else {
-      parts.push(`p.is_active = 1 AND p.stock <= p.min_stock`);
+      parts.push(`p.stock <= p.min_stock`);
     }
   }
 
@@ -179,25 +172,27 @@ export async function listProducts(filter?: ProductFilter): Promise<ProductPageR
 
     const whereClause = buildWhere(filter);
     const whereSql = whereClause ? `WHERE ${whereClause}` : '';
-    const limit = Math.min(filter?.limit ?? 50, 200); // clamp max 200
+    const limit = filter?.limit ?? 50; // default 50, unlimited jika tidak ada limit
     const cursor = decodeCursor(filter?.cursor);
+    const unlimited = limit <= 0;
 
     // Build ORDER BY + cursor WHERE
     const orderBy = hasNewSchema ? 'p.created_at DESC, p.id DESC' : 'created_at DESC, id DESC';
     const cursorClause = cursor ? `AND (${hasNewSchema ? 'p' : ''}.created_at, ${hasNewSchema ? 'p' : ''}.id) < (${cursor.createdAt}, '${esc(cursor.id)}')` : '';
 
     const baseSql = hasNewSchema ? BASE_SQL : LEGACY_BASE_SQL;
-    const sql = `${baseSql} ${whereSql} ${cursorClause} ORDER BY ${orderBy} LIMIT ${limit}`;
+    const limitClause = unlimited ? '' : ` LIMIT ${limit}`;
+    const sql = `${baseSql} ${whereSql} ${cursorClause} ORDER BY ${orderBy}${limitClause}`;
 
     const result = db.exec(sql);
     const rows = result.length > 0 && result[0]!.values.length > 0
       ? result[0]!.values.map((r: any[]) => hasNewSchema ? mapNewRow(r) : mapLegacyRow(r))
       : [];
 
-    // Derive nextCursor from the last row (if we got exactly `limit` rows, there may be more)
+    // Derive nextCursor from the last row (only matters when limit is applied)
     let nextCursor: string | null = null;
     let hasMore = false;
-    if (rows.length === limit) {
+    if (!unlimited && rows.length === limit) {
       // Fetch created_at of the last row to build a proper cursor
       const lastRaw = result[0]!.values[rows.length - 1] as any[];
       const createdAtIdx = hasNewSchema ? 13 : 11; // created_at index: new schema=13 (after is_active=12), legacy=11

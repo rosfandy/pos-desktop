@@ -73,7 +73,6 @@ export const products = sqliteTable('products', {
   baseUnit: text('base_unit').notNull().default('pcs'),
   imagePath: text('image_path'),
   minStock: integer('min_stock').notNull().default(0),
-  isActive: integer('is_active', { mode: 'boolean' }).notNull().default(true),
   createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(() => new Date()),
   updatedAt: integer('updated_at', { mode: 'timestamp' }).$defaultFn(() => new Date()),
 });

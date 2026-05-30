@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import type { ProductPageResult } from '@/lib/api';
-import { MagnifyingGlass, CaretUp, CaretDown, Plus, Barcode, Tag } from 'phosphor-react';
+import { MagnifyingGlass, CaretUp, CaretDown, Plus, Barcode, Tag, Spinner } from 'phosphor-react';
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
@@ -38,7 +38,6 @@ interface ProductRaw {
   barcode?: string | null;
   stock: number;
   baseUnit: string;
-  isActive: boolean;
 }
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
@@ -51,6 +50,15 @@ function unwrap<T>(res: unknown, fallback?: T): T | null {
   return fallback ?? null;
 }
 
+function useDebounce<T>(value: T, delay: number): T {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const timer = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(timer);
+  }, [value, delay]);
+  return debounced;
+}
+
 // ─── Component ──────────────────────────────────────────────────────────────────
 
 export default function ProductTable({
@@ -61,7 +69,7 @@ export default function ProductTable({
 }: ProductTableProps) {
   // ── State ───────────────────────────────────────────────────────────────────
   const [products, setProducts] = useState<ProductRaw[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [internalSearch, setInternalSearch] = useState('');
   const [sortKey, setSortKey] = useState<SortKey>('name');
   const [sortDir, setSortDir] = useState<SortDir>('asc');
@@ -74,15 +82,20 @@ export default function ProductTable({
 
   const search = externalSearch ?? internalSearch;
   const setSearch = onSearchChange ?? setInternalSearch;
+  const debouncedSearch = useDebounce(search, 300);
 
-  // ── Load products (direct API, no store) ─────────────────────────────────────
-  const loadProducts = useCallback(async () => {
+  // ── Search products on backend when debounced query changes ─────────────────
+  useEffect(() => {
+    if (!debouncedSearch.trim()) {
+      setProducts([]);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
-    try {
-      const res = await window.api.productList({ isActive: true, cursor: undefined, limit: 50 });
+    window.api.productList({ search: debouncedSearch.trim(), isActive: true, limit: 0 }).then((res: any) => {
       const page = unwrap<ProductPageResult>(res, { data: [], nextCursor: null, hasMore: false });
       if (page && page.data) {
-        // Map ProductRow → ProductRaw (categoryName: null → undefined)
         const raw: ProductRaw[] = page.data.map((p) => ({
           id: p.id,
           name: p.name,
@@ -92,22 +105,17 @@ export default function ProductTable({
           barcode: p.barcode,
           stock: p.stock,
           baseUnit: p.baseUnit,
-          isActive: p.isActive,
         }));
         setProducts(raw);
       } else {
         setProducts([]);
       }
-    } catch {
-      setProducts([]);
-    } finally {
       setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadProducts();
-  }, [loadProducts]);
+    }).catch(() => {
+      setProducts([]);
+      setLoading(false);
+    });
+  }, [debouncedSearch]);
 
   // ── Auto-focus search on mount ───────────────────────────────────────────────
   useEffect(() => {
@@ -142,19 +150,9 @@ export default function ProductTable({
     }));
   }, [products]);
 
-  // ── Filtering & Sorting ─────────────────────────────────────────────────────
+  // ── Filtering & Sorting (client-side sort only, no in-memory filter) ──────
   const filtered = useMemo(() => {
     let list = mappedProducts;
-
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      list = list.filter(
-        (p) =>
-          p.name.toLowerCase().includes(q) ||
-          p.barcode?.toLowerCase().includes(q) ||
-          p.id.toLowerCase().includes(q)
-      );
-    }
 
     list = [...list].sort((a, b) => {
       let cmp = 0;
@@ -176,7 +174,7 @@ export default function ProductTable({
     });
 
     return list;
-  }, [mappedProducts, search, sortKey, sortDir]);
+  }, [mappedProducts, sortKey, sortDir]);
 
   // ── Add to cart ─────────────────────────────────────────────────────────────
   const handleAdd = useCallback((product: Product) => {
@@ -277,14 +275,6 @@ export default function ProductTable({
 
   // ─── Render ──────────────────────────────────────────────────────────────────
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-full text-neutral-400">
-        <div className="text-[13px]">Memuat produk…</div>
-      </div>
-    );
-  }
-
   return (
     <div className={cn('flex flex-col h-full', className)} onKeyDown={handleTableKeyDown}>
       {/* ── Search bar ───────────────────────────────────────────────────────── */}
@@ -300,123 +290,150 @@ export default function ProductTable({
             data-focus-search="product"
             className="h-8 pl-9 pr-3 text-[12px]!"
           />
+          {search && (
+            <button
+              onClick={() => setSearch('')}
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 text-[11px]"
+            >
+              ✕
+            </button>
+          )}
         </div>
       </div>
 
       {/* ── Product table ───────────────────────────────────────────────────── */}
       <div ref={tableRef} className="flex-1 overflow-y-auto">
-        <table className="w-full text-left border-collapse">
-          <thead className="sticky top-0 z-10">
-            <tr className="bg-neutral-50 border-b-2 border-neutral-300">
-              <th className="px-3 py-2 text-[10px] font-semibold text-neutral-500 uppercase tracking-wider w-10 border-r border-neutral-200">No</th>
-              <th
-                className="px-3 py-2 text-[10px] font-semibold text-neutral-500 uppercase tracking-wider cursor-pointer hover:text-neutral-700 select-none border-r border-neutral-200"
-                onClick={() => toggleSort('barcode')}
-              >
-                <span className="flex items-center gap-0.5">
-                  <Barcode className="w-3 h-3" />
-                  Kode
-                  {sortKey === 'barcode' && (sortDir === 'asc' ? <CaretUp className="w-3 h-3" /> : <CaretDown className="w-3 h-3" />)}
-                </span>
-              </th>
-              <th
-                className="px-3 py-2 text-[10px] font-semibold text-neutral-500 uppercase tracking-wider cursor-pointer hover:text-neutral-700 select-none border-r border-neutral-200"
-                onClick={() => toggleSort('name')}
-              >
-                <span className="flex items-center gap-0.5">
-                  <Tag className="w-3 h-3" />
-                  Nama Produk
-                  {sortKey === 'name' && (sortDir === 'asc' ? <CaretUp className="w-3 h-3" /> : <CaretDown className="w-3 h-3" />)}
-                </span>
-              </th>
-              <th
-                className="px-3 py-2 text-[10px] font-semibold text-neutral-500 uppercase tracking-wider text-right cursor-pointer hover:text-neutral-700 select-none border-r border-neutral-200"
-                onClick={() => toggleSort('price')}
-              >
-                <span className="flex items-center justify-end gap-0.5">
-                  Harga
-                  {sortKey === 'price' && (sortDir === 'asc' ? <CaretUp className="w-3 h-3" /> : <CaretDown className="w-3 h-3" />)}
-                </span>
-              </th>
-              <th
-                className="px-3 py-2 text-[10px] font-semibold text-neutral-500 uppercase tracking-wider text-center cursor-pointer hover:text-neutral-700 select-none border-r border-neutral-200"
-                onClick={() => toggleSort('stock')}
-              >
-                <span className="flex items-center justify-center gap-0.5">
-                  Stok
-                  {sortKey === 'stock' && (sortDir === 'asc' ? <CaretUp className="w-3 h-3" /> : <CaretDown className="w-3 h-3" />)}
-                </span>
-              </th>
-              <th className="px-3 py-2 text-[10px] font-semibold text-neutral-500 uppercase tracking-wider text-center w-20">Aksi</th>
-            </tr>
-          </thead>
+        {loading && (
+          <div className="flex items-center justify-center py-8 text-neutral-400">
+            <Spinner className="w-5 h-5 animate-spin mr-2" />
+            <span className="text-[13px]">Mencari…</span>
+          </div>
+        )}
 
-          <tbody>
-            {filtered.map((product, idx) => {
-              const isHighlighted = highlightedIndex === idx;
-              const isAdded = addedId === product.id;
-              const rowClass = getRowClass(isHighlighted, isAdded);
+        {!loading && products.length === 0 && !search.trim() && (
+          <div className="flex flex-col items-center justify-center h-64 text-neutral-400">
+            <MagnifyingGlass className="w-12 h-12 mb-3 opacity-20" />
+            <p className="text-[13px] font-medium">Cari produk</p>
+            <p className="text-[11px] mt-1">Ketik nama produk atau scan barcode untuk memulai</p>
+          </div>
+        )}
 
-              return (
-                <tr
-                  key={product.id}
-                  onClick={() => handleAdd(product)}
-                  className={cn('border-b border-neutral-200 cursor-pointer transition-colors', rowClass)}
-                  onMouseEnter={() => setHighlightedIndex(idx)}
-                  onMouseLeave={() => setHighlightedIndex(-1)}
-                >
-                  <td className="px-3 py-1 text-[11px] text-neutral-400 tabular-nums border-r border-neutral-200">{idx + 1}</td>
-                  <td className="px-3 py-1 text-[11px] text-neutral-500 font-mono border-r border-neutral-200">
-                    {product.barcode || <span className="text-neutral-300">—</span>}
-                  </td>
-                  <td className="px-3 py-1 border-r border-neutral-200">
-                    <p className="text-[12px] font-medium text-neutral-800 truncate max-w-[240px]">{product.name}</p>
-                    <p className="text-[10px] text-neutral-400">{product.category}</p>
-                  </td>
-                  <td className="px-3 py-1 text-[12px] font-semibold text-indigo-600 text-right tabular-nums border-r border-neutral-200">
-                    Rp{product.price.toLocaleString('id-ID')}
-                  </td>
-                  <td className={cn(
-                    'px-3 py-1 text-[12px] text-center tabular-nums border-r border-neutral-200',
-                    product.stock <= 5 ? 'text-red-500 font-semibold' : product.stock <= 20 ? 'text-amber-500' : 'text-neutral-600'
-                  )}>
-                    {product.stock}
-                  </td>
-                  <td className="px-3 py-1 text-center">
-                    <Button
-                      size="icon-xs"
-                      onClick={(e) => { e.stopPropagation(); handleAdd(product); }}
-                      className={cn(
-                        'rounded-md',
-                        isAdded ? 'bg-emerald-500 text-white' : 'bg-indigo-600 text-white hover:bg-indigo-700 active:bg-indigo-800'
-                      )}
-                      title="Tambah ke keranjang"
-                    >
-                      <Plus weight="bold"  />
-                    </Button>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-
-        {filtered.length === 0 && (
+        {!loading && products.length === 0 && search.trim() && (
           <div className="flex flex-col items-center justify-center h-64 text-neutral-400">
             <MagnifyingGlass className="w-10 h-10 mb-3 opacity-30" />
             <p className="text-[13px] font-medium">Produk tidak ditemukan</p>
-            <p className="text-[11px] mt-1">Coba kata kunci lain atau ubah kategori</p>
+            <p className="text-[11px] mt-1">Coba kata kunci lain</p>
           </div>
         )}
-      </div>
 
-      {/* ── Footer ───────────────────────────────────────────────────────────── */}
-      <div className="shrink-0 h-7 flex items-center justify-between px-3 border-t border-neutral-200 bg-white text-[10px] text-neutral-500">
-        <span>{filtered.length} produk ditemukan</span>
-        <span className="flex items-center gap-3">
-          <span>↑↓ navigasi</span>
-          <span>Enter tambah ke keranjang</span>
-        </span>
+        {!loading && products.length > 0 && (
+          <>
+            <table className="w-full text-left border-collapse">
+              <thead className="sticky top-0 z-10">
+                <tr className="bg-neutral-50 border-b-2 border-neutral-300">
+                  <th className="px-3 py-2 text-[10px] font-semibold text-neutral-500 uppercase tracking-wider w-10 border-r border-neutral-200">No</th>
+                  <th
+                    className="px-3 py-2 text-[10px] font-semibold text-neutral-500 uppercase tracking-wider cursor-pointer hover:text-neutral-700 select-none border-r border-neutral-200"
+                    onClick={() => toggleSort('barcode')}
+                  >
+                    <span className="flex items-center gap-0.5">
+                      <Barcode className="w-3 h-3" />
+                      Kode
+                      {sortKey === 'barcode' && (sortDir === 'asc' ? <CaretUp className="w-3 h-3" /> : <CaretDown className="w-3 h-3" />)}
+                    </span>
+                  </th>
+                  <th
+                    className="px-3 py-2 text-[10px] font-semibold text-neutral-500 uppercase tracking-wider cursor-pointer hover:text-neutral-700 select-none border-r border-neutral-200"
+                    onClick={() => toggleSort('name')}
+                  >
+                    <span className="flex items-center gap-0.5">
+                      <Tag className="w-3 h-3" />
+                      Nama Produk
+                      {sortKey === 'name' && (sortDir === 'asc' ? <CaretUp className="w-3 h-3" /> : <CaretDown className="w-3 h-3" />)}
+                    </span>
+                  </th>
+                  <th
+                    className="px-3 py-2 text-[10px] font-semibold text-neutral-500 uppercase tracking-wider text-right cursor-pointer hover:text-neutral-700 select-none border-r border-neutral-200"
+                    onClick={() => toggleSort('price')}
+                  >
+                    <span className="flex items-center justify-end gap-0.5">
+                      Harga
+                      {sortKey === 'price' && (sortDir === 'asc' ? <CaretUp className="w-3 h-3" /> : <CaretDown className="w-3 h-3" />)}
+                    </span>
+                  </th>
+                  <th
+                    className="px-3 py-2 text-[10px] font-semibold text-neutral-500 uppercase tracking-wider text-center cursor-pointer hover:text-neutral-700 select-none border-r border-neutral-200"
+                    onClick={() => toggleSort('stock')}
+                  >
+                    <span className="flex items-center justify-center gap-0.5">
+                      Stok
+                      {sortKey === 'stock' && (sortDir === 'asc' ? <CaretUp className="w-3 h-3" /> : <CaretDown className="w-3 h-3" />)}
+                    </span>
+                  </th>
+                  <th className="px-3 py-2 text-[10px] font-semibold text-neutral-500 uppercase tracking-wider text-center w-20">Aksi</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {filtered.map((product, idx) => {
+                  const isHighlighted = highlightedIndex === idx;
+                  const isAdded = addedId === product.id;
+                  const rowClass = getRowClass(isHighlighted, isAdded);
+
+                  return (
+                    <tr
+                      key={product.id}
+                      onClick={() => handleAdd(product)}
+                      className={cn('border-b border-neutral-200 cursor-pointer transition-colors', rowClass)}
+                      onMouseEnter={() => setHighlightedIndex(idx)}
+                      onMouseLeave={() => setHighlightedIndex(-1)}
+                    >
+                      <td className="px-3 py-1 text-[11px] text-neutral-400 tabular-nums border-r border-neutral-200">{idx + 1}</td>
+                      <td className="px-3 py-1 text-[11px] text-neutral-500 font-mono border-r border-neutral-200">
+                        {product.barcode || <span className="text-neutral-300">—</span>}
+                      </td>
+                      <td className="px-3 py-1 border-r border-neutral-200">
+                        <p className="text-[12px] font-medium text-neutral-800 truncate max-w-[240px]">{product.name}</p>
+                        <p className="text-[10px] text-neutral-400">{product.category}</p>
+                      </td>
+                      <td className="px-3 py-1 text-[12px] font-semibold text-indigo-600 text-right tabular-nums border-r border-neutral-200">
+                        Rp{product.price.toLocaleString('id-ID')}
+                      </td>
+                      <td className={cn(
+                        'px-3 py-1 text-[12px] text-center tabular-nums border-r border-neutral-200',
+                        product.stock <= 5 ? 'text-red-500 font-semibold' : product.stock <= 20 ? 'text-amber-500' : 'text-neutral-600'
+                      )}>
+                        {product.stock}
+                      </td>
+                      <td className="px-3 py-1 text-center">
+                        <Button
+                          size="icon-xs"
+                          onClick={(e) => { e.stopPropagation(); handleAdd(product); }}
+                          className={cn(
+                            'rounded-md',
+                            isAdded ? 'bg-emerald-500 text-white' : 'bg-indigo-600 text-white hover:bg-indigo-700 active:bg-indigo-800'
+                          )}
+                          title="Tambah ke keranjang"
+                        >
+                          <Plus weight="bold" />
+                        </Button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+
+            {/* ── Footer ──────────────────────────────────────────────── */}
+            <div className="shrink-0 h-7 flex items-center justify-between px-3 border-t border-neutral-200 bg-white text-[10px] text-neutral-500">
+              <span>{filtered.length} produk ditemukan</span>
+              <span className="flex items-center gap-3">
+                <span>↑↓ navigasi</span>
+                <span>Enter tambah ke keranjang</span>
+              </span>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
