@@ -90,10 +90,7 @@ export const useCartStore = create<CartState>((set, get) => ({
   },
 
   updateQuantity: (productId: string, unit: string, quantity: number) => {
-    if (quantity <= 0) {
-      get().removeItem(productId, unit);
-      return;
-    }
+    if (quantity < 0) quantity = 0;
     const items = get().items.map((i) =>
       i.productId === productId && i.unit === unit
         ? { ...i, quantity, total: quantity * i.price - i.discount }

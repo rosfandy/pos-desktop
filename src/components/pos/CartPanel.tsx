@@ -1,7 +1,7 @@
 import { useCartStore } from '@/stores/cartStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Trash, CurrencyDollar, Percent, Receipt, ShoppingCart } from 'phosphor-react';
+import { Trash, Minus, Plus, CurrencyDollar, Percent, Receipt, ShoppingCart } from 'phosphor-react';
 import { useEffect, useCallback, useState } from 'react';
 
 interface CartPanelProps {
@@ -97,8 +97,16 @@ export default function CartPanel({ onPay }: CartPanelProps) {
 
                 {/* Qty controls + discount + delete */}
                 <div className="flex items-center gap-2 mt-2">
-                  {/* Qty input (pure input, decimal by "." or ",") */}
-                  <div className="flex-1 max-w-[72px]">
+                  {/* Qty: minus + input + plus */}
+                  <div className="flex items-center bg-neutral-100 rounded-md overflow-hidden">
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      onClick={() => updateQuantity(item.productId, item.unit, item.quantity - 1)}
+                      className="text-neutral-600 hover:bg-neutral-200 shrink-0"
+                    >
+                      <Minus weight="bold" className="w-3 h-3" />
+                    </Button>
                     <Input
                       type="text"
                       inputMode="decimal"
@@ -113,10 +121,7 @@ export default function CartPanel({ onPay }: CartPanelProps) {
                           updateQuantity(item.productId, item.unit, val);
                         }
                       }}
-                      onFocus={(e) => {
-                        // Select all text on focus for quick replacement
-                        e.target.select();
-                      }}
+                      onFocus={(e) => e.target.select()}
                       onBlur={() => {
                         const key = `${item.productId}-${item.unit}`;
                         setQtyRaw((prev) => {
@@ -125,8 +130,16 @@ export default function CartPanel({ onPay }: CartPanelProps) {
                           return next;
                         });
                       }}
-                      className="w-full h-7 text-center text-[12px] font-semibold tabular-nums border border-neutral-300 rounded-md bg-white focus:ring-1 focus:ring-indigo-500"
+                      className="w-12 h-7 text-center text-[12px] font-semibold tabular-nums border-0 rounded-none bg-transparent focus:bg-white focus:ring-1 focus:ring-indigo-500 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                     />
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      onClick={() => updateQuantity(item.productId, item.unit, item.quantity + 1)}
+                      className="text-neutral-600 hover:bg-neutral-200 shrink-0"
+                    >
+                      <Plus weight="bold" className="w-3 h-3" />
+                    </Button>
                   </div>
 
                   {/* Item discount */}
