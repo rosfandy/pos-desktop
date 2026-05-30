@@ -44,6 +44,7 @@ export default function POSTerminalPage() {
   const [_paymentCustomerId, setPaymentCustomerId] = useState<string | null>(null);
   const [paymentCustomerName, setPaymentCustomerName] = useState<string | null>(null);
   const paymentCustomerRef = useRef<{ id: string; name: string } | null>(null);
+  const customerReceiptRef = useRef<{ name: string; tier: string; points: number; earned: number } | null>(null);
 
   const navigate = useNavigate();
 
@@ -72,6 +73,7 @@ export default function POSTerminalPage() {
     setPaymentCustomerId(customer.id);
     setPaymentCustomerName(customer.name);
     paymentCustomerRef.current = { id: customer.id, name: customer.name };
+    customerReceiptRef.current = null; // reset data receipt sebelumnya
     showToast(`Pelanggan: ${customer.name}`, 'info');
   }, [showToast]);
 
@@ -150,7 +152,8 @@ export default function POSTerminalPage() {
   }, [lastTransaction, print, testPrint, showToast]);
 
   // ── Build receipt data ──────────────────────────────────────────────────────
-  const buildReceiptData = useCallback((tx: Transaction): ReceiptData => {
+  const buildReceiptData = useCallback((tx: Transaction, custInfo?: { name: string; tier: string; points: number; earned: number } | null): ReceiptData => {
+    const ci = custInfo ?? customerReceiptRef.current;
     return {
       storeName: settings.storeName || 'Toko Saya',
       storeAddress: settings.storeAddress || '',
@@ -177,6 +180,10 @@ export default function POSTerminalPage() {
       total: tx.total,
       amountPaid: tx.amountPaid,
       change: tx.change,
+      customerName: ci?.name ?? tx.customerName ?? undefined,
+      customerTier: ci?.tier,
+      customerPoints: ci?.points,
+      pointsEarned: ci?.earned,
     };
   }, [settings, user]);
 
@@ -219,8 +226,17 @@ export default function POSTerminalPage() {
       if (custNow) {
         try {
           const recordRes = await window.api.customerRecordTransaction(custNow.id, tx.total);
-          if (recordRes.ok && recordRes.data?.earnedPoints > 0) {
-            showToast(`+${recordRes.data.earnedPoints.toLocaleString('id-ID')} poin untuk ${custNow.name}`, 'success');
+          if (recordRes.ok && recordRes.data) {
+            const { customer, earnedPoints } = recordRes.data;
+            customerReceiptRef.current = {
+              name: custNow.name,
+              tier: customer.tier || 'Bronze',
+              points: customer.points || 0,
+              earned: earnedPoints,
+            };
+            if (earnedPoints > 0) {
+              showToast(`+${earnedPoints.toLocaleString('id-ID')} poin untuk ${custNow.name}`, 'success');
+            }
           }
         } catch {
           // silent fail
@@ -238,6 +254,7 @@ export default function POSTerminalPage() {
     setPaymentCustomerId(null);
     setPaymentCustomerName(null);
     paymentCustomerRef.current = null;
+    // customerReceiptRef tetap diisi sampai preview ditutup atau customer baru dipilih
   }, [cartStore, user, currentShift, shiftLoading, printReceiptForTransaction, showToast, setShiftRequiredOpen]);
 
   // ── Handle print from ReceiptPreview ─────────────────────────────────────────
@@ -414,6 +431,11 @@ export default function POSTerminalPage() {
               transaction={{
                 invoiceNumber: lastTransaction.invoiceNumber,
                 createdAt: new Date(lastTransaction.createdAt).getTime(),
+                cashierName: lastTransaction.userName || undefined,
+                customerName: lastTransaction.customerName ?? undefined,
+                customerTier: customerReceiptRef.current?.tier,
+                customerPoints: customerReceiptRef.current?.points,
+                pointsEarned: customerReceiptRef.current?.earned,
                 items: lastTransaction.items?.map((item) => ({
                   productName: item.productName,
                   quantity: item.quantity,

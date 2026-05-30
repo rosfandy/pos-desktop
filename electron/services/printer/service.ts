@@ -1,18 +1,18 @@
-﻿import { tmpdir } from 'os';
+import { tmpdir } from 'os';
 import { join } from 'path';
 import { writeFileSync, unlinkSync } from 'fs';
 import { spawn } from 'child_process';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const { ThermalPrinter, PrinterTypes, CharacterSet, BreakLine } = require('node-thermal-printer');
 
-// â”€â”€â”€ Error Codes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Error Codes ──────────────────────────────────────────────────────────────
 
 export const PRINT_ERRORS = {
   PRINTER_NOT_FOUND: 'PRINT_001',
   PRINT_FAILED: 'PRINT_002',
 } as const;
 
-// â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface ReceiptItem {
   name: string;
@@ -43,9 +43,15 @@ export interface ReceiptData {
   total: number;
   amountPaid: number;
   change: number;
+
+  // Customer / loyalty info
+  customerName?: string;
+  customerTier?: string;
+  customerPoints?: number;       // saldo poin saat ini
+  pointsEarned?: number;         // poin yg didapat dari transaksi ini
 }
 
-// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function fmtCurrency(cents: number): string {
   return `Rp${(cents / 100).toLocaleString('id-ID')}`;
@@ -59,7 +65,7 @@ function padRight(s: string, width: number): string {
   return s.slice(0, width).padEnd(width);
 }
 
-// â”€â”€â”€ ESC/POS builder via node-thermal-printer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── ESC/POS builder via node-thermal-printer ─────────────────────────────────
 // Lebar 32 char untuk 58mm | 42 char untuk 80mm
 
 const LINE_WIDTH = 32;
@@ -67,7 +73,7 @@ const LINE_WIDTH = 32;
 function buildEscposBuffer(data: ReceiptData): Buffer {
   const printer = new ThermalPrinter({
     type: PrinterTypes.EPSON,
-    interface: 'file:/dev/null',   // interface dummy â€” kita ambil buffer-nya saja
+    interface: 'file:/dev/null',   // interface dummy — kita ambil buffer-nya saja
     width: LINE_WIDTH,
     characterSet: CharacterSet.PC852_LATIN2,
     breakLine: BreakLine.WORD,
@@ -85,7 +91,7 @@ function buildEscposBuffer(data: ReceiptData): Buffer {
     hour: '2-digit', minute: '2-digit',
   });
 
-  // â”€â”€ HEADER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── HEADER ──────────────────────────────────────────────────────────────────
   printer.alignCenter();
   printer.setTextDoubleHeight();
   printer.bold(true);
@@ -103,7 +109,7 @@ function buildEscposBuffer(data: ReceiptData): Buffer {
   printer.alignLeft();
   printer.drawLine();
 
-  // â”€â”€ META â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── META ────────────────────────────────────────────────────────────────────
   const labelW = 12;
   const metaRow = (label: string, value: string) => {
     printer.println(`${padRight(label, labelW)}: ${value}`);
@@ -115,7 +121,29 @@ function buildEscposBuffer(data: ReceiptData): Buffer {
 
   printer.drawLine();
 
-  // â”€â”€ ITEMS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── PEMBELI & POIN ──────────────────────────────────────────────────────────
+  if (data.customerName) {
+    printer.bold(true);
+    printer.newLine();
+    printer.println('PEMBELI');
+    printer.bold(false);
+    printer.println(data.customerName);
+    if (data.customerTier) {
+      printer.print('Level  : ');
+      printer.println(data.customerTier);
+    }
+    if (data.pointsEarned !== undefined && data.pointsEarned > 0) {
+      printer.print('Poin   : +');
+      printer.println(String(data.pointsEarned));
+    }
+    if (data.customerPoints !== undefined) {
+      printer.print('Saldo  : ');
+      printer.println(String(data.customerPoints));
+    }
+    printer.newLine();
+  }
+
+  // ── ITEMS ────────────────────────────────────────────────────────────────────
   // Header item: "PRODUK           TOTAL"
   const itemTotalW = 10;
   const itemNameW  = LINE_WIDTH - itemTotalW - 1;
@@ -129,7 +157,7 @@ function buildEscposBuffer(data: ReceiptData): Buffer {
     // baris 1: nama produk (kiri) + total (kanan)
     const name = item.name.slice(0, itemNameW);
     printer.println(`${padRight(name, itemNameW)} ${padLeft(totalStr, itemTotalW)}`);
-    // baris 2: harga Ã— qty (indent 2)
+    // baris 2: harga × qty (indent 2)
     const detail = `  ${fmtCurrency(item.price)} x ${item.quantity} ${item.unit}`;
     printer.println(detail);
     // baris 3: diskon per-item jika ada
@@ -141,7 +169,7 @@ function buildEscposBuffer(data: ReceiptData): Buffer {
 
   printer.drawLine();
 
-  // â”€â”€ SUMMARY â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── SUMMARY ──────────────────────────────────────────────────────────────────
   const sumValW  = 12;
   const sumLblW  = LINE_WIDTH - sumValW - 1;
 
@@ -158,7 +186,7 @@ function buildEscposBuffer(data: ReceiptData): Buffer {
     sumRow('Pajak', fmtCurrency(data.tax));
   }
 
-  // TOTAL â€” double height
+  // TOTAL — double height
   printer.drawLine();
   printer.bold(true);
   printer.setTextDoubleHeight();
@@ -172,7 +200,7 @@ function buildEscposBuffer(data: ReceiptData): Buffer {
     sumRow('Kembali', fmtCurrency(data.change));
   }
 
-  // â”€â”€ FOOTER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── FOOTER ──────────────────────────────────────────────────────────────────
   printer.drawLine();
   printer.alignCenter();
   printer.bold(true);
@@ -192,7 +220,7 @@ function buildEscposBuffer(data: ReceiptData): Buffer {
   return printer.getBuffer() as Buffer;
 }
 
-// â”€â”€â”€ Send ESC/POS buffer to Windows printer via PowerShell RAW â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Send ESC/POS buffer to Windows printer via PowerShell RAW ────────────────
 
 function sendRawToPrinter(buffer: Buffer, printerName: string): Promise<void> {
   return new Promise((resolve, reject) => {
@@ -302,7 +330,7 @@ function buildTestBuffer(): Buffer {
   return printer.getBuffer() as Buffer;
 }
 
-// â”€â”€â”€ Service â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Service ──────────────────────────────────────────────────────────────────
 
 export async function printReceipt(data: ReceiptData, printerName?: string): Promise<{ ok: boolean; error?: { code: string; message: string } }> {
   if (!printerName) {
@@ -339,7 +367,7 @@ export async function openCashDrawer(printerName?: string): Promise<{ ok: boolea
 
   try {
     // ESC/POS command for cash drawer: ESC p pin onTime offTime
-    // pin 2 (default) â†’ byte 0, pin 5 â†’ byte 1
+    // pin 2 (default) → byte 0, pin 5 → byte 1
     const pin: number = 2;
     const onTime = 25;  // 25ms / 2 = 12.5ms
     const offTime = 250; // 250ms / 2 = 125ms

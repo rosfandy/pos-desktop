@@ -11,6 +11,9 @@ interface ReceiptPreviewProps {
     createdAt: number;
     cashierName?: string;
     customerName?: string;
+    customerTier?: string;
+    customerPoints?: number;
+    pointsEarned?: number;
     items: Array<{
       productName: string;
       quantity: number;
@@ -50,6 +53,9 @@ export default function ReceiptPreview({ transaction, className, onPrint }: Rece
         createdAt: transaction.createdAt,
         cashierName: transaction.cashierName,
         customerName: transaction.customerName,
+        customerTier: transaction.customerTier,
+        customerPoints: transaction.customerPoints,
+        pointsEarned: transaction.pointsEarned,
         paymentMethod: transaction.paymentMethod,
         status: transaction.status,
         items: transaction.items.map((i) => ({

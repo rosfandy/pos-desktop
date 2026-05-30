@@ -79,6 +79,21 @@ export function TransactionDetailModal({ open, onClose, transactionId }: Transac
     setPrintStatus('idle');
 
     try {
+      // Fetch customer info (points, tier) if available
+      let custInfo: { name: string; tier: string; points: number; earned: number } | null = null;
+      if (tx.customerId) {
+        const custRes = await window.api.customerGet(tx.customerId);
+        if (custRes.ok && custRes.data) {
+          const c = custRes.data;
+          custInfo = {
+            name: c.name,
+            tier: c.tier || 'Bronze',
+            points: c.points || 0,
+            earned: 0, // tidak diketahui untuk cetak ulang
+          };
+        }
+      }
+
       const receiptData: ReceiptData = {
         storeName: storeName || 'Toko Saya',
         storeAddress: storeAddress || '',
@@ -105,6 +120,10 @@ export function TransactionDetailModal({ open, onClose, transactionId }: Transac
         total: tx.total,
         amountPaid: tx.amountPaid,
         change: tx.change,
+        customerName: custInfo?.name ?? tx.customerName ?? undefined,
+        customerTier: custInfo?.tier,
+        customerPoints: custInfo?.points,
+        pointsEarned: custInfo?.earned,
       };
 
       const result = await window.api.printerPrint(receiptData);

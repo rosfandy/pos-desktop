@@ -34,6 +34,9 @@ export interface ReceiptCardData {
   createdAt: number;   // timestamp ms
   cashierName?: string;
   customerName?: string;
+  customerTier?: string;
+  customerPoints?: number;
+  pointsEarned?: number;
   paymentMethod: string;
   status?: 'completed' | 'voided' | 'refunded' | 'held';
   // items + totals
@@ -116,6 +119,13 @@ export function ReceiptCard({ data, className }: ReceiptCardProps) {
           <MetaRow label="Tanggal"     value={dateStr} />
           {data.cashierName && <MetaRow label="Kasir" value={data.cashierName} />}
           {data.customerName && <MetaRow label="Pembeli" value={data.customerName} />}
+          {data.pointsEarned !== undefined && data.pointsEarned > 0 && (
+            <MetaRow label="Poin Didapat" value={`+${data.pointsEarned.toLocaleString('id-ID')}`} />
+          )}
+          {data.customerTier && <MetaRow label="Level" value={data.customerTier} />}
+          {data.customerPoints !== undefined && (
+            <MetaRow label="Saldo Poin" value={data.customerPoints.toLocaleString('id-ID')} />
+          )}
           <div className="flex gap-1 items-center">
             <span className="w-28 shrink-0 text-neutral-400">Pembayaran</span>
             <span className="text-neutral-400">:</span>
