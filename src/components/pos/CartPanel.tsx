@@ -1,8 +1,8 @@
 import { useCartStore } from '@/stores/cartStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Trash, Minus, Plus, CurrencyDollar, Percent, Receipt, ShoppingCart } from 'phosphor-react';
-import { useEffect, useCallback } from 'react';
+import { Trash, CurrencyDollar, Percent, Receipt, ShoppingCart } from 'phosphor-react';
+import { useEffect, useCallback, useState } from 'react';
 
 interface CartPanelProps {
   onPay?: () => void;
@@ -16,6 +16,9 @@ export default function CartPanel({ onPay }: CartPanelProps) {
   } = useCartStore();
 
   const subtotal = items.reduce((s, i) => s + i.quantity * i.price, 0);
+
+  // ── Raw qty text input (allows typing "." and "," intermediate states) ──
+  const [qtyRaw, setQtyRaw] = useState<Record<string, string>>({});
 
   // ── Listen for focus-cart-item event (dispatched after Enter from ProductTable) ──
   const handleFocusCartItem = useCallback((e: Event) => {
@@ -94,37 +97,36 @@ export default function CartPanel({ onPay }: CartPanelProps) {
 
                 {/* Qty controls + discount + delete */}
                 <div className="flex items-center gap-2 mt-2">
-                  {/* Qty buttons + input */}
-                  <div className="flex items-center bg-neutral-100 rounded-md overflow-hidden">
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      onClick={() => updateQuantity(item.productId, item.unit, Math.max(0, item.quantity - 1))}
-                      className="text-neutral-600 hover:bg-neutral-200 shrink-0"
-                    >
-                      <Minus weight="bold" className="w-3 h-3" />
-                    </Button>
+                  {/* Qty input (pure input, decimal by "." or ",") */}
+                  <div className="flex-1 max-w-[72px]">
                     <Input
-                      type="number"
-                      min={0}
-                      step="any"
-                      value={item.quantity}
+                      type="text"
+                      inputMode="decimal"
+                      value={qtyRaw[`${item.productId}-${item.unit}`] ?? String(item.quantity)}
                       onChange={(e) => {
-                        const val = parseFloat(e.target.value);
+                        const key = `${item.productId}-${item.unit}`;
+                        const raw = e.target.value;
+                        setQtyRaw((prev) => ({ ...prev, [key]: raw }));
+                        const normalized = raw.replace(',', '.');
+                        const val = parseFloat(normalized);
                         if (!isNaN(val) && val >= 0) {
                           updateQuantity(item.productId, item.unit, val);
                         }
                       }}
-                      className="w-14 h-7 text-center text-[12px] font-semibold tabular-nums border-0 rounded-none bg-transparent focus:bg-white focus:ring-1 focus:ring-indigo-500 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                      onFocus={(e) => {
+                        // Select all text on focus for quick replacement
+                        e.target.select();
+                      }}
+                      onBlur={() => {
+                        const key = `${item.productId}-${item.unit}`;
+                        setQtyRaw((prev) => {
+                          const next = { ...prev };
+                          delete next[key];
+                          return next;
+                        });
+                      }}
+                      className="w-full h-7 text-center text-[12px] font-semibold tabular-nums border border-neutral-300 rounded-md bg-white focus:ring-1 focus:ring-indigo-500"
                     />
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      onClick={() => updateQuantity(item.productId, item.unit, item.quantity + 1)}
-                      className="text-neutral-600 hover:bg-neutral-200 shrink-0"
-                    >
-                      <Plus weight="bold" className="w-3 h-3" />
-                    </Button>
                   </div>
 
                   {/* Item discount */}
