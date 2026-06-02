@@ -326,6 +326,7 @@ export default function POSTerminalPage() {
       discount: 0,
       total: Math.round(product.price * 100),
     });
+    setSearchQuery(''); // kosongkan input search
   }, [cartStore]);
 
   // ── Cash out success ──────────────────────────────────────────────────────
