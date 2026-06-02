@@ -530,7 +530,7 @@ export default function ProductForm({ open, onOpenChange, productId }: ProductFo
           </div>
         </div>
 
-        <DialogFooter className="px-6 py-4 border-t border-neutral-200 flex items-center justify-between">
+        <DialogFooter className="justify-between">
 
             <div className="flex items-center gap-2">
               <Button

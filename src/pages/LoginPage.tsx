@@ -44,7 +44,7 @@ export default function LoginPage() {
 
   return (
     <div className="flex h-screen items-center justify-center bg-neutral-100">
-      <div className="w-[340px] bg-white border border-neutral-200 shadow-sm">
+      <div className="w-[340px] bg-card text-card-foreground border border-border shadow-sm">
         {/* Header */}
         <div className="flex items-center gap-2.5 px-5 pt-5 pb-4 border-b border-neutral-100">
           <div className="w-7 h-7 rounded bg-indigo-600 flex items-center justify-center shrink-0">

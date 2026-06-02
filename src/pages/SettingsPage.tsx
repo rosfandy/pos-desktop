@@ -9,7 +9,7 @@ import type { PrinterInfo } from '@/lib/api';
 import {
   Storefront, MapPin, Phone, Percent, CheckCircle, Warning, FloppyDisk,
   WarningCircle, Printer, Package, TextT, ArrowClockwise,
-  SidebarSimple, Receipt, Shield,
+  SidebarSimple, Receipt, Shield, Sun, Moon,
 } from 'phosphor-react';
 import {
   PosPageColumn, PosToolbar, PosToolbarTitle,
@@ -17,6 +17,7 @@ import {
   PosPanel, PosPanelBody, PosButton, PosAlert, PosForm, PosFormSection,
   PosLabel, PosHint,
 } from '@/components/ui/pos-ui';
+import { useThemeStore } from '@/stores/themeStore';
 
 // ── Tab definitions ───────────────────────────────────────────────────────────
 
@@ -84,7 +85,7 @@ function GeneralSection({ form, setForm }: { form: any; setForm: any }) {
             onChange={(e) => setForm((f: any) => ({ ...f, storeAddress: e.target.value }))}
             placeholder="Contoh: Jl. Sudirman No. 123"
             rows={3}
-            className="pl-10 text-[12px] bg-white border border-neutral-300 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 resize-none"
+            className="pl-10 text-[12px] bg-background text-foreground border border-input shadow-sm focus:border-primary focus:ring-1 focus:ring-primary resize-none"
           />
         </div>
       </div>
@@ -200,7 +201,7 @@ function PrintSection({ form, setForm, printers, printersLoading, fetchPrinters 
           onChange={(e) => setForm((f: any) => ({ ...f, receiptHeader: e.target.value }))}
           placeholder="Terima Kasih"
           rows={2}
-          className="text-[12px] bg-white border border-neutral-300 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 resize-none"
+          className="text-[12px] bg-background text-foreground border border-input shadow-sm focus:border-primary focus:ring-1 focus:ring-primary resize-none"
         />
         <PosHint>Teks yang muncul di bagian atas struk.</PosHint>
       </div>
@@ -213,7 +214,7 @@ function PrintSection({ form, setForm, printers, printersLoading, fetchPrinters 
           onChange={(e) => setForm((f: any) => ({ ...f, receiptFooter: e.target.value }))}
           placeholder="Barang yang sudah dibeli tidak dapat dikembalikan"
           rows={2}
-          className="text-[12px] bg-white border border-neutral-300 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 resize-none"
+          className="text-[12px] bg-background text-foreground border border-input shadow-sm focus:border-primary focus:ring-1 focus:ring-primary resize-none"
         />
         <PosHint>Teks yang muncul di bagian bawah struk.</PosHint>
       </div>
@@ -278,6 +279,16 @@ function TampilanSection({ form, setForm }: { form: any; setForm: any }) {
     { value: 'large',  label: 'Besar' },
   ];
 
+  const themes: { value: 'light' | 'dark'; label: string; Icon: React.ElementType }[] = [
+    { value: 'light', label: 'Terang', Icon: Sun },
+    { value: 'dark',  label: 'Gelap',  Icon: Moon },
+  ];
+
+  const { theme, setTheme } = useThemeStore();
+  const handleThemeChange = (value: 'light' | 'dark') => {
+    void setTheme(value);
+  };
+
   return (
     <PosForm>
       <PosFormSection className="flex items-center gap-2">
@@ -286,6 +297,33 @@ function TampilanSection({ form, setForm }: { form: any; setForm: any }) {
       </PosFormSection>
 
       <div className="space-y-2">
+        <PosLabel>Mode Tampilan</PosLabel>
+        <PosHint>Pilih mode terang atau gelap. Perubahan langsung diterapkan.</PosHint>
+        <div className="flex gap-2">
+          {themes.map((t) => {
+            const active = theme === t.value;
+            const Icon = t.Icon;
+            return (
+              <button
+                key={t.value}
+                type="button"
+                onClick={() => handleThemeChange(t.value)}
+                className={cn(
+                  'flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium border transition-colors',
+                  active
+                    ? 'bg-indigo-50 border-indigo-300 text-indigo-700'
+                    : 'bg-background border-input text-foreground hover:bg-muted'
+                )}
+              >
+                <Icon weight={active ? 'fill' : 'regular'} className="w-3.5 h-3.5" />
+                {t.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="space-y-2 pt-2 border-t border-neutral-100">
         <PosLabel>Ukuran Huruf</PosLabel>
         <PosHint>Pilih ukuran huruf keseluruhan aplikasi.</PosHint>
         <div className="flex gap-2">
@@ -298,7 +336,7 @@ function TampilanSection({ form, setForm }: { form: any; setForm: any }) {
                 'flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium border transition-colors',
                 form.fontSize === s.value
                   ? 'bg-indigo-50 border-indigo-300 text-indigo-700'
-                  : 'bg-white border-neutral-300 text-neutral-600 hover:bg-neutral-50'
+                    : 'bg-background border-input text-foreground hover:bg-muted'
               )}
             >
               <TextT className="w-3.5 h-3.5" />
@@ -441,7 +479,7 @@ export default function SettingsPage() {
             </PosPanelBody>
 
             {/* Save bar */}
-            <div className="h-10 shrink-0 flex items-center justify-between px-4 border-t border-neutral-200 bg-white">
+            <div className="h-10 shrink-0 flex items-center justify-between px-4 border-t border-border bg-card text-card-foreground">
               <span className={cn('text-[10px]', hasChanges ? 'text-amber-600 font-medium' : 'text-neutral-400')}>
                 {hasChanges ? '● Ada perubahan yang belum disimpan' : '○ Semua perubahan tersimpan'}
               </span>

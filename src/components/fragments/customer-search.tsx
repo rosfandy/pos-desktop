@@ -157,7 +157,7 @@ export default function CustomerSearch({ className, value, onQueryChange, onSele
       </div>
 
       {isOpen && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-neutral-200 rounded-md shadow-lg z-50 max-h-64 overflow-y-auto">
+        <div className="absolute top-full left-0 right-0 mt-1 bg-popover text-popover-foreground border border-border rounded-md shadow-lg z-50 max-h-64 overflow-y-auto">
           {isLoading && filtered.length === 0 ? (
             <div className="px-3 py-4 text-[12px] text-neutral-400 text-center">Memuat…</div>
           ) : filtered.length > 0 ? (

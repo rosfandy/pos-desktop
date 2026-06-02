@@ -17,7 +17,7 @@ function LiveClock() {
     return () => clearInterval(id);
   }, []);
   return (
-    <span className="text-[11px] text-neutral-500 tabular-nums font-mono">
+    <span className="text-[11px] text-muted-foreground tabular-nums font-mono">
       {time.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
     </span>
   );
@@ -32,27 +32,27 @@ export default function Toolbar({ sidebarCollapsed, onToggleSidebar }: ToolbarPr
   const segments = location.pathname.split('/').filter(Boolean);
 
   return (
-    <div className="h-9 shrink-0 flex items-center px-3 gap-3 bg-white border-b border-neutral-200 select-none">
+    <div className="h-9 shrink-0 flex items-center px-3 gap-3 bg-card text-card-foreground border-b border-border select-none">
       {/* Sidebar toggle */}
       <Button
         variant="ghost"
         size="icon-xs"
         onClick={onToggleSidebar}
-        className="text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 -ml-1"
+        className="text-muted-foreground hover:text-foreground hover:bg-muted -ml-1"
         title={sidebarCollapsed ? 'Perluas sidebar' : 'Ciutkan sidebar'}
       >
         <TextIndent className={cn('w-3.5 h-3.5 transition-transform duration-200', sidebarCollapsed && 'rotate-180')} />
       </Button>
 
       {/* Breadcrumb */}
-      <div className="flex items-center gap-1 text-[11px] text-neutral-500">
+      <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
         <House className="w-3 h-3" />
         {segments.length === 0 ? (
-          <span className="text-neutral-800 font-medium">Dashboard</span>
+          <span className="text-foreground font-medium">Dashboard</span>
         ) : (
           <>
             <CaretRight className="w-2.5 h-2.5" />
-            <span className="text-neutral-800 font-medium">{current?.label}</span>
+            <span className="text-foreground font-medium">{current?.label}</span>
           </>
         )}
       </div>

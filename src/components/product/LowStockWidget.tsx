@@ -141,7 +141,7 @@ export default function LowStockWidget({ className }: LowStockWidgetProps) {
 
       {/* Expanded dropdown */}
       {expanded && (
-        <div className="absolute left-0 top-full mt-1 w-80 bg-white border border-neutral-200 rounded-md shadow-lg z-50 overflow-hidden">
+        <div className="absolute left-0 top-full mt-1 w-80 bg-popover text-popover-foreground border border-border rounded-md shadow-lg z-50 overflow-hidden">
           {/* Header */}
           <div className="px-3 py-2 border-b border-neutral-100 flex items-center justify-between">
             <span className="text-[11px] font-semibold text-neutral-700">Produk Stok Rendah</span>

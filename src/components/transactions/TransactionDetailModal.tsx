@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils';
 import type { Transaction } from '@/lib/api';
 import type { ReceiptData } from '@/hooks/usePrinter';
 import { useSettingsStore } from '@/stores/settingsStore';
+import { useToast } from '@/hooks/use-toast';
 
 interface TransactionDetailModalProps {
   open: boolean;
@@ -43,6 +44,7 @@ export function TransactionDetailModal({ open, onClose, transactionId, receiptCu
   const [printStatus, setPrintStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [custInfo, setCustInfo] = useState<{ name: string; points: number; earned: number } | null>(null);
 
+  const { toast } = useToast();
   const settings = useSettingsStore();
   const { storeName, storeAddress, storePhone, receiptHeader, receiptFooter, receiptShowLogo, receiptShowTaxBreakdown, receiptShowQr, isLoading: settingsLoading, loadSettings } = settings;
 
@@ -74,7 +76,9 @@ export function TransactionDetailModal({ open, onClose, transactionId, receiptCu
           }
         }
       })
-      .catch(() => {})
+      .catch(() => {
+        toast({ title: 'Gagal memuat transaksi', variant: 'destructive' });
+      })
       .finally(() => setLoading(false));
   }, [open, transactionId]);
 
@@ -141,11 +145,11 @@ export function TransactionDetailModal({ open, onClose, transactionId, receiptCu
         setPrintStatus('success');
       } else {
         setPrintStatus('error');
-        console.error('[print]', result.error?.message);
+        toast({ description: 'Print gagal — cek printer', variant: 'destructive' });
       }
     } catch (err: any) {
       setPrintStatus('error');
-      console.error('[print]', err.message || 'Print gagal');
+      toast({ description: 'Print gagal — cek printer', variant: 'destructive' });
     } finally {
       setPrintLoading(false);
     }
@@ -155,7 +159,7 @@ export function TransactionDetailModal({ open, onClose, transactionId, receiptCu
     <Dialog open={open} onOpenChange={(v: boolean) => { if (!v) onClose(); }}>
       <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col p-0 gap-0" showCloseButton={false}>
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-200 bg-neutral-50 shrink-0">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-200 shrink-0">
           <div className="flex items-center gap-2">
             <DialogTitle className="text-[12px] font-semibold text-neutral-800">
               Detail Transaksi
@@ -200,7 +204,7 @@ export function TransactionDetailModal({ open, onClose, transactionId, receiptCu
 
           {!loading && tx && (
             /* ── Receipt card ─────────────────────────────────────────────── */
-            <div className="mx-auto max-w-sm bg-white shadow-sm rounded border border-neutral-200 font-mono text-[11px] text-neutral-800">
+            <div className="mx-auto max-w-sm bg-card text-card-foreground shadow-sm rounded border border-border font-mono text-[11px]">
 
               {/* ── HEADER ── */}
               <div className="px-5 pt-5 pb-3 text-center border-b border-dashed border-neutral-300">
@@ -374,7 +378,7 @@ export function TransactionDetailModal({ open, onClose, transactionId, receiptCu
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-2 px-4 py-3 border-t border-neutral-200 bg-neutral-50 shrink-0">
+        <div className="flex items-center justify-end gap-2 px-4 py-3 border-t border-neutral-200 shrink-0">
           <Button variant="outline" size="sm" onClick={onClose} className="text-[11px]">
             Tutup
           </Button>

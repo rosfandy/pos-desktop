@@ -12,7 +12,7 @@ function SelectTrigger({ className, ...props }: SelectPrimitive.Trigger.Props) {
     <SelectPrimitive.Trigger
       data-slot="select-trigger"
       className={cn(
-        'text-[12px]! flex h-8 w-full items-center justify-between rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50',
+        'text-[12px]! flex h-8 w-full items-center justify-between rounded-lg border border-input bg-background text-foreground px-2.5 py-1 text-sm transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50',
         className
       )}
       {...props}
@@ -55,7 +55,7 @@ function SelectContent({ className, ...props }: SelectPrimitive.Popup.Props) {
     <SelectPrimitive.Popup
       data-slot="select-content"
       className={cn(
-        'max-h-64 min-w-[8rem] overflow-hidden rounded-lg border bg-popover text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
+        'max-h-64 min-w-[8rem] overflow-hidden rounded-lg border border-border bg-popover text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
         className
       )}
       {...props}

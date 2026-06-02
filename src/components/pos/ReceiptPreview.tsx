@@ -102,14 +102,14 @@ export default function ReceiptPreview({ transaction, className, onPrint, onSkip
       };
 
   return (
-    <div className={cn('flex flex-col bg-white', className)}>
+    <div className={cn('flex flex-col bg-card text-card-foreground', className)}>
       {/* receipt area — full height minus bottom bar */}
       <div className="flex-1 overflow-y-auto bg-neutral-100 p-3">
         <ReceiptCard data={receiptData} />
       </div>
 
       {/* bottom action bar */}
-      <div className="shrink-0 flex items-center justify-between gap-3 px-4 py-3 border-t border-neutral-200 bg-white">
+      <div className="shrink-0 flex items-center justify-between gap-3 px-4 py-3 border-t border-border bg-card text-card-foreground">
         {/* Skip button */}
         {onSkip && (
           <Button

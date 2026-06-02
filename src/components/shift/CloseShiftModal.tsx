@@ -97,7 +97,7 @@ export default function CloseShiftModal({ open, onOpenChange, shift, onSuccess }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent showCloseButton={false} className="w-[380px] p-0 gap-0 sm:max-w-[380px] shadow-2xl bg-white">
+      <DialogContent showCloseButton={false} className="w-[380px] p-0 gap-0 sm:max-w-[380px] bg-card text-card-foreground">
         <DialogHeader className="px-3 pt-3 pb-1.5">
           <DialogTitle className="flex items-center gap-1.5 text-[12px] font-semibold text-neutral-800">
             <CurrencyDollar weight="fill" className="w-3.5 h-3.5 text-amber-500" />
@@ -180,7 +180,7 @@ export default function CloseShiftModal({ open, onOpenChange, shift, onSuccess }
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Keterangan selisih..."
               rows={2}
-              className="w-full rounded-lg border border-neutral-300 px-2.5 py-1.5 text-[10px] bg-white focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500 resize-none placeholder:text-neutral-400"
+              className="w-full rounded-lg border border-input px-2.5 py-1.5 text-[10px] bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500 resize-none placeholder:text-muted-foreground"
             />
           </div>
         </div>

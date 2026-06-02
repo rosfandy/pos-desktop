@@ -183,7 +183,7 @@ export default function HoldBillModal({ open: openProp, onOpenChange, onContinue
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent showCloseButton={false} className="w-[480px] max-h-[80vh] overflow-hidden flex flex-col p-0 gap-0 sm:max-w-[480px] shadow-2xl bg-white">
+      <DialogContent showCloseButton={false} className="w-[480px] max-h-[80vh] overflow-hidden flex flex-col p-0 gap-0 sm:max-w-[480px]  bg-card text-card-foreground">
         {/* Toolbar */}
         <div className="pos-toolbar h-9 shrink-0 px-3 border-b border-neutral-300">
           <Checkbox
@@ -301,7 +301,7 @@ export default function HoldBillModal({ open: openProp, onOpenChange, onContinue
 
       {/* ── Delete confirmation ──────────────────────────────────────────── */}
       <Dialog open={deleteConfirm !== null} onOpenChange={(isOpen) => { if (!isOpen) setDeleteConfirm(null); }}>
-        <DialogContent showCloseButton={false} className="w-[340px] p-0 gap-0 sm:max-w-[340px] shadow-2xl bg-white">
+        <DialogContent showCloseButton={false} className="w-[340px] p-0 gap-0 sm:max-w-[340px]  bg-card text-card-foreground">
           <div className="px-3 pt-3 pb-2">
             <p className="pos-form-section text-[11px] font-semibold text-neutral-800 mb-1">Hapus Bill</p>
             <p className="pos-hint text-neutral-600">
@@ -320,7 +320,7 @@ export default function HoldBillModal({ open: openProp, onOpenChange, onContinue
 
       {/* ── Bulk delete confirmation ────────────────────────────────────── */}
       <Dialog open={bulkDeleteConfirm} onOpenChange={(isOpen) => { if (!isOpen) setBulkDeleteConfirm(false); }}>
-        <DialogContent showCloseButton={false} className="w-[340px] p-0 gap-0 sm:max-w-[340px] shadow-2xl bg-white">
+        <DialogContent showCloseButton={false} className="w-[340px] p-0 gap-0 sm:max-w-[340px]  bg-card text-card-foreground">
           <div className="px-3 pt-3 pb-2">
             <p className="pos-form-section text-[11px] font-semibold text-neutral-800 mb-1">Hapus {selectedIds.size} Bill</p>
             <p className="pos-hint text-neutral-600">

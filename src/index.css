@@ -95,7 +95,7 @@ html {
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
+  --primary: oklch(0.57 0.18 264);
   --primary-foreground: oklch(0.985 0 0);
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
@@ -115,12 +115,41 @@ html {
   --radius: 0.625rem;
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary: oklch(0.57 0.18 264);
   --sidebar-primary-foreground: oklch(0.985 0 0);
   --sidebar-accent: oklch(0.97 0 0);
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+}
+
+html.dark {
+  --background: oklch(0.17 0 0);
+  --foreground: oklch(0.94 0 0);
+  --card: oklch(0.21 0 0);
+  --card-foreground: oklch(0.94 0 0);
+  --popover: oklch(0.21 0 0);
+  --popover-foreground: oklch(0.94 0 0);
+  --primary: oklch(0.78 0 0);
+  --primary-foreground: oklch(0.14 0 0);
+  --secondary: oklch(0.26 0 0);
+  --secondary-foreground: oklch(0.94 0 0);
+  --muted: oklch(0.24 0 0);
+  --muted-foreground: oklch(0.72 0 0);
+  --accent: oklch(0.28 0 0);
+  --accent-foreground: oklch(0.96 0 0);
+  --destructive: oklch(0.64 0.21 25);
+  --border: oklch(0.3 0 0);
+  --input: oklch(0.3 0 0);
+  --ring: oklch(0.62 0 0);
+  --sidebar: oklch(0.19 0 0);
+  --sidebar-foreground: oklch(0.94 0 0);
+  --sidebar-primary: oklch(0.78 0 0);
+  --sidebar-primary-foreground: oklch(0.14 0 0);
+  --sidebar-accent: oklch(0.25 0 0);
+  --sidebar-accent-foreground: oklch(0.94 0 0);
+  --sidebar-border: oklch(0.3 0 0);
+  --sidebar-ring: oklch(0.62 0 0);
 }
 
 @layer base {
@@ -140,6 +169,97 @@ html.text-size-small  { font-size: 85%; }
 html.text-size-medium { font-size: 100%; }
 html.text-size-large  { font-size: 115%; }
 
+/* ── Dark mode legacy overrides (fallback) ─────────────────────────────── */
+html.dark body {
+  background-color: var(--background);
+  color: var(--foreground);
+}
+html.dark .bg-white        { background-color: var(--card); }
+html.dark .bg-neutral-50  { background-color: var(--muted); }
+html.dark .bg-neutral-100 { background-color: var(--background); }
+html.dark .bg-neutral-200 { background-color: var(--muted); }
+html.dark .text-neutral-900 { color: var(--foreground); }
+html.dark .text-neutral-800 { color: var(--foreground); }
+html.dark .text-neutral-700 { color: var(--foreground); }
+html.dark .text-neutral-600 { color: oklch(0.78 0.01 264); }
+html.dark .text-neutral-500 { color: var(--muted-foreground); }
+html.dark .text-neutral-400 { color: oklch(0.55 0.01 264); }
+html.dark .text-neutral-300 { color: oklch(0.42 0.01 264); }
+html.dark .text-neutral-200 { color: oklch(0.32 0.01 264); }
+html.dark .border-neutral-200,
+html.dark .border-neutral-300,
+html.dark .border-neutral-100 { border-color: var(--border); }
+html.dark .divide-neutral-100 > * + * { border-color: var(--border); }
+html.dark .hover\:bg-neutral-50:hover  { background-color: var(--muted); }
+html.dark .hover\:bg-neutral-100:hover { background-color: var(--muted); }
+html.dark .hover\:bg-indigo-50:hover  { background-color: color-mix(in oklch, var(--primary) 18%, transparent); }
+html.dark .placeholder\:text-neutral-400::placeholder { color: var(--muted-foreground); }
+html.dark .bg-indigo-100 { background-color: color-mix(in oklch, var(--primary) 18%, transparent); }
+html.dark .bg-indigo-50  { background-color: color-mix(in oklch, var(--primary) 12%, transparent); }
+html.dark .text-indigo-600,
+html.dark .text-indigo-700,
+html.dark .text-indigo-800 { color: var(--primary); }
+html.dark .bg-emerald-100 { background-color: color-mix(in oklch, oklch(0.7 0.18 155) 18%, transparent); }
+html.dark .bg-emerald-50  { background-color: color-mix(in oklch, oklch(0.7 0.18 155) 12%, transparent); }
+html.dark .text-emerald-700,
+html.dark .text-emerald-600 { color: oklch(0.78 0.16 155); }
+html.dark .bg-amber-100 { background-color: color-mix(in oklch, oklch(0.78 0.16 70) 18%, transparent); }
+html.dark .bg-amber-50  { background-color: color-mix(in oklch, oklch(0.78 0.16 70) 12%, transparent); }
+html.dark .text-amber-700,
+html.dark .text-amber-600 { color: oklch(0.82 0.16 70); }
+html.dark .bg-red-100,
+html.dark .bg-red-50 { background-color: color-mix(in oklch, var(--destructive) 14%, transparent); }
+html.dark .text-red-700,
+html.dark .text-red-600,
+html.dark .text-red-500 { color: oklch(0.78 0.18 25); }
+html.dark .bg-rose-50,
+html.dark .bg-rose-100 { background-color: color-mix(in oklch, oklch(0.7 0.18 0) 14%, transparent); }
+html.dark .text-rose-700,
+html.dark .text-rose-600 { color: oklch(0.78 0.18 0); }
+html.dark .bg-orange-50,
+html.dark .bg-orange-100 { background-color: color-mix(in oklch, oklch(0.78 0.16 50) 14%, transparent); }
+html.dark .text-orange-700,
+html.dark .text-orange-600 { color: oklch(0.82 0.16 50); }
+html.dark .bg-yellow-50,
+html.dark .bg-yellow-100 { background-color: color-mix(in oklch, oklch(0.85 0.16 90) 14%, transparent); }
+html.dark .text-yellow-700,
+html.dark .text-yellow-600 { color: oklch(0.88 0.16 90); }
+html.dark .bg-blue-50,
+html.dark .bg-blue-100 { background-color: color-mix(in oklch, oklch(0.7 0.16 240) 14%, transparent); }
+html.dark .text-blue-700,
+html.dark .text-blue-600 { color: oklch(0.78 0.16 240); }
+html.dark .bg-violet-50,
+html.dark .bg-violet-100 { background-color: color-mix(in oklch, oklch(0.72 0.18 290) 14%, transparent); }
+html.dark .text-violet-700,
+html.dark .text-violet-600 { color: oklch(0.78 0.18 290); }
+html.dark .bg-pink-50,
+html.dark .bg-pink-100 { background-color: color-mix(in oklch, oklch(0.72 0.18 340) 14%, transparent); }
+html.dark .text-pink-700,
+html.dark .text-pink-600 { color: oklch(0.78 0.18 340); }
+html.dark .bg-cyan-50,
+html.dark .bg-cyan-100 { background-color: color-mix(in oklch, oklch(0.78 0.16 200) 14%, transparent); }
+html.dark .text-cyan-700,
+html.dark .text-cyan-600 { color: oklch(0.82 0.16 200); }
+html.dark .bg-slate-50,
+html.dark .bg-slate-100 { background-color: color-mix(in oklch, var(--muted) 70%, transparent); }
+html.dark .text-slate-700,
+html.dark .text-slate-600 { color: oklch(0.78 0.01 264); }
+html.dark .bg-orange-100,
+html.dark .bg-orange-50 { background-color: color-mix(in oklch, oklch(0.78 0.16 50) 14%, transparent); }
+html.dark .text-orange-700,
+html.dark .text-orange-600 { color: oklch(0.82 0.16 50); }
+html.dark .shadow-sm { box-shadow: 0 1px 2px rgba(0,0,0,0.4); }
+html.dark .shadow-md { box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+html.dark .shadow-2xl { box-shadow: 0 25px 50px -12px rgba(0,0,0,0.6); }
+
+/* ── Dark mode: native date/time picker popup ──────────────────────────── */
+html.dark input[type="date"],
+html.dark input[type="datetime-local"],
+html.dark input[type="month"],
+html.dark input[type="time"] {
+  color-scheme: dark;
+}
+
 /* ════════════════════════════════════════════════════════════════════════════
    POS Desktop — Reusable Component Classes
    Standarisasi styling desktop-native: page → toolbar → panel → content.
@@ -149,7 +269,7 @@ html.text-size-large  { font-size: 115%; }
 @layer components {
   /* ── Page container ─────────────────────────────────────────────────── */
   .pos-page {
-    @apply flex h-full bg-neutral-100;
+    @apply flex h-full bg-background text-foreground;
   }
   .pos-page-col {
     @apply flex flex-col h-full;
@@ -157,21 +277,21 @@ html.text-size-large  { font-size: 115%; }
 
   /* ── Toolbar atas ──────────────────────────────────────────────────── */
   .pos-toolbar {
-    @apply h-9 shrink-0 flex items-center px-3 border-b border-neutral-300 bg-white select-none;
+    @apply h-9 shrink-0 flex items-center px-3 border-b border-border bg-card text-card-foreground select-none;
   }
   .pos-toolbar-title {
-    @apply text-[11px] font-semibold text-neutral-800 uppercase tracking-wide;
+    @apply text-[11px] font-semibold text-foreground uppercase tracking-wide;
   }
   .pos-toolbar-section {
-    @apply text-[10px] font-semibold text-neutral-500 uppercase tracking-widest;
+    @apply text-[10px] font-semibold text-muted-foreground uppercase tracking-widest;
   }
 
   /* ── Panel konten (card utama halaman) ─────────────────────────────── */
   .pos-panel {
-    @apply flex-1 min-w-0 bg-white border border-neutral-300 m-2 rounded-sm overflow-hidden;
+    @apply flex-1 min-w-0 flex flex-col bg-card text-card-foreground border border-border m-2 rounded-sm overflow-hidden;
   }
   .pos-panel-flush {
-    @apply flex-1 min-w-0 bg-white border border-neutral-300 overflow-hidden;
+    @apply flex-1 min-w-0 bg-card text-card-foreground border border-border overflow-hidden;
   }
   .pos-panel-body {
     @apply h-full overflow-y-auto p-4;
@@ -179,19 +299,19 @@ html.text-size-large  { font-size: 115%; }
 
   /* ── Sidebar konten (di dalam halaman) ─────────────────────────────── */
   .pos-sidebar {
-    @apply shrink-0 border-r border-neutral-300 bg-neutral-50 flex flex-col py-2;
+    @apply shrink-0 border-r border-sidebar-border bg-sidebar text-sidebar-foreground flex flex-col py-2;
   }
   .pos-sidebar-header {
-    @apply px-3 pb-2 mb-1 border-b border-neutral-200;
+    @apply px-3 pb-2 mb-1 border-b border-sidebar-border;
   }
   .pos-sidebar-nav {
     @apply flex-1 overflow-y-auto px-1.5 space-y-0.5;
   }
   .pos-sidebar-item {
-    @apply w-full flex items-center gap-2 px-2 py-1.5 rounded text-[11px] font-medium border border-transparent transition-colors text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900;
+    @apply w-full flex items-center gap-2 px-2 py-1.5 rounded text-[11px] font-medium border border-transparent transition-colors text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground;
   }
   .pos-sidebar-item-active {
-    @apply bg-indigo-100 text-indigo-800 border-indigo-200;
+    @apply bg-primary/15 text-primary border-primary/30;
   }
 
   /* ── Tab bar (horizontal) ──────────────────────────────────────────── */
@@ -199,10 +319,10 @@ html.text-size-large  { font-size: 115%; }
     @apply flex items-stretch self-stretch;
   }
   .pos-tab-item {
-    @apply relative flex items-center gap-1.5 px-3 text-[11px] font-medium border-r border-neutral-100 transition-colors text-neutral-500 hover:text-neutral-800 hover:bg-neutral-50;
+    @apply relative flex items-center gap-1.5 px-3 text-[11px] font-medium border-r border-border transition-colors text-muted-foreground hover:text-foreground hover:bg-muted;
   }
   .pos-tab-item-active {
-    @apply text-indigo-700 bg-indigo-50;
+    @apply text-primary bg-primary/10;
   }
   .pos-tab-underline {
     @apply absolute left-0 right-0 bottom-0 h-0.5 bg-indigo-600;
@@ -213,24 +333,24 @@ html.text-size-large  { font-size: 115%; }
     @apply flex flex-col gap-3 p-4;
   }
   .pos-form-section {
-    @apply pb-2 mb-1 border-b border-neutral-200;
+    @apply pb-2 mb-1 border-b border-border;
   }
   .pos-form-row {
-    @apply flex items-center justify-end gap-2 border-t border-neutral-200;
+    @apply flex items-center justify-end gap-2 border-t border-border bg-card;
   }
   .pos-form-error {
-    @apply rounded border border-red-200 bg-red-50 px-3 py-2 text-[11px] text-red-700;
+    @apply rounded border border-destructive/30 bg-destructive/10 px-3 py-2 text-[11px] text-destructive;
   }
   .pos-form-info {
-    @apply rounded border border-amber-200 bg-amber-50 px-3 py-2 text-[10px] text-amber-800;
+    @apply rounded border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-[10px] text-amber-700 dark:text-amber-300;
   }
   .pos-form-success {
-    @apply rounded border border-emerald-200 bg-emerald-50 px-3 py-2 text-[11px] text-emerald-700;
+    @apply rounded border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-[11px] text-emerald-700 dark:text-emerald-300;
   }
 
   /* ── Label & Input ─────────────────────────────────────────────────── */
   .pos-label {
-    @apply text-[10px] font-semibold text-neutral-700 uppercase tracking-wide;
+    @apply text-[10px] font-semibold text-foreground uppercase tracking-wide;
   }
   .pos-label-danger {
     @apply text-[10px] font-semibold text-red-600 uppercase tracking-wide;
@@ -242,10 +362,10 @@ html.text-size-large  { font-size: 115%; }
     @apply text-[10px] font-semibold text-indigo-600 uppercase tracking-wide;
   }
   .pos-input {
-    @apply h-8 text-[12px] bg-white border border-neutral-300 px-2 rounded-sm shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none;
+    @apply h-8 text-[12px] bg-background text-foreground border border-input px-2 rounded-sm shadow-sm placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary outline-none;
   }
   .pos-hint {
-    @apply text-[10px] text-neutral-500;
+    @apply text-[10px] text-muted-foreground;
   }
 
   /* ── Buttons ───────────────────────────────────────────────────────── */
@@ -265,18 +385,18 @@ html.text-size-large  { font-size: 115%; }
     @apply h-7 px-3 rounded bg-red-600 hover:bg-red-700 text-white text-[11px] font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5;
   }
   .pos-btn-secondary {
-    @apply h-7 px-3 rounded bg-white border border-neutral-300 text-[11px] font-medium text-neutral-700 hover:bg-neutral-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5;
+    @apply h-7 px-3 rounded bg-background border border-input text-[11px] font-medium text-foreground hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5;
   }
   .pos-btn-ghost {
-    @apply h-7 px-2 rounded text-[10px] font-medium text-neutral-600 hover:bg-neutral-100 transition-colors flex items-center gap-1.5;
+    @apply h-7 px-2 rounded text-[10px] font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors flex items-center gap-1.5;
   }
 
   /* ── Status bar ────────────────────────────────────────────────────── */
   .pos-statusbar {
-    @apply h-6 shrink-0 flex items-center justify-between px-3 border-t border-neutral-300 bg-white select-none;
+    @apply h-6 shrink-0 flex items-center justify-between px-3 border-t border-border bg-card select-none;
   }
   .pos-statusbar-item {
-    @apply flex items-center gap-1.5 text-[10px] text-neutral-500;
+    @apply flex items-center gap-1.5 text-[10px] text-muted-foreground;
   }
   .pos-statusbar-status {
     @apply text-[10px] text-neutral-400;
@@ -287,16 +407,16 @@ html.text-size-large  { font-size: 115%; }
     @apply w-full text-left border-collapse;
   }
   .pos-table-thead {
-    @apply sticky top-0 z-10 bg-neutral-100 border-b-2 border-neutral-300;
+    @apply sticky top-0 z-10 bg-muted border-b-2 border-border;
   }
   .pos-table-th {
-    @apply px-3 py-1.5 text-[10px] font-semibold text-neutral-600 uppercase tracking-wider border-r border-neutral-200;
+    @apply px-3 py-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider border-r border-border;
   }
   .pos-table-td {
-    @apply px-3 py-1 text-[11px] text-neutral-700 border-r border-neutral-200;
+    @apply px-3 py-1 text-[11px] text-foreground border-r border-border;
   }
   .pos-table-tr {
-    @apply border-b border-neutral-200 cursor-pointer transition-colors hover:bg-neutral-50;
+    @apply border-b border-border cursor-pointer transition-colors hover:bg-muted;
   }
   .pos-table-tr-active {
     @apply border-b border-neutral-200 cursor-pointer transition-colors bg-indigo-100;
@@ -304,24 +424,24 @@ html.text-size-large  { font-size: 115%; }
 
   /* ── Empty state ──────────────────────────────────────────────────── */
   .pos-empty {
-    @apply flex flex-col items-center justify-center h-full gap-1 text-neutral-400;
+    @apply flex flex-col items-center justify-center h-full gap-1 text-muted-foreground;
   }
   .pos-empty-title {
-    @apply text-[11px] font-medium text-neutral-600;
+    @apply text-[11px] font-medium text-foreground;
   }
   .pos-empty-desc {
-    @apply text-[10px] text-neutral-400;
+    @apply text-[10px] text-muted-foreground;
   }
 
   /* ── Stat card ────────────────────────────────────────────────────── */
   .pos-stat {
-    @apply bg-white border border-neutral-300 px-3 py-2.5 flex items-center gap-3 shadow-sm;
+    @apply bg-card border border-border px-3 py-2.5 flex items-center gap-3 shadow-sm;
   }
   .pos-stat-label {
-    @apply text-[10px] text-neutral-500 truncate;
+    @apply text-[10px] text-muted-foreground truncate;
   }
   .pos-stat-value {
-    @apply text-lg font-bold leading-tight text-neutral-900 tabular-nums;
+    @apply text-lg font-bold leading-tight text-foreground tabular-nums;
   }
   .pos-stat-change {
     @apply text-[10px] font-medium flex items-center gap-0.5;

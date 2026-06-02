@@ -93,7 +93,7 @@ export default function LoyaltyCard({ customer, onRedeemPoints, className }: Loy
       </div>
 
       {/* ── Points Balance ─────────────────────────────────────────────────── */}
-      <div className="px-4 py-3 bg-white border-b border-neutral-100">
+      <div className="px-4 py-3 bg-card text-card-foreground border-b border-border">
         <div className="flex items-end justify-between">
           <div>
             <p className="text-[10px] text-neutral-400 font-medium uppercase tracking-wider">Poin Tersedia</p>
@@ -121,7 +121,7 @@ export default function LoyaltyCard({ customer, onRedeemPoints, className }: Loy
 
       {/* ── Tier Progress ───────────────────────────────────────────────────── */}
       {nextTier && (
-        <div className="px-4 py-3 bg-white">
+        <div className="px-4 py-3 bg-card text-card-foreground">
           <div className="flex items-center justify-between text-[10px] mb-1.5">
             <span className="text-neutral-500">Progress ke {TIER_LABEL[nextTier]}</span>
             <span className="text-neutral-400 font-mono">

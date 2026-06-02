@@ -71,7 +71,7 @@ export default function CashOutModal({ open, onOpenChange, shiftId, userId, onSu
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent showCloseButton={false} className="w-[360px] p-0 gap-0 sm:max-w-[360px] shadow-2xl bg-white">
+      <DialogContent showCloseButton={false} className="w-[360px] p-0 gap-0 sm:max-w-[360px] bg-card text-card-foreground">
         <PosForm className="gap-0">
           <PosFormSection className="flex items-center gap-1.5">
             <CurrencyDollar weight="fill" className="w-3.5 h-3.5 text-red-500" />
@@ -114,7 +114,7 @@ export default function CashOutModal({ open, onOpenChange, shiftId, userId, onSu
               onChange={(e) => setReason(e.target.value)}
               placeholder="Misal: beli plastik, bensin, dll"
               rows={2}
-              className="w-full rounded-lg border border-neutral-300 px-2.5 py-1.5 text-[11px] bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 resize-none placeholder:text-neutral-400"
+              className="w-full rounded-lg border border-input px-2.5 py-1.5 text-[11px] bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary resize-none placeholder:text-muted-foreground"
             />
           </div>
         </PosForm>

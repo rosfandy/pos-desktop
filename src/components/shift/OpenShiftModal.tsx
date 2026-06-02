@@ -56,7 +56,7 @@ export default function OpenShiftModal({ open, onOpenChange, onSuccess }: OpenSh
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent showCloseButton={false} className="w-[360px] p-0 gap-0 sm:max-w-[360px] shadow-2xl bg-white">
+      <DialogContent showCloseButton={false} className="w-[360px] p-0 gap-0 sm:max-w-[360px] bg-card text-card-foreground">
         <DialogHeader className="px-3 pt-3 pb-1.5">
           <DialogTitle className="flex items-center gap-1.5 text-[12px] font-semibold text-neutral-800">
             <Clock weight="fill" className="w-3.5 h-3.5 text-emerald-500" />

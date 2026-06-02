@@ -53,7 +53,7 @@ export default function ShiftPage() {
   return (
     <div className="flex flex-col h-full">
       {/* ── Header ──────────────────────────────────────────────────────── */}
-      <div className="shrink-0 h-9 flex items-center justify-between px-3 border-b border-neutral-200 bg-white">
+      <div className="shrink-0 h-9 flex items-center justify-between px-3 border-b border-border bg-card text-card-foreground">
         <div className="flex items-center gap-1.5">
           <Clock weight="fill" className="w-4 h-4 text-indigo-500" />
           <h1 className="text-[13px] font-semibold text-neutral-800">Manajemen Shift</h1>
@@ -91,7 +91,7 @@ export default function ShiftPage() {
       </div>
 
       {/* ── History ─────────────────────────────────────────────────────── */}
-      <div className="flex-1 min-h-0 bg-white">
+      <div className="flex-1 min-h-0 bg-background text-foreground">
         <ShiftHistory shifts={shiftHistory} loading={loading} />
       </div>
 

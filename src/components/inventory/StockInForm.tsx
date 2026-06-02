@@ -149,7 +149,7 @@ export default function StockInForm({ onSubmit, onDone, initialProductId }: Stoc
           return (
             <div
               key={line.id}
-              className="border border-neutral-200 rounded-lg p-3 space-y-2.5 bg-white"
+              className="border border-border rounded-lg p-3 space-y-2.5 bg-card text-card-foreground"
             >
               {/* Row header: product search + remove */}
               <div className="flex items-center gap-2">

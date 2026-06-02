@@ -12,7 +12,7 @@ export default function POSTerminal({ leftPanel, centerPanel, rightPanel, classN
   return (
     <div className={cn('flex h-full', className)}>
       {/* Left — Categories */}
-      <aside className="w-48 shrink-0 flex flex-col border-r border-neutral-200 bg-white">
+      <aside className="w-48 shrink-0 flex flex-col border-r border-border bg-card text-card-foreground">
         {leftPanel}
       </aside>
 
@@ -22,7 +22,7 @@ export default function POSTerminal({ leftPanel, centerPanel, rightPanel, classN
       </main>
 
       {/* Right — Cart */}
-      <aside className="w-96 shrink-0 flex flex-col border-l border-neutral-200 bg-white">
+      <aside className="w-96 shrink-0 flex flex-col border-l border-border bg-card text-card-foreground">
         {rightPanel}
       </aside>
     </div>

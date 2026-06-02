@@ -138,7 +138,7 @@ export default function StockOutForm({ onSubmit, onDone }: StockOutFormProps) {
             <div
               key={line.id}
               className={cn(
-                'border rounded-lg p-3 space-y-2.5 bg-white',
+                'border rounded-lg p-3 space-y-2.5 bg-card text-card-foreground',
                 overStock ? 'border-red-300 bg-red-50/30' : 'border-neutral-200'
               )}
             >

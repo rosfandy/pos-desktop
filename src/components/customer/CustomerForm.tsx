@@ -315,7 +315,7 @@ export default function CustomerForm({ open, onOpenChange, customerId }: Custome
           )}
         </div>
 
-        <DialogFooter className="shrink-0 px-6 py-3 border-t border-neutral-200 bg-neutral-50 flex-row-reverse gap-2">
+        <DialogFooter>
           <Button
             onClick={handleSubmit}
             disabled={loading || hasErrors}

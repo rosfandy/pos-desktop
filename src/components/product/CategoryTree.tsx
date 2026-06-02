@@ -250,7 +250,7 @@ export default function CategoryTree({
   return (
     <div className={cn('flex flex-col h-full', className)}>
       {/* ── Toolbar ───────────────────────────────────────────────────────────── */}
-      <div className="shrink-0 flex items-center gap-1 px-2 py-1.5 border-b border-neutral-200 bg-white">
+      <div className="shrink-0 flex items-center gap-1 px-2 py-1.5 border-b border-border bg-card text-card-foreground">
         <span className="flex items-center gap-1 text-[11px] font-medium text-neutral-600">
           <Tag className="w-3.5 h-3.5" />
           Kategori

@@ -93,7 +93,7 @@ export function ReceiptCard({ data, className }: ReceiptCardProps) {
 
   return (
     <div className={cn(
-      'bg-white rounded border border-neutral-200 shadow-sm font-mono text-[11px] text-neutral-800',
+      'bg-card text-card-foreground rounded border border-border shadow-sm font-mono text-[11px]',
       className,
     )}>
 

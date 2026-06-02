@@ -1,5 +1,4 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
 import ProductTable from '@/components/pos/ProductTable';
 import type { Product } from '@/components/pos/ProductTable';
 import CartPanel from '@/components/pos/CartPanel';
@@ -8,6 +7,7 @@ import { TransactionDetailModal } from '@/components/transactions/TransactionDet
 import HoldBillModal from '@/components/pos/HoldBillModal';
 import VoidRefundModal from '@/components/pos/VoidRefundModal';
 import CashOutModal from '@/components/pos/CashOutModal';
+import OpenShiftModal from '@/components/shift/OpenShiftModal';
 import CustomerSearch from '@/components/fragments/customer-search';
 import useBarcode from '@/hooks/useBarcode';
 import useKeyboardShortcuts from '@/hooks/useKeyboardShortcuts';
@@ -41,6 +41,7 @@ export default function POSTerminalPage() {
   const [cashOutOpen, setCashOutOpen] = useState(false);
   const [holdConfirmOpen, setHoldConfirmOpen] = useState(false);
   const [shiftRequiredOpen, setShiftRequiredOpen] = useState(false);
+  const [openShiftOpen, setOpenShiftOpen] = useState(false);
   const [holdNotes, setHoldNotes] = useState('');
   const [holdCustomerId, setHoldCustomerId] = useState<string | null>(null);
   const [holdCustomerName, setHoldCustomerName] = useState<string | null>(null);
@@ -49,8 +50,6 @@ export default function POSTerminalPage() {
   const [paymentCustomerName, setPaymentCustomerName] = useState<string | null>(null);
   const paymentCustomerRef = useRef<{ id: string; name: string } | null>(null);
   const [customerReceiptInfo, setCustomerReceiptInfo] = useState<{ name: string; points: number; earned: number } | null>(null);
-
-  const navigate = useNavigate();
 
   // ── Hooks ──────────────────────────────────────────────────────────────────
   const { print, testPrint, openDrawer, lastError } = usePrinter();
@@ -69,7 +68,7 @@ export default function POSTerminalPage() {
       info: 'info',
       default: 'default',
     };
-    toast({ title: message, variant: variantMap[variant] ?? 'default' });
+    toast({ description: message, variant: variantMap[variant] ?? 'default' });
   }, [toast]);
 
   // ── Customer selection ────────────────────────────────────────────────────────
@@ -340,7 +339,7 @@ export default function POSTerminalPage() {
   return (
     <div className="flex flex-col h-full">
       {/* ── Top toolbar ───────────────────────────────────────────────────── */}
-      <div className="h-9 shrink-0 flex items-center gap-1.5 px-2 border-b border-neutral-200 bg-white">
+      <div className="h-9 shrink-0 flex items-center gap-1.5 px-2 border-b border-border bg-card text-card-foreground">
         <Storefront weight="fill" className="w-3.5 h-3.5 text-indigo-600" />
         <span className="text-[11px] font-semibold text-neutral-800 mr-1">Kasir</span>
 
@@ -401,7 +400,13 @@ export default function POSTerminalPage() {
         <Button
           variant="ghost"
           size="xs"
-          onClick={() => setCashOutOpen(true)}
+          onClick={() => {
+            if (!currentShift) {
+              setShiftRequiredOpen(true);
+            } else {
+              setCashOutOpen(true);
+            }
+          }}
           title="Kas Keluar"
           className="h-7 px-2 text-[10px]"
         >
@@ -434,7 +439,7 @@ export default function POSTerminalPage() {
         </div>
 
         {/* Right: Cart panel (fixed width ~40%) */}
-        <aside className="w-[360px] shrink-0 flex flex-col bg-white border">
+        <aside className="w-[360px] shrink-0 flex flex-col bg-card text-card-foreground border border-border">
           <CartPanel onPay={() => setPaymentOpen(true)} />
         </aside>
       </div>
@@ -474,7 +479,7 @@ export default function POSTerminalPage() {
 
       {/* ── Hold Confirmation Dialog ─────────────────────────────────────────── */}
       <Dialog open={holdConfirmOpen} onOpenChange={(isOpen) => { if (!isOpen) setHoldConfirmOpen(false); }}>
-        <DialogContent showCloseButton={false} className="w-[360px] p-0 gap-0 sm:max-w-[360px] shadow-2xl bg-white">
+        <DialogContent showCloseButton={false} className="w-[360px] p-0 gap-0 sm:max-w-[360px] bg-card text-card-foreground">
           <DialogHeader className="px-3 pt-3 pb-1.5">
             <DialogTitle className="flex items-center gap-1.5 text-[12px] font-semibold text-neutral-800">
               <ArrowCounterClockwise weight="fill" className="w-3.5 h-3.5 text-amber-500" />
@@ -503,7 +508,7 @@ export default function POSTerminalPage() {
                 onChange={(e) => setHoldNotes(e.target.value)}
                 placeholder="Contoh: Bill untuk pesanan paket A"
                 rows={2}
-                className="w-full rounded-lg border border-neutral-300 px-2.5 py-1.5 text-[10px] bg-white focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500 resize-none placeholder:text-neutral-400"
+                className="w-full rounded-lg border border-input px-2.5 py-1.5 text-[10px] bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500 resize-none placeholder:text-muted-foreground"
               />
             </div>
 
@@ -579,14 +584,14 @@ export default function POSTerminalPage() {
 
       {/* ── Shift Required Dialog ─────────────────────────────────────────────── */}
       <Dialog open={shiftRequiredOpen} onOpenChange={(isOpen) => { if (!isOpen) setShiftRequiredOpen(false); }}>
-        <DialogContent showCloseButton={false} className="w-[360px] p-0 gap-0 sm:max-w-[360px] shadow-2xl bg-white">
+        <DialogContent showCloseButton={false} className="w-[360px] p-0 gap-0 sm:max-w-[360px] bg-card text-card-foreground">
           <DialogHeader className="px-3 pt-3 pb-1.5">
             <DialogTitle className="flex items-center gap-1.5 text-[12px] font-semibold text-neutral-800">
               <Clock weight="fill" className="w-3.5 h-3.5 text-amber-500" />
               Shift Belum Dibuka
             </DialogTitle>
             <DialogDescription className="pt-1.5 text-[10px] text-neutral-600 leading-relaxed">
-              Anda harus membuka shift terlebih dahulu sebelum dapat memproses transaksi.
+              Shift masih tutup. Buka shift terlebih dahulu sebelum menggunakan fitur ini.
             </DialogDescription>
           </DialogHeader>
 
@@ -614,7 +619,7 @@ export default function POSTerminalPage() {
               size="xs"
               onClick={() => {
                 setShiftRequiredOpen(false);
-                navigate('/shifts');
+                setOpenShiftOpen(true);
               }}
               className="h-7 px-3 bg-amber-600 hover:bg-amber-700 text-[10px] text-white"
             >
@@ -624,6 +629,15 @@ export default function POSTerminalPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* ── Open Shift Modal (inline) ──────────────────────────────────────────── */}
+      <OpenShiftModal
+        open={openShiftOpen}
+        onOpenChange={setOpenShiftOpen}
+        onSuccess={() => {
+          if (user?.id) checkCurrentShift(user.id);
+        }}
+      />
     </div>
   );
 }

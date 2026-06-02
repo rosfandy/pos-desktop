@@ -69,9 +69,9 @@ export default function CustomersPage() {
   }, []);
 
   return (
-    <div className="flex flex-col h-full bg-white shadow">
+    <div className="flex flex-col h-full bg-card text-card-foreground shadow">
       {/* ── Header ──────────────────────────────────────────────────────────── */}
-      <div className="shrink-0 h-10 flex items-center gap-2 px-4 border-b border-neutral-200 bg-white">
+      <div className="shrink-0 h-10 flex items-center gap-2 px-4 border-b border-border bg-card text-card-foreground">
         <Users className="w-4 h-4 text-indigo-600" />
         <span className="text-[13px] font-semibold text-neutral-800">Manajemen Pelanggan</span>
         <div className="flex-1" />

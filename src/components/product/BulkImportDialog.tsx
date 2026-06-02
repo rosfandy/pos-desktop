@@ -280,7 +280,7 @@ export default function BulkImportDialog({ open, onOpenChange }: BulkImportDialo
           )}
         </div>
 
-        <DialogFooter className="px-6 py-4 border-t border-neutral-200 flex items-center justify-between">
+        <DialogFooter className="justify-between">
           <p className="text-[10px] text-neutral-400">
             Kolom: Nama (wajib), SKU, Barcode, Kategori, Harga Beli, Harga Jual, Stok, Satuan, Min Stok
           </p>

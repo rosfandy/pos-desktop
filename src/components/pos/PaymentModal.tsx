@@ -77,7 +77,7 @@ export default function PaymentModal({ open, onClose, onConfirm, total }: Paymen
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => { if (!isOpen) onClose(); }}>
-      <DialogContent showCloseButton={false} className="w-[420px] max-h-[90vh] overflow-hidden flex flex-col p-0 gap-0 sm:max-w-[420px] shadow-2xl bg-white">
+      <DialogContent showCloseButton={false} className="w-[420px] max-h-[90vh] overflow-hidden flex flex-col p-0 gap-0 sm:max-w-[420px] bg-card text-card-foreground">
           {/* Header */}
           <div className="h-11 shrink-0 flex items-center justify-between px-4 border-b border-neutral-200">
             <div className="flex items-center gap-2">

@@ -152,7 +152,7 @@ export default function ProductList({
   return (
     <div className={cn('flex flex-col h-full', className)}>
       {/* ── Toolbar: Search + Category Filter ────────────────────────────────── */}
-      <div className="shrink-0 border-b border-neutral-200 bg-white px-3 py-2 flex items-center gap-2">
+      <div className="shrink-0 border-b border-border bg-card text-card-foreground px-3 py-2 flex items-center gap-2">
         <div className="relative flex-1 max-w-xs">
           <MagnifyingGlass className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-neutral-400" />
           <Input

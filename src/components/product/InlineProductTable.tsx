@@ -378,7 +378,7 @@ export default function InlineProductTable({ refreshKey }: { refreshKey?: number
   return (
     <div className="flex flex-col h-full">
       {/* ── Toolbar ─────────────────────────────────────────────────────────── */}
-      <div className="shrink-0 border-b border-neutral-200 bg-white">
+      <div className="shrink-0 border-b border-border bg-card text-card-foreground">
         {/* Baris 1: Pencarian & aksi utama */}
           <div className="px-3 py-2 flex items-center gap-2 flex-wrap border-b border-neutral-100">
           <div className="relative flex-1 min-w-[200px] max-w-xs">
@@ -607,7 +607,7 @@ export default function InlineProductTable({ refreshKey }: { refreshKey?: number
                   </td>
                   <td className="px-2 py-1.5 text-[11px] text-neutral-500 text-center">{product.baseUnit}</td>
                   <td className="px-2 py-1.5 text-[11px] text-neutral-400 text-center tabular-nums">{product.minStock}</td>
-                  <td className="px-2 py-1.5 sticky right-0 z-10 border-l border-neutral-200 bg-white">
+                  <td className="px-2 py-1.5 sticky right-0 z-10 border-l border-border bg-card">
                     {editingRows.size === 0 ? (
                       <div className="flex items-center justify-center gap-1">
                         <Button

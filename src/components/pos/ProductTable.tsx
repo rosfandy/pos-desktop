@@ -276,7 +276,7 @@ export default function ProductTable({
   return (
     <div className={cn('flex flex-col h-full', className)} onKeyDown={handleTableKeyDown}>
       {/* ── Search bar ───────────────────────────────────────────────────────── */}
-      <div className="shrink-0 border-b border-neutral-200 bg-white">
+      <div className="shrink-0 border-b border-border bg-card text-card-foreground">
         <div className="relative px-3 py-2">
           <MagnifyingGlass className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
           <Input
@@ -423,7 +423,7 @@ export default function ProductTable({
             </PosTable>
 
             {/* ── Footer ──────────────────────────────────────────────── */}
-            <div className="shrink-0 h-7 flex items-center justify-between px-3 border-t border-neutral-200 bg-white text-[10px] text-neutral-500">
+            <div className="shrink-0 h-7 flex items-center justify-between px-3 border-t border-border bg-card text-[10px] text-muted-foreground">
               <span>{filtered.length} produk ditemukan</span>
               <span className="flex items-center gap-3">
                 <span>↑↓ navigasi</span>

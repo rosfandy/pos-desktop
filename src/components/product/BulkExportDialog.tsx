@@ -186,7 +186,7 @@ export default function BulkExportDialog({ open, onOpenChange }: BulkExportDialo
           )}
         </div>
 
-        <DialogFooter className="px-6 py-4 border-t border-neutral-200 flex items-center justify-end gap-2">
+        <DialogFooter>
           <Button variant="outline" size="sm" onClick={handleClose} className="h-8 text-[12px]">
             Tutup
           </Button>

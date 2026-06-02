@@ -327,7 +327,7 @@ export default function CustomerList({
       </div>
 
       {/* ── Footer ────────────────────────────────────────────────────────────── */}
-      <div className="shrink-0 h-7 flex items-center justify-between px-3 border-t border-neutral-200 bg-white text-[10px] text-neutral-500">
+      <div className="shrink-0 h-7 flex items-center justify-between px-3 border-t border-border bg-card text-[10px] text-muted-foreground">
         <span>{filtered.length} pelanggan</span>
       </div>
     </div>

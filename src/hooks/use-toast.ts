@@ -134,8 +134,17 @@ function dispatch(action: Action) {
 
 type Toast = Omit<ToasterToast, 'id'>
 
-function toast({ ...props }: Toast) {
+const DEFAULT_TITLE: Record<string, string> = {
+  default: 'Info',
+  success: 'Berhasil',
+  destructive: 'Error',
+  info: 'Info',
+}
+
+function toast({ title, variant, ...props }: Toast) {
   const id = genId()
+
+  const resolvedTitle = title ?? DEFAULT_TITLE[variant ?? 'default'] ?? 'Info'
 
   const update = (props: ToasterToast) =>
     dispatch({
@@ -147,6 +156,8 @@ function toast({ ...props }: Toast) {
   dispatch({
     type: 'ADD_TOAST',
     toast: {
+      variant,
+      title: resolvedTitle,
       ...props,
       id,
       open: true,

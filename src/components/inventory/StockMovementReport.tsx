@@ -158,7 +158,7 @@ export default function StockMovementReport() {
   return (
     <div className="flex flex-col h-full">
       {/* ── Toolbar ───────────────────────────────────────────────────────── */}
-      <div className="shrink-0 border-b border-neutral-200 bg-white px-3 py-2 flex items-center gap-2">
+      <div className="shrink-0 border-b border-border bg-card text-card-foreground px-3 py-2 flex items-center gap-2">
         <div className="relative flex-1">
           <MagnifyingGlass className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-neutral-400" />
           <Input
@@ -172,7 +172,7 @@ export default function StockMovementReport() {
         <select
           value={productFilter}
           onChange={(e) => setProductFilter(e.target.value)}
-          className="h-7 px-2 text-[11px] border border-neutral-300 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          className="h-7 px-2 text-[11px] border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
         >
           <option value="">Semua produk</option>
           {products.map((p) => (
@@ -312,7 +312,7 @@ export default function StockMovementReport() {
       </div>
 
       {/* ── Footer ─────────────────────────────────────────────────────────── */}
-      <div className="shrink-0 h-7 flex items-center justify-between px-3 border-t border-neutral-200 bg-white text-[10px] text-neutral-500">
+      <div className="shrink-0 h-7 flex items-center justify-between px-3 border-t border-border bg-card text-[10px] text-muted-foreground">
         <span>{filtered.length} produk</span>
       </div>
     </div>

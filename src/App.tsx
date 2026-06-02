@@ -38,6 +38,8 @@ import CustomersPage from '@/pages/CustomersPage';
 import ReportsPage from '@/pages/ReportsPage';
 import ShiftPage from '@/pages/ShiftPage';
 import { TransactionDetailModal } from '@/components/transactions/TransactionDetailModal';
+import OpenShiftModal from '@/components/shift/OpenShiftModal';
+import CloseShiftModal from '@/components/shift/CloseShiftModal';
 import UpdateDialog from '@/components/update/UpdateDialog';
 import Sidebar from '@/components/fragments/Sidebar';
 import Toolbar from '@/components/fragments/Toolbar';
@@ -112,7 +114,7 @@ function Panel({
   className?: string;
 }) {
   return (
-    <div className={cn('flex flex-col bg-white border border-neutral-300 shadow-sm overflow-hidden', className)}>
+    <div className={cn('flex flex-col bg-card text-card-foreground border border-border shadow-sm overflow-hidden', className)}>
       <div className="h-9 flex items-center justify-between px-3 border-b border-neutral-200 bg-neutral-50 shrink-0">
         <span className="text-[11px] font-semibold text-neutral-700 uppercase tracking-wide">{title}</span>
         {toolbar && <div className="flex items-center gap-1">{toolbar}</div>}
@@ -135,6 +137,8 @@ function DashboardPage() {
   const [totalCategories, setTotalCategories] = useState(0);
   const [selectedTxId, setSelectedTxId] = useState<string | null>(null);
   const [shiftTxCount, setShiftTxCount] = useState(0);
+  const [showOpenShiftModal, setShowOpenShiftModal] = useState(false);
+  const [showCloseShiftModal, setShowCloseShiftModal] = useState(false);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -194,7 +198,25 @@ function DashboardPage() {
     return () => { cancelled = true; };
   }, []);
 
+  const handleOpenShiftSuccess = useCallback(() => {
+    setShowOpenShiftModal(false);
+    if (user?.id) useShiftStore.getState().checkCurrentShift(user.id);
+  }, [user?.id]);
+
+  const handleCloseShiftSuccess = useCallback(() => {
+    setShowCloseShiftModal(false);
+    if (user?.id) useShiftStore.getState().checkCurrentShift(user.id);
+  }, [user?.id]);
+
   const formatRupiah = (cents: number) => `Rp ${(cents / 100).toLocaleString('id-ID')}`;
+  const formatRupiahShort = (cents: number) => {
+    const rp = cents / 100;
+    const abs = Math.abs(rp);
+    const sign = rp < 0 ? '-' : '';
+    if (abs >= 1_000_000) return `${sign}Rp ${(abs / 1_000_000).toFixed(1)}jt`;
+    if (abs >= 1_000) return `${sign}Rp ${(abs / 1_000).toFixed(0)}rb`;
+    return `${sign}Rp ${Math.round(abs).toLocaleString('id-ID')}`;
+  };
   const formatTime = (ts: number) => {
     const d = new Date(ts * 1000);
     return d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
@@ -206,14 +228,14 @@ function DashboardPage() {
       {/* Stat strip */}
       <div className="grid grid-cols-4 gap-3">
         {[
-          { label: 'Penjualan Hari Ini', value: formatRupiah(todaySales), delta: `${todayTransactions} transaksi`, up: true,  icon: CurrencyDollar, color: 'text-emerald-600' },
+          { label: 'Penjualan Hari Ini', value: formatRupiahShort(todaySales), delta: `${todayTransactions} transaksi`, up: true,  icon: CurrencyDollar, color: 'text-emerald-600' },
           { label: 'Transaksi',          value: String(todayTransactions),     delta: `+${todayTransactions}`,  up: true,  icon: ShoppingCart,   color: 'text-indigo-600' },
           { label: 'Total Produk',       value: String(totalProducts),     delta: 'aktif', up: true,  icon: Package,  color: 'text-violet-600' },
           { label: 'Stok Menipis',       value: String(lowStockCount),     delta: `${totalCategories} kategori`, up: false, icon: Warning,  color: lowStockCount > 0 ? 'text-red-500' : 'text-amber-500' },
         ].map(({ label, value, delta, up, icon: Icon, color }) => (
           <div
             key={label}
-            className="bg-white border border-neutral-200 rounded px-3 py-2.5 flex items-center gap-3"
+            className="bg-card text-card-foreground border border-border rounded px-3 py-2.5 flex items-center gap-3"
           >
             <div className={cn('shrink-0', color)}>
               <Icon weight="fill" className="w-6 h-6" />
@@ -345,7 +367,7 @@ function DashboardPage() {
                     Lihat Shift
                   </Button>
                   <Button
-                    onClick={() => navigate('/shifts')}
+                    onClick={() => setShowCloseShiftModal(true)}
                     className="flex-1 bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-semibold py-1.5 h-auto"
                   >
                     Tutup Shift
@@ -371,7 +393,7 @@ function DashboardPage() {
                 </div>
                 <div className="pt-1 border-t border-neutral-100">
                   <Button
-                    onClick={() => navigate('/shifts')}
+                    onClick={() => setShowOpenShiftModal(true)}
                     className="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-semibold py-1.5"
                   >
                     Buka Shift
@@ -432,6 +454,19 @@ function DashboardPage() {
         onClose={() => setSelectedTxId(null)}
         transactionId={selectedTxId}
       />
+      <OpenShiftModal
+        open={showOpenShiftModal}
+        onOpenChange={setShowOpenShiftModal}
+        onSuccess={handleOpenShiftSuccess}
+      />
+      {currentShift && (
+        <CloseShiftModal
+          open={showCloseShiftModal}
+          onOpenChange={setShowCloseShiftModal}
+          shift={currentShift}
+          onSuccess={handleCloseShiftSuccess}
+        />
+      )}
     </>
   );
 }

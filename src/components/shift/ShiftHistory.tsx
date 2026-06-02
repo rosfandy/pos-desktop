@@ -24,7 +24,7 @@ export default function ShiftHistory({ shifts, loading }: ShiftHistoryProps) {
   return (
     <div className="flex flex-col h-full">
       {/* Filter */}
-      <div className="shrink-0 flex items-center gap-2 px-3 py-1.5 border-b border-neutral-100 bg-white">
+      <div className="shrink-0 flex items-center gap-2 px-3 py-1.5 border-b border-border bg-card text-card-foreground">
         <MagnifyingGlass className="w-3 h-3 text-neutral-400" />
         <select
           value={statusFilter}
@@ -39,7 +39,7 @@ export default function ShiftHistory({ shifts, loading }: ShiftHistoryProps) {
       </div>
 
       {/* List */}
-      <div className="flex-1 overflow-y-auto divide-y divide-neutral-100">
+      <div className="flex-1 overflow-y-auto divide-y divide-neutral-100 px-4">
         {filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-40 text-neutral-300">
             <Clock className="w-8 h-8 mb-2 opacity-20" />

@@ -26,7 +26,7 @@ export default function ProductCard({ productId, onEdit, onDelete, onClick, clas
     <div
       onClick={() => onClick?.(product.id)}
       className={cn(
-        'group relative flex flex-col bg-white rounded-lg border border-neutral-200 p-3 transition-all cursor-pointer',
+        'group relative flex flex-col bg-card text-card-foreground rounded-lg border border-border p-3 transition-all cursor-pointer',
         'hover:shadow-md hover:border-indigo-200',
         className
       )}

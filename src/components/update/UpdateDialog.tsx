@@ -39,7 +39,7 @@ export default function UpdateDialog({ open, status, info, onClose, onDownload, 
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-900/40 backdrop-blur-[1px]">
-      <div className="w-[400px] bg-white border border-neutral-200 shadow-lg flex flex-col">
+      <div className="w-[400px] bg-card text-card-foreground border border-border flex flex-col">
 
         {/* Toolbar */}
         <div className="h-9 flex items-center justify-between px-3 border-b border-neutral-200 bg-neutral-50">

@@ -232,7 +232,7 @@ export default function InlineCategoryTable() {
   return (
     <div className="flex flex-col h-full">
       {/* ── Toolbar ─────────────────────────────────────────────────────────── */}
-      <div className="shrink-0 h-9 border-b border-neutral-200 bg-white px-3 flex items-center justify-between">
+      <div className="shrink-0 h-9 border-b border-border bg-card text-card-foreground px-3 flex items-center justify-between">
         <div className="flex items-center gap-1.5">
           <Tag className="w-3.5 h-3.5 text-amber-500" />
           <span className="text-[12px] font-medium text-neutral-700">Kategori</span>

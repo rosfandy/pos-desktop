@@ -121,7 +121,7 @@ export default function ProductSearchInput({
       </div>
 
       {open && results.length > 0 && (
-        <div className="absolute z-50 top-full left-0 right-0 mt-0.5 bg-white border border-neutral-200 rounded-md shadow-md max-h-48 overflow-y-auto">
+        <div className="absolute z-50 top-full left-0 right-0 mt-0.5 bg-popover text-popover-foreground border border-border rounded-md shadow-md max-h-48 overflow-y-auto">
           {results.map((p) => (
             <button
               key={p.id}
@@ -138,7 +138,7 @@ export default function ProductSearchInput({
       )}
 
       {open && !loading && results.length === 0 && query.trim() && (
-        <div className="absolute z-50 top-full left-0 right-0 mt-0.5 bg-white border border-neutral-200 rounded-md shadow-md px-3 py-2 text-[11px] text-neutral-400">
+        <div className="absolute z-50 top-full left-0 right-0 mt-0.5 bg-popover text-popover-foreground border border-border rounded-md shadow-md px-3 py-2 text-[11px] text-muted-foreground">
           Produk tidak ditemukan
         </div>
       )}

@@ -154,7 +154,7 @@ export default function VoidRefundModal({ open, onClose, onVoid, onRefund }: Voi
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => { if (!isOpen) onClose(); }} modal>
-      <DialogContent showCloseButton={false} className="w-[640px] max-h-[85vh] overflow-hidden flex flex-col p-0 gap-0 sm:max-w-[640px] shadow-2xl bg-white">
+      <DialogContent showCloseButton={false} className="w-[640px] max-h-[85vh] overflow-hidden flex flex-col p-0 gap-0 sm:max-w-[640px]  bg-card text-card-foreground">
           {/* Header */}
           <div className="h-11 shrink-0 flex items-center justify-between px-4 border-b border-neutral-200">
             <div className="flex items-center gap-2">

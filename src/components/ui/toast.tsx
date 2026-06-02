@@ -23,14 +23,19 @@ const ToastViewport = React.forwardRef<
 ToastViewport.displayName = ToastPrimitives.Viewport.displayName
 
 const toastVariants = cva(
-  'group pointer-events-auto relative flex w-full items-center justify-between space-x-4 overflow-hidden rounded-md border-l-4 p-4 pr-8 shadow-lg transition-all data-[swipe=cancel]:translate-x-0 data-[swipe=end]:translate-x-[var(--radix-toast-swipe-end-x)] data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)] data-[swipe=move]:transition-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[swipe=end]:animate-out data-[state=closed]:fade-out-80 data-[state=closed]:slide-out-to-right-full data-[state=open]:slide-in-from-top-full',
+  `group bg-card pointer-events-auto relative flex w-full items-center justify-between space-x-3
+    overflow-hidden rounded-md border-l-4 p-3 pr-7 transition-all data-[swipe=cancel]:translate-x-0 
+    data-[swipe=end]:translate-x-[var(--radix-toast-swipe-end-x)] data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)] 
+    data-[swipe=move]:transition-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[swipe=end]:animate-out 
+    data-[state=closed]:fade-out-80 data-[state=closed]:slide-out-to-right-full data-[state=open]:slide-in-from-top-full
+  `,
   {
     variants: {
       variant: {
-        default: 'border! border-neutral-200! bg-white text-neutral-900',
-        success: 'border! border-emerald-200! bg-emerald-50 text-emerald-900 border-l-emerald-500',
-        destructive: 'border! border-red-200! bg-red-50 text-red-900 border-l-red-500',
-        info: 'border! border-indigo-200! bg-indigo-50 text-indigo-900 border-l-indigo-500',
+        default: 'border border-border text-card-foreground',
+        success: 'border border-l-4! bg-emerald-900 border-border border-l-emerald-400! text-white',
+        destructive: 'border border-l-4! bg-red-900 border-border border-l-red-400! text-white',
+        info: 'border border-l-4! bg-blue-900 border-border border-l-blue-400! text-white',
       },
     },
     defaultVariants: {
@@ -42,7 +47,7 @@ const toastVariants = cva(
 const Toast = React.forwardRef<
   React.ComponentRef<typeof ToastPrimitives.Root>,
   React.ComponentPropsWithoutRef<typeof ToastPrimitives.Root> &
-    VariantProps<typeof toastVariants>
+  VariantProps<typeof toastVariants>
 >(({ className, variant, ...props }, ref) => {
   return (
     <ToastPrimitives.Root
@@ -61,7 +66,7 @@ const ToastAction = React.forwardRef<
   <ToastPrimitives.Action
     ref={ref}
     className={cn(
-      'inline-flex h-8 shrink-0 items-center justify-center rounded-md border bg-transparent px-3 text-xs! font-medium ring-offset-background transition-colors hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 group-[.destructive]:border-muted/40 group-[.destructive]:hover:border-destructive/30 group-[.destructive]:hover:bg-destructive group-[.destructive]:hover:text-destructive-foreground group-[.destructive]:focus:ring-destructive',
+      'inline-flex h-8 shrink-0 items-center justify-center rounded-md border bg-transparent px-3 font-medium ring-offset-background transition-colors hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 group-[.destructive]:border-muted/40 group-[.destructive]:hover:border-destructive/30 group-[.destructive]:hover:bg-destructive group-[.destructive]:hover:text-destructive-foreground group-[.destructive]:focus:ring-destructive',
       className
     )}
     {...props}
@@ -93,7 +98,7 @@ const ToastTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <ToastPrimitives.Title
     ref={ref}
-    className={cn('text-xs! font-semibold', className)}
+    className={cn('text-[12px] font-semibold', className)}
     {...props}
   />
 ))
@@ -105,7 +110,7 @@ const ToastDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <ToastPrimitives.Description
     ref={ref}
-    className={cn('text-sm opacity-90', className)}
+    className={cn('text-[11px] opacity-90', className)}
     {...props}
   />
 ))

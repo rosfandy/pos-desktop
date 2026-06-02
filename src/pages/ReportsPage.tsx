@@ -4,11 +4,14 @@ import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { cn, unwrap } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
+import { DateRangePicker } from '@/components/ui/date-range-picker';
+import { useThemeStore } from '@/stores/themeStore';
 import Chart from 'react-apexcharts';
 import type { ApexOptions } from 'apexcharts';
-import type { SalesReport, StockReport, FinanceReport, Transaction } from '@/lib/api';
+import type { SalesReport, StockReport, FinanceReport, Transaction, Shift } from '@/lib/api';
 import { TransactionDetailModal } from '@/components/transactions/TransactionDetailModal';
 import { DataTable } from '@/components/fragments/data-table';
+import { Dialog, DialogContent, DialogTitle, DialogHeader } from '@/components/ui/dialog';
 import {
   CurrencyDollar,
   Receipt,
@@ -17,7 +20,6 @@ import {
   ChartBar,
   TrendUp,
   ArrowUp,
-  ArrowDown,
   MagnifyingGlass,
   XCircle,
   Spinner,
@@ -27,7 +29,7 @@ import {
 import {
   PosPage, PosToolbar, PosToolbarTitle,
   PosSideMenu, PosSideMenuHeader, PosSideMenuNav, PosSideMenuItem,
-  PosPanel, PosButton, PosAlert, PosLabel, PosHint,
+  PosPanel, PosButton, PosAlert, PosHint,
   PosEmptyState, PosEmptyTitle,
 } from '@/components/ui/pos-ui';
 import { PosTableSection } from '@/components/ui/table';
@@ -38,6 +40,15 @@ const formatRupiah = (cents: number) =>
   `Rp ${(Math.round(cents) / 100).toLocaleString('id-ID')}`;
 const formatRupiahDirect = (v: number) =>
   `Rp ${Math.round(v).toLocaleString('id-ID')}`;
+const formatRupiahShort = (v: number) => {
+  // Input dalam cents → konversi ke rupiah dulu
+  const rp = Math.round(v) / 100;
+  const abs = Math.abs(rp);
+  const sign = rp < 0 ? '-' : '';
+  if (abs >= 1_000_000) return `${sign}Rp ${(abs / 1_000_000).toFixed(1)}jt`;
+  if (abs >= 1_000) return `${sign}Rp ${(abs / 1_000).toFixed(0)}rb`;
+  return `${sign}Rp ${Math.round(abs).toLocaleString('id-ID')}`;
+};
 const formatDate = (dateStr: string) => {
   const d = new Date(dateStr);
   return d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
@@ -60,9 +71,12 @@ export default function ReportsPage() {
     return 'sales';
   });
 
-  const today = new Date().toISOString().split('T')[0];
-  const [startDate, setStartDate] = useState(today);
-  const [endDate, setEndDate] = useState(today);
+  const today = new Date();
+  const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0, 0);
+  const [dateRange, setDateRange] = useState<{ from: Date; to: Date }>({
+    from: todayStart,
+    to: todayStart,
+  });
 
   // Sales
   const [salesData, setSalesData] = useState<SalesReport | null>(null);
@@ -81,6 +95,9 @@ export default function ReportsPage() {
   const [financeError, setFinanceError] = useState<string | null>(null);
   const [cashFlows, setCashFlows] = useState<any[]>([]);
   const [cashFlowLoading, setCashFlowLoading] = useState(false);
+  const [shifts, setShifts] = useState<Shift[]>([]);
+  const [shiftsLoading, setShiftsLoading] = useState(false);
+  const [selectedShiftNotes, setSelectedShiftNotes] = useState<{ id: string; notes: string | null } | null>(null);
 
   // Transactions
   const [txList, setTxList] = useState<Transaction[]>([]);
@@ -88,8 +105,8 @@ export default function ReportsPage() {
   const [txError, setTxError] = useState<string | null>(null);
   const [selectedTxId, setSelectedTxId] = useState<string | null>(null);
 
-  const startTs = Math.floor(new Date(startDate).getTime() / 1000);
-  const endTs = Math.floor(new Date(endDate).getTime() / 1000) + 86399;
+  const startTs = Math.floor(dateRange.from.getTime() / 1000);
+  const endTs = Math.floor(dateRange.to.getTime() / 1000) + 86399;
 
   // ── Fetchers ─────────────────────────────────────────────────────────────
 
@@ -114,19 +131,22 @@ export default function ReportsPage() {
     finally { setStockLoading(false); }
   };
   const fetchFinance = async () => {
-    setFinanceLoading(true); setCashFlowLoading(true); setFinanceError(null);
+    setFinanceLoading(true); setCashFlowLoading(true); setShiftsLoading(true); setFinanceError(null);
     try {
-      const [finRes, cfRes] = await Promise.all([
+      const [finRes, cfRes, shiftRes] = await Promise.all([
         window.api.reportFinance({ startDate: startTs, endDate: endTs }),
         window.api.cashFlowListByDate({ startDate: startTs * 1000, endDate: endTs * 1000 }),
+        window.api.shiftList({ from: startTs * 1000, to: endTs * 1000 }),
       ]);
       const data = unwrap<FinanceReport>(finRes);
       if (data) setFinanceData(data);
       else setFinanceError((finRes as any)?.error?.message || 'Gagal memuat laporan keuangan');
       const cfData = unwrap<any[]>(cfRes);
       if (cfData) setCashFlows(cfData);
+      const shiftData = unwrap<Shift[]>(shiftRes);
+      if (shiftData) setShifts(shiftData);
     } catch { setFinanceError('Gagal memuat laporan keuangan'); }
-    finally { setFinanceLoading(false); setCashFlowLoading(false); }
+    finally { setFinanceLoading(false); setCashFlowLoading(false); setShiftsLoading(false); }
   };
   const fetchTransactions = async () => {
     setTxLoading(true); setTxError(null);
@@ -139,10 +159,12 @@ export default function ReportsPage() {
     finally { setTxLoading(false); }
   };
 
-  useEffect(() => { if (activeTab === 'sales') fetchSales(); }, [activeTab, startDate, endDate]);
-  useEffect(() => { if (activeTab === 'stock') fetchStock(); }, [activeTab]);
-  useEffect(() => { if (activeTab === 'finance') fetchFinance(); }, [activeTab, startDate, endDate]);
-  useEffect(() => { if (activeTab === 'transactions') fetchTransactions(); }, [activeTab, startDate, endDate]);
+  useEffect(() => {
+    if (activeTab === 'sales') fetchSales();
+    else if (activeTab === 'stock') fetchStock();
+    else if (activeTab === 'finance') fetchFinance();
+    else if (activeTab === 'transactions') fetchTransactions();
+  }, [activeTab, dateRange]);
 
   // ── Query param sync ─────────────────────────────────────────────────────
 
@@ -169,6 +191,15 @@ export default function ReportsPage() {
     return { totalIn, totalOut };
   }, [cashFlows]);
 
+  const shiftCashSummary = useMemo(() => {
+    let totalExpected = 0, totalDiscrepancy = 0;
+    for (const s of shifts) {
+      if (s.expectedCash != null) totalExpected += s.expectedCash;
+      if (s.discrepancy != null) totalDiscrepancy += s.discrepancy;
+    }
+    return { totalExpected, totalDiscrepancy };
+  }, [shifts]);
+
   const filteredStock = useMemo(() => {
     if (!stockData || !stockSearch.trim()) return stockData;
     const q = stockSearch.toLowerCase();
@@ -183,18 +214,24 @@ export default function ReportsPage() {
   }, [stockData, stockSearch]);
 
   const currentTab = TABS.find((t) => t.id === activeTab)!;
+  const isDark = useThemeStore((s) => s.isDark);
+  const gridColor = isDark ? 'rgba(255,255,255,0.08)' : '#e5e5e5';
 
   // ── Toolbar per tab ─────────────────────────────────────────────────────
 
-  const renderDateToolbar = (loading: boolean, onReload: () => void) => (
-    <div className="h-9 flex items-center gap-3 px-3 border-b border-neutral-300 bg-white shrink-0">
+  const renderCalendarToolbar = (loading: boolean, onReload: () => void) => (
+    <div className="h-9 flex items-center gap-3 px-3 border-b border-border bg-card shrink-0">
       <div className="flex items-center gap-1.5">
-        <PosLabel className="!text-neutral-500 whitespace-nowrap">Dari</PosLabel>
-        <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="h-7 w-36 text-[11px]" />
-      </div>
-      <div className="flex items-center gap-1.5">
-        <PosLabel className="!text-neutral-500 whitespace-nowrap">Sampai</PosLabel>
-        <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="h-7 w-36 text-[11px]" />
+        <span className="text-[11px] text-muted-foreground whitespace-nowrap">Periode</span>
+        <DateRangePicker
+          value={dateRange}
+          onChange={(range) => {
+            if (range?.from && range?.to) {
+              setDateRange({ from: range.from, to: range.to });
+            }
+          }}
+          className="w-64"
+        />
       </div>
       <PosButton variant="primary" onClick={onReload} disabled={loading}>
         {loading ? 'Memuat…' : 'Muat Ulang'}
@@ -205,11 +242,11 @@ export default function ReportsPage() {
   // ── Stat card ──────────────────────────────────────────────────────────
 
   const renderStat = (label: string, value: string, Icon: React.ElementType, color: string) => (
-    <div className="bg-white border border-neutral-300 px-3 py-2.5 flex items-center gap-3 shadow-sm">
+    <div className="bg-card border border-border px-3 py-2.5 flex items-center gap-3 shadow-sm">
       <div className={cn('shrink-0', color)}><Icon weight="fill" className="w-6 h-6" /></div>
       <div className="flex-1 min-w-0">
         <p className="text-[10px] text-neutral-500 truncate">{label}</p>
-        <p className="text-lg font-bold leading-tight text-neutral-900 tabular-nums">{value}</p>
+        <p className={cn('text-lg font-bold leading-tight tabular-nums', color)}>{value}</p>
       </div>
     </div>
   );
@@ -218,7 +255,7 @@ export default function ReportsPage() {
 
   const renderSales = () => (
     <div className="flex flex-col h-full">
-      {renderDateToolbar(salesLoading, fetchSales)}
+      {renderCalendarToolbar(salesLoading, fetchSales)}
 
       <div className="flex-1 overflow-y-auto p-3 space-y-3">
         {salesError && <PosAlert tone="error">{salesError}</PosAlert>}
@@ -233,16 +270,16 @@ export default function ReportsPage() {
         {salesData && (
           <>
             <div className="grid grid-cols-4 gap-3">
-              {renderStat('Omzet',               formatRupiah(salesData.summary.totalRevenue), CurrencyDollar, 'text-emerald-600')}
-              {renderStat('Untung / Rugi',       formatRupiah(salesData.summary.totalProfit),  ChartBar,       salesData.summary.totalProfit >= 0 ? 'text-green-600' : 'text-red-600')}
+              {renderStat('Omzet',               formatRupiahShort(salesData.summary.totalRevenue), CurrencyDollar, 'text-emerald-600')}
+              {renderStat('Untung / Rugi',       formatRupiahShort(salesData.summary.totalProfit),  ChartBar,       salesData.summary.totalProfit >= 0 ? 'text-green-600' : 'text-red-600')}
               {renderStat('Total Transaksi',     String(salesData.summary.totalTransactions),  Receipt,        'text-indigo-600')}
-              {renderStat('Rata-rata Transaksi', formatRupiah(salesData.summary.averageTicket),    TrendUp,        'text-violet-600')}
+              {renderStat('Rata-rata Transaksi', formatRupiahShort(salesData.summary.averageTicket),    TrendUp,        'text-violet-600')}
             </div>
 
             {/* Chart */}
-            <div className="bg-white border border-neutral-300 shadow-sm">
-              <div className="h-9 flex items-center px-3 border-b border-neutral-200 bg-neutral-50">
-                <span className="text-[11px] font-semibold text-neutral-700 uppercase tracking-wide">Trend Penjualan Harian</span>
+            <div className="bg-card border border-border shadow-sm">
+              <div className="h-9 flex items-center px-3 border-b border-border bg-muted/50">
+                <span className="text-[11px] font-semibold text-card-foreground uppercase tracking-wide">Trend Penjualan Harian</span>
               </div>
               <div className="p-3">
                 {salesData.byDay.length > 0 ? (
@@ -262,7 +299,7 @@ export default function ReportsPage() {
                           formatter: (v: number) => v >= 1000000 ? `${(v / 1000000).toFixed(1)}jt` : v >= 1000 ? `${(v / 1000).toFixed(0)}rb` : String(v),
                         },
                       },
-                      grid: { borderColor: '#f0f0f0', strokeDashArray: 4 },
+                      grid: { borderColor: gridColor, strokeDashArray: 4 },
                       tooltip: { y: { formatter: (v: number) => formatRupiahDirect(v) } },
                       colors: ['#6366f1'],
                       dataLabels: { enabled: false },
@@ -354,7 +391,7 @@ export default function ReportsPage() {
 
   const renderStock = () => (
     <div className="flex flex-col h-full">
-      <div className="h-9 flex items-center gap-2 px-3 border-b border-neutral-300 bg-white shrink-0">
+      <div className="h-9 flex items-center gap-2 px-3 border-b border-border bg-card text-card-foreground shrink-0">
         <div className="relative flex-1 max-w-xs">
           <MagnifyingGlass className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-neutral-400" />
           <Input value={stockSearch} onChange={(e) => setStockSearch(e.target.value)} placeholder="Cari produk, SKU, kategori…" className="h-7 pl-7 pr-7 text-[11px]" />
@@ -381,7 +418,7 @@ export default function ReportsPage() {
           <>
             <div className="grid grid-cols-4 gap-3">
               {renderStat('Total Produk', String(filteredStock.products.length),   Package,      'text-violet-600')}
-              {renderStat('Nilai Stok',   formatRupiah(filteredStock.totalValue),  CurrencyDollar, 'text-emerald-600')}
+              {renderStat('Nilai Stok',   formatRupiahShort(filteredStock.totalValue),  CurrencyDollar, 'text-emerald-600')}
               {renderStat('Stok Rendah',  String(filteredStock.lowStockCount),      Warning,      'text-amber-500')}
               {renderStat('Stok Habis',   String(filteredStock.outOfStockCount),   Warning,      'text-red-500')}
             </div>
@@ -422,7 +459,7 @@ export default function ReportsPage() {
 
   const renderFinance = () => (
     <div className="flex flex-col h-full">
-      {renderDateToolbar(financeLoading, fetchFinance)}
+      {renderCalendarToolbar(financeLoading, fetchFinance)}
 
       <div className="flex-1 overflow-y-auto p-3 space-y-3">
         {financeError && <PosAlert tone="error">{financeError}</PosAlert>}
@@ -436,10 +473,15 @@ export default function ReportsPage() {
         {financeData && (
           <>
             <div className="grid grid-cols-4 gap-3">
-              {renderStat('Kas Masuk',    formatRupiah(cashFlowSummary.totalIn),  CurrencyDollar, 'text-emerald-600')}
-              {renderStat('Kas Keluar',   formatRupiah(cashFlowSummary.totalOut), ArrowUp,        'text-red-500')}
-              {renderStat('Total Diskon', formatRupiah(financeData.discount),       ArrowDown,      'text-red-500')}
-              {renderStat('Pajak',        formatRupiah(financeData.tax),            ChartBar,       'text-indigo-600')}
+              {renderStat('Kas Masuk',    formatRupiahShort(cashFlowSummary.totalIn),  CurrencyDollar, 'text-emerald-600')}
+              {renderStat('Kas Keluar',   formatRupiahShort(cashFlowSummary.totalOut), ArrowUp,        'text-red-500')}
+              {renderStat('Total Seharusnya', formatRupiahShort(shiftCashSummary.totalExpected), CurrencyDollar, 'text-indigo-600')}
+              {renderStat('Total Selisih',
+                shiftCashSummary.totalDiscrepancy > 0
+                  ? `+${formatRupiahShort(shiftCashSummary.totalDiscrepancy)}`
+                  : formatRupiahShort(shiftCashSummary.totalDiscrepancy),
+                ChartBar,
+                shiftCashSummary.totalDiscrepancy < 0 ? 'text-red-500' : shiftCashSummary.totalDiscrepancy > 0 ? 'text-emerald-600' : 'text-neutral-600')}
             </div>
 
             <ReportTable title="Arus Kas">
@@ -460,7 +502,7 @@ export default function ReportsPage() {
                           formatter: (v: number) => v >= 1000000 ? `${(v / 1000000).toFixed(1)}jt` : v >= 1000 ? `${(v / 1000).toFixed(0)}rb` : String(v),
                         },
                       },
-                      grid: { borderColor: '#f0f0f0', strokeDashArray: 4 },
+                      grid: { borderColor: gridColor, strokeDashArray: 4 },
                       tooltip: { y: { formatter: (v: number) => formatRupiahDirect(v) } },
                       colors: ['#10b981', '#ef4444'],
                       dataLabels: { enabled: true, formatter: (v: number) => formatRupiahDirect(v), style: { fontSize: '10px', fontWeight: 600, colors: ['#fff'] } },
@@ -493,13 +535,62 @@ export default function ReportsPage() {
                         {cf.type === 'in' ? 'Masuk' : 'Keluar'}
                       </span>
                     ) },
-                    { key: 'reason', header: 'Alasan', render: (cf) => cf.reason },
+                    { key: 'reason', header: 'Catatan', render: (cf) => cf.reason },
                     { key: 'userName', header: 'Kasir', render: (cf) => cf.userName || '-' },
                     { key: 'amount', header: 'Jumlah', headerClassName: 'text-right', cellClassName: cn('text-right tabular-nums font-semibold'), render: (cf) => (
                       <span className={cf.type === 'in' ? 'text-emerald-600' : 'text-red-600'}>
                         {cf.type === 'in' ? '' : '-'}{formatRupiah(cf.amount)}
                       </span>
                     ) },
+                  ]}
+                />
+              )}
+            </ReportTable>
+
+            <ReportTable title="Uang di Tangan per Shift">
+              {shiftsLoading ? (
+                <div className="flex items-center justify-center py-8 text-neutral-500">
+                  <Spinner className="w-4 h-4 text-indigo-500 animate-spin mr-2" /> Memuat…
+                </div>
+              ) : shifts.length === 0 ? (
+                <div className="flex items-center justify-center py-8 text-[11px] text-neutral-400">Belum ada data shift</div>
+              ) : (
+                <DataTable
+                  data={shifts}
+                  getRowKey={(s) => s.id}
+                  tableClassName="min-w-[650px]"
+                  emptyMessage="Belum ada data shift"
+                  columns={[
+                    { key: 'no', header: 'No', headerClassName: 'w-10', cellClassName: 'text-neutral-400 tabular-nums', render: (_, i) => i + 1 },
+                    { key: 'shift', header: 'Shift', cellClassName: 'tabular-nums', render: (s) => (
+                      new Date(s.openedAt).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })
+                    )},
+                    { key: 'cashier', header: 'Kasir', render: (s) => s.userName || s.userId },
+                    { key: 'status', header: 'Status', headerClassName: 'text-center', cellClassName: 'text-center', render: (s) => (
+                      <span className={cn('inline-block px-1.5 py-0.5 rounded text-[10px] font-semibold', s.status === 'open' ? 'bg-emerald-100 text-emerald-700' : 'bg-neutral-100 text-neutral-600')}>
+                        {s.status === 'open' ? 'Buka' : 'Tutup'}
+                      </span>
+                    )},
+                    { key: 'openingCash', header: 'Uang Awal', headerClassName: 'text-right', cellClassName: 'text-right tabular-nums', render: (s) => formatRupiahDirect(s.openingCash) },
+                    { key: 'expectedCash', header: 'Kas Seharusnya', headerClassName: 'text-right', cellClassName: 'text-right tabular-nums', render: (s) => s.expectedCash != null ? formatRupiahDirect(s.expectedCash) : <span className="text-neutral-300">—</span> },
+                    { key: 'closingCash', header: 'Kas Akhir', headerClassName: 'text-right', cellClassName: 'text-right tabular-nums font-semibold', render: (s) => s.closingCash != null ? formatRupiahDirect(s.closingCash) : <span className="text-neutral-300">—</span> },
+                    { key: 'discrepancy', header: 'Selisih', headerClassName: 'text-right', cellClassName: 'text-right tabular-nums font-semibold', render: (s) => {
+                      if (s.discrepancy == null) return <span className="text-neutral-300">—</span>;
+                      return (
+                        <span className={s.discrepancy === 0 ? 'text-neutral-600' : s.discrepancy > 0 ? 'text-emerald-600' : 'text-red-600'}>
+                          {s.discrepancy > 0 ? '+' : ''}{formatRupiahDirect(s.discrepancy)}
+                        </span>
+                      );
+                    }},
+                    { key: 'notes', header: 'Catatan', headerClassName: 'text-center', cellClassName: 'text-center p-0', render: (s) => s.notes ? (
+                      <button
+                        onClick={() => setSelectedShiftNotes({ id: s.id, notes: s.notes })}
+                        className="w-full h-full flex items-center justify-center text-neutral-400 hover:text-indigo-600 transition-colors cursor-pointer py-1"
+                        title={s.notes}
+                      >
+                        <Receipt weight="regular" className="w-3.5 h-3.5" />
+                      </button>
+                    ) : <span className="text-neutral-300">—</span> },
                   ]}
                 />
               )}
@@ -512,7 +603,7 @@ export default function ReportsPage() {
 
   const renderTransactions = () => (
     <div className="flex flex-col h-full">
-      {renderDateToolbar(txLoading, fetchTransactions)}
+      {renderCalendarToolbar(txLoading, fetchTransactions)}
 
       <div className="flex-1 overflow-y-auto p-3">
         {txError && <PosAlert tone="error">{txError}</PosAlert>}
@@ -593,6 +684,31 @@ export default function ReportsPage() {
           {activeTab === 'transactions' && renderTransactions()}
         </div>
       </PosPanel>
+
+      {/* ── Notes detail dialog ─────────────────────────────────────────── */}
+      <Dialog open={selectedShiftNotes !== null} onOpenChange={(open) => { if (!open) setSelectedShiftNotes(null); }}>
+        <DialogContent showCloseButton={false} className="w-[400px] p-0 gap-0 sm:max-w-[400px]">
+          <DialogHeader className="px-3 pt-3 pb-1.5">
+            <DialogTitle className="flex items-center gap-1.5 text-[12px] font-semibold text-neutral-800">
+              <Receipt weight="fill" className="w-3.5 h-3.5 text-indigo-500" />
+              Catatan Shift
+            </DialogTitle>
+          </DialogHeader>
+          <div className="px-3 pb-3">
+            <div className="bg-neutral-50 border border-neutral-200 rounded-lg px-3 py-2.5 text-[11px] text-neutral-700 leading-relaxed whitespace-pre-wrap break-words max-h-60 overflow-y-auto">
+              {selectedShiftNotes?.notes || <span className="text-neutral-300 italic">Tidak ada catatan</span>}
+            </div>
+          </div>
+          <div className="flex items-center justify-end px-3 py-2.5 border-t border-neutral-200 bg-neutral-50 rounded-b-xl">
+            <button
+              onClick={() => setSelectedShiftNotes(null)}
+              className="h-7 px-3 text-[10px] font-medium text-neutral-600 hover:text-neutral-800 transition-colors"
+            >
+              Tutup
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </PosPage>
   );
 }

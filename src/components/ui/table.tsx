@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 
 export function PosTableSection({ title, className, headerClassName, bodyClassName, children }: React.ComponentProps<'div'> & { title: string; headerClassName?: string; bodyClassName?: string }) {
   return (
-    <div className={cn('bg-white border border-neutral-300 shadow-sm overflow-hidden', className)}>
+    <div className={cn('bg-card text-card-foreground border border-border shadow-sm overflow-hidden', className)}>
       <div className={cn('h-9 flex items-center px-3 border-b border-neutral-200 bg-neutral-50', headerClassName)}>
         <span className="text-[11px] font-semibold text-neutral-700 uppercase tracking-wide">{title}</span>
       </div>

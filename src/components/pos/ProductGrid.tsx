@@ -170,7 +170,7 @@ export default function ProductGrid({ className, activeCategory: externalCategor
   return (
     <div className={cn('flex flex-col h-full', className)}>
       {/* Search + Category */}
-      <div className="shrink-0 border-b border-neutral-200 p-2 bg-white">
+      <div className="shrink-0 border-b border-border p-2 bg-card text-card-foreground">
         <div className="relative mb-2">
           <MagnifyingGlass className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
           <Input
@@ -190,7 +190,7 @@ export default function ProductGrid({ className, activeCategory: externalCategor
                 key={product.id}
                 variant="outline"
                 onClick={() => handleAdd(product)}
-                className="flex flex-col items-start p-2.5 rounded-lg border-neutral-200 bg-white hover:border-indigo-300 hover:shadow-sm active:scale-[0.98] h-auto w-auto group"
+                className="flex flex-col items-start p-2.5 rounded-lg border-border bg-card text-card-foreground hover:border-primary hover:shadow-sm active:scale-[0.98] h-auto w-auto group"
               >
                 {/* Image placeholder */}
                 <div className="w-full aspect-square rounded-md bg-neutral-100 flex items-center justify-center mb-1.5 overflow-hidden">

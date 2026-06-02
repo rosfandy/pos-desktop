@@ -41,7 +41,7 @@ export default function CartPanel({ onPay }: CartPanelProps) {
   return (
     <div className="flex flex-col h-full">
       {/* ── Header ──────────────────────────────────────────────────────────── */}
-      <div className="shrink-0 h-10 flex items-center justify-between px-3 border-b border-neutral-200 bg-white">
+      <div className="shrink-0 h-10 flex items-center justify-between px-3 border-b border-border bg-card text-card-foreground">
         <div className="flex items-center gap-2">
           <ShoppingCart weight="fill" className="w-4 h-4 text-indigo-600" />
           <span className="text-[12px] font-semibold text-neutral-800">Keranjang</span>
@@ -130,7 +130,7 @@ export default function CartPanel({ onPay }: CartPanelProps) {
                           return next;
                         });
                       }}
-                      className="w-12 h-7 text-center text-[12px] font-semibold tabular-nums border-0 rounded-none bg-transparent focus:bg-white focus:ring-1 focus:ring-indigo-500 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                       className="w-12 h-7 text-center text-[12px] font-semibold tabular-nums border-0 rounded-none bg-transparent focus:bg-card focus:ring-1 focus:ring-primary [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                     />
                     <Button
                       variant="ghost"
@@ -174,7 +174,7 @@ export default function CartPanel({ onPay }: CartPanelProps) {
 
       {/* ── Footer: Discount + Tax + Total + Pay ───────────────────────────── */}
       {items.length > 0 && (
-        <div className="shrink-0 border-t border-neutral-200 bg-white">
+        <div className="shrink-0 border-t border-border bg-card text-card-foreground">
           {/* Cart-level discount */}
           <div className="px-3 pt-2.5 pb-1 space-y-1.5">
             <div className="flex items-center gap-2">
