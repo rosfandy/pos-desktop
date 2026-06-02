@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { cn } from '@/lib/utils';
-import { Package, ArrowDown, ArrowUp, ArrowClockwise, ArrowsOutSimple, Scroll, ChartBar } from 'phosphor-react';
+import { ArrowDown, ArrowUp, ArrowClockwise, ArrowsOutSimple, Scroll, ChartBar, Cube } from 'phosphor-react';
+import { Input } from '@/components/ui/input';
+import { Select, SelectTrigger, SelectValue, SelectPositioner, SelectContent, SelectItem } from '@/components/ui/select';
+import ProductSearchInput from '@/components/inventory/ProductSearchInput';
 import StockInForm from '@/components/inventory/StockInForm';
 import StockOutForm from '@/components/inventory/StockOutForm';
 import AdjustmentForm from '@/components/inventory/AdjustmentForm';
@@ -11,27 +13,34 @@ import InventoryLogTable from '@/components/inventory/InventoryLogTable';
 import StockMovementReport from '@/components/inventory/StockMovementReport';
 import { useInventoryStore } from '@/stores/inventoryStore';
 import { useAuthStore } from '@/stores/authStore';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Select, SelectTrigger, SelectValue, SelectPositioner, SelectContent, SelectItem } from '@/components/ui/select';
 import type { StockInLine } from '@/components/inventory/StockInForm';
 import type { StockOutLine } from '@/components/inventory/StockOutForm';
 import type { AdjustmentLine } from '@/components/inventory/AdjustmentForm';
-import ProductSearchInput from '@/components/inventory/ProductSearchInput';
 import type { ProductRow } from '@/lib/api';
+import {
+  PosPage, PosSideMenu, PosSideMenuHeader, PosSideMenuNav, PosSideMenuItem,
+  PosPanel, PosButton, PosForm, PosFormSection, PosLabel, PosHint,
+} from '@/components/ui/pos-ui';
+
+// ── Types ────────────────────────────────────────────────────────────────────
 
 type Tab = 'in' | 'out' | 'adjust' | 'transfer' | 'movement' | 'log';
 
-const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
-  { id: 'in',       label: 'Stok Masuk',  icon: ArrowDown },
-  { id: 'out',      label: 'Stok Keluar', icon: ArrowUp },
-  { id: 'adjust',   label: 'Penyesuaian', icon: ArrowClockwise },
-  { id: 'transfer', label: 'Transfer',    icon: ArrowsOutSimple },
-  { id: 'movement', label: 'Laporan',     icon: ChartBar },
-  { id: 'log',      label: 'Riwayat',     icon: Scroll },
+const NAV_ITEMS: { id: Tab; label: string; icon: React.ElementType }[] = [
+  { id: 'in',       label: 'Stok Masuk',   icon: ArrowDown },
+  { id: 'out',      label: 'Stok Keluar',  icon: ArrowUp },
+  { id: 'adjust',   label: 'Penyesuaian',  icon: ArrowClockwise },
+  { id: 'transfer', label: 'Transfer',     icon: ArrowsOutSimple },
+  { id: 'movement', label: 'Laporan',      icon: ChartBar },
+  { id: 'log',      label: 'Riwayat',      icon: Scroll },
 ];
 
-// ─── Transfer Form (inline) ─────────────────────────────────────────────────────
+const TAB_TITLES: Record<Tab, string> = {
+  in: 'Stok Masuk', out: 'Stok Keluar', adjust: 'Penyesuaian Stok',
+  transfer: 'Transfer Lokasi', movement: 'Laporan Pergerakan Stok', log: 'Riwayat Inventaris',
+};
+
+// ── Transfer Form (inline) ────────────────────────────────────────────────────
 
 function TransferForm({ onDone }: { onDone?: () => void }) {
   const { locations, fetchLocations } = useInventoryStore();
@@ -48,20 +57,14 @@ function TransferForm({ onDone }: { onDone?: () => void }) {
   const [submitting, setSubmitting] = useState(false);
 
   const activeLocations = locations.filter((l) => l.isActive);
-  const fromLocOptions = activeLocations;
   const toLocOptions = activeLocations.filter((l) => l.id !== fromLocation);
-
   const productId = selectedProduct?.id ?? '';
   const currentStock = selectedProduct?.stock ?? 0;
   const baseQty = (parseFloat(quantity) || 0) * (parseFloat(conversionFactor) || 1);
   const isValid = productId && toLocation && baseQty > 0 && baseQty <= currentStock && reason.trim() && toLocation !== fromLocation;
 
-  // Fetch data on mount
-  useEffect(() => {
-    fetchLocations();
-  }, [fetchLocations]);
+  useEffect(() => { fetchLocations(); }, [fetchLocations]);
 
-  // Auto-select first active location as source when locations load
   useEffect(() => {
     if (activeLocations.length > 0 && !fromLocation) {
       const main = activeLocations.find((l) => l.type === 'store') || activeLocations[0]!;
@@ -94,16 +97,14 @@ function TransferForm({ onDone }: { onDone?: () => void }) {
   };
 
   return (
-    <div className="flex flex-col gap-4 p-4">
-      {/* Header */}
-      <div className="flex items-center gap-2">
+    <PosForm className="max-w-xl">
+      <PosFormSection className="flex items-center gap-2">
         <ArrowsOutSimple weight="fill" className="w-4 h-4 text-violet-600" />
-        <h3 className="text-[12px] font-semibold text-neutral-800">Transfer Stok Antar Lokasi</h3>
-      </div>
+        <span className="text-[11px] font-semibold text-neutral-800 uppercase tracking-wide">Transfer Stok</span>
+      </PosFormSection>
 
-      {/* Product search */}
       <div className="space-y-1">
-        <label className="text-[10px] font-semibold text-neutral-700 uppercase tracking-wide">Produk</label>
+        <PosLabel>Produk</PosLabel>
         <ProductSearchInput
           value={productId}
           productName={selectedProduct?.name ?? ''}
@@ -114,266 +115,148 @@ function TransferForm({ onDone }: { onDone?: () => void }) {
       </div>
 
       {selectedProduct && (
-        <div className="text-[10px] text-neutral-500 -mt-2">
-          Stok saat ini: <b className="text-neutral-700">{currentStock} {selectedProduct.baseUnit}</b>
-        </div>
+        <PosHint>Stok saat ini: <b className="text-neutral-700">{currentStock} {selectedProduct.baseUnit}</b></PosHint>
       )}
 
-      {/* From / To locations */}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-2">
         <div className="space-y-1">
-          <label className="text-[10px] font-semibold text-red-600 uppercase tracking-wide">Dari Lokasi</label>
-          <Select
-            value={fromLocation}
-            onValueChange={(val: string | null) => { if (!val) return; setFromLocation(val); }}
-          >
-            <SelectTrigger className="w-full h-9 text-[12px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectPositioner>
-              <SelectContent>
-                {fromLocOptions.map((loc) => (
-                  <SelectItem key={loc.id} value={loc.id}>{loc.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </SelectPositioner>
+          <PosLabel tone="danger">Dari Lokasi</PosLabel>
+          <Select value={fromLocation} onValueChange={(v) => { if (v) setFromLocation(v); }}>
+            <SelectTrigger className="h-8 text-[11px]"><SelectValue /></SelectTrigger>
+            <SelectPositioner><SelectContent>
+              {activeLocations.map((l) => <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>)}
+            </SelectContent></SelectPositioner>
           </Select>
         </div>
-
         <div className="space-y-1">
-          <label className="text-[10px] font-semibold text-emerald-600 uppercase tracking-wide">Ke Lokasi</label>
-          <Select
-            value={toLocation}
-            onValueChange={(val: string | null) => { if (!val) return; setToLocation(val); }}
-          >
-            <SelectTrigger className="w-full h-9 text-[12px]">
-              <SelectValue placeholder="Pilih lokasi tujuan…" />
-            </SelectTrigger>
-            <SelectPositioner>
-              <SelectContent>
-                {toLocOptions.map((loc) => (
-                  <SelectItem key={loc.id} value={loc.id}>{loc.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </SelectPositioner>
+          <PosLabel tone="success">Ke Lokasi</PosLabel>
+          <Select value={toLocation} onValueChange={(v) => { if (v) setToLocation(v); }}>
+            <SelectTrigger className="h-8 text-[11px]"><SelectValue placeholder="Pilih…" /></SelectTrigger>
+            <SelectPositioner><SelectContent>
+              {toLocOptions.map((l) => <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>)}
+            </SelectContent></SelectPositioner>
           </Select>
         </div>
       </div>
 
-      {/* Qty + Unit */}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-2">
         <div className="space-y-1">
-          <label className="text-[10px] font-semibold text-neutral-700 uppercase tracking-wide">Jumlah</label>
-          <Input
-            type="number"
-            min={0}
-            step={0.01}
-            value={quantity}
-            onChange={(e) => setQuantity(e.target.value)}
-            placeholder="0"
-            className={cn('h-9 text-[12px]', baseQty > currentStock ? 'border-red-300' : '')}
-          />
-          {baseQty > currentStock && (
-            <p className="text-[10px] text-red-500">Tersedia {currentStock}</p>
-          )}
+          <PosLabel>Jumlah</PosLabel>
+          <Input type="number" min={0} step={0.01} value={quantity} onChange={(e) => setQuantity(e.target.value)} placeholder="0" className="h-8 text-[11px]" />
         </div>
-
         <div className="space-y-1">
-          <label className="text-[10px] font-semibold text-neutral-700 uppercase tracking-wide">Satuan</label>
-          <Select
-            value={unit}
-            onValueChange={(val: string | null) => { if (!val) return; setUnit(val); }}
-          >
-            <SelectTrigger className="w-full h-9 text-[12px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectPositioner>
-              <SelectContent>
-                <SelectItem value="pcs">pcs</SelectItem>
-                <SelectItem value="kg">kg</SelectItem>
-                <SelectItem value="lusin">lusin</SelectItem>
-                <SelectItem value="dus">dus</SelectItem>
-              </SelectContent>
-            </SelectPositioner>
+          <PosLabel>Satuan</PosLabel>
+          <Select value={unit} onValueChange={(v) => { if (v) setUnit(v); }}>
+            <SelectTrigger className="h-8 text-[11px]"><SelectValue /></SelectTrigger>
+            <SelectPositioner><SelectContent>
+              <SelectItem value="pcs">pcs</SelectItem>
+              <SelectItem value="kg">kg</SelectItem>
+              <SelectItem value="lusin">lusin</SelectItem>
+              <SelectItem value="dus">dus</SelectItem>
+            </SelectContent></SelectPositioner>
           </Select>
         </div>
       </div>
 
-      {/* Conversion factor */}
       <div className="space-y-1">
-        <label className="text-[10px] font-semibold text-neutral-700 uppercase tracking-wide">Faktor Konversi (ke satuan dasar)</label>
-        <Input
-          type="number"
-          min={0.01}
-          step={0.01}
-          value={conversionFactor}
-          onChange={(e) => setConversionFactor(e.target.value)}
-          className="h-9 text-[12px]"
-        />
+        <PosLabel>Faktor Konversi</PosLabel>
+        <Input type="number" min={0.01} step={0.01} value={conversionFactor} onChange={(e) => setConversionFactor(e.target.value)} className="h-8 text-[11px]" />
       </div>
 
-      {/* Reason */}
       <div className="space-y-1">
-        <label className="text-[10px] font-semibold text-neutral-700 uppercase tracking-wide">Alasan Transfer</label>
-        <Input
-          value={reason}
-          onChange={(e) => setReason(e.target.value)}
-          placeholder="Contoh: Restock gudang, perbaikan stok"
-          className="h-9 text-[12px]"
-        />
+        <PosLabel>Alasan</PosLabel>
+        <Input value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Contoh: Restok gudang" className="h-8 text-[11px]" />
       </div>
 
-      {/* Submit */}
       <div className="flex items-center justify-end gap-2 pt-2 border-t border-neutral-200">
-        {onDone && (
-          <Button variant="outline" size="sm" onClick={onDone} className="h-8 text-[11px]">
-            Batal
-          </Button>
-        )}
-        <Button
-          size="sm"
-          disabled={!isValid || submitting}
-          onClick={handleSubmit}
-          className="h-8 text-[11px] bg-violet-600 hover:bg-violet-700"
-        >
-          {submitting ? 'Memindahkan…' : 'Transfer Stok'}
-        </Button>
+        {onDone && <PosButton variant="secondary" onClick={onDone}>Batal</PosButton>}
+        <PosButton variant="primary" disabled={!isValid || submitting} onClick={handleSubmit}>
+          {submitting ? 'Memindah…' : 'Transfer'}
+        </PosButton>
       </div>
-    </div>
+    </PosForm>
   );
 }
 
-// ─── Page ───────────────────────────────────────────────────────────────────────
+// ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function InventoryPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState<Tab>(() => {
-    const tabParam = searchParams.get('tab') as Tab | null;
-    if (tabParam && TABS.some((t) => t.id === tabParam)) return tabParam;
-    return 'in';
+    const t = searchParams.get('tab') as Tab | null;
+    return t && ['in','out','adjust','transfer','movement','log'].includes(t) ? t : 'in';
   });
   const [initialProductId] = useState<string | null>(() => searchParams.get('productId') || null);
 
-  // Bersihkan query params setelah dibaca
   useEffect(() => {
-    if (initialProductId || searchParams.get('tab')) {
-      setSearchParams({}, { replace: true });
-    }
-  }, []); // sekali di mount
+    if (initialProductId || searchParams.get('tab')) setSearchParams({}, { replace: true });
+  }, []);
 
   const stockIn = useInventoryStore((s) => s.stockIn);
   const stockOut = useInventoryStore((s) => s.stockOut);
   const adjustStock = useInventoryStore((s) => s.adjustStock);
   const fetchMovement = useInventoryStore((s) => s.fetchMovement);
-
-  useEffect(() => {
-    if (activeTab === 'movement') {
-      fetchMovement();
-    }
-  }, [activeTab, fetchMovement]);
-
   const { user } = useAuthStore();
 
+  useEffect(() => {
+    if (activeTab === 'movement') fetchMovement();
+  }, [activeTab, fetchMovement]);
+
   const handleStockInSubmit = async (lines: StockInLine[]) => {
-    for (const line of lines) {
-      await stockIn({
-        productId: line.productId,
-        quantity: line.quantity,
-        unit: line.unit,
-        conversionFactor: line.conversionFactor,
-        reason: line.reason,
-        userId: user?.id ?? 'system',
-      });
-    }
+    for (const line of lines) await stockIn({ ...line, userId: user?.id ?? 'system' });
   };
-
   const handleStockOutSubmit = async (lines: StockOutLine[]) => {
-    for (const line of lines) {
-      await stockOut({
-        productId: line.productId,
-        quantity: line.quantity,
-        unit: line.unit,
-        conversionFactor: line.conversionFactor,
-        reason: line.reason,
-        userId: user?.id ?? 'system',
-      });
-    }
+    for (const line of lines) await stockOut({ ...line, userId: user?.id ?? 'system' });
+  };
+  const handleAdjustSubmit = async (lines: AdjustmentLine[]) => {
+    for (const line of lines) await adjustStock({ ...line, userId: user?.id ?? 'system' });
   };
 
-  const handleAdjustSubmit = async (lines: AdjustmentLine[]) => {
-    for (const line of lines) {
-      await adjustStock({
-        productId: line.productId,
-        newQuantity: line.newQuantity,
-        unit: line.unit,
-        conversionFactor: line.conversionFactor,
-        reason: line.reason,
-        userId: user?.id ?? 'system',
-      });
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'in':       return <StockInForm onSubmit={handleStockInSubmit} onDone={() => setActiveTab('log')} initialProductId={initialProductId ?? undefined} />;
+      case 'out':      return <StockOutForm onSubmit={handleStockOutSubmit} onDone={() => setActiveTab('log')} />;
+      case 'adjust':   return <AdjustmentForm onSubmit={handleAdjustSubmit} onDone={() => setActiveTab('log')} />;
+      case 'transfer': return <TransferForm onDone={() => setActiveTab('log')} />;
+      case 'movement': return <StockMovementReport />;
+      case 'log':      return <InventoryLogTable />;
+      default:         return null;
     }
   };
 
   return (
-    <div className="flex flex-col h-full bg-neutral-50">
-      {/* ── Header ─────────────────────────────────────────────────────────── */}
-      <div className="shrink-0 h-12 flex items-center px-4 border-b border-neutral-200 bg-white">
-        <Package weight="fill" className="w-4 h-4 text-indigo-600 mr-2" />
-        <span className="text-[12px] font-semibold text-neutral-800">Inventaris</span>
+    <PosPage>
+      {/* Side menu */}
+      <PosSideMenu className="w-36">
+        <PosSideMenuHeader>
+          <Cube weight="fill" className="w-3.5 h-3.5 text-indigo-600 mr-1.5 inline-block" />
+          <span className="text-[10px] font-semibold text-neutral-500 uppercase tracking-widest">Inventaris</span>
+        </PosSideMenuHeader>
+        <PosSideMenuNav>
+          {NAV_ITEMS.map(({ id, label, icon: Icon }) => (
+            <PosSideMenuItem
+              key={id}
+              active={activeTab === id}
+              onClick={() => setActiveTab(id)}
+            >
+              <Icon weight={activeTab === id ? 'fill' : 'regular'} className="w-3.5 h-3.5 shrink-0" />
+              {label}
+            </PosSideMenuItem>
+          ))}
+        </PosSideMenuNav>
+      </PosSideMenu>
 
-        {/* Tabs */}
-        <div className="flex items-center ml-6 gap-0.5 bg-neutral-100 rounded-lg p-0.5">
-          {TABS.map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-            return (
-              <Button
-                key={tab.id}
-                variant="ghost"
-                onClick={() => setActiveTab(tab.id)}
-                className={cn(
-                  'flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium transition-colors',
-                  isActive
-                    ? 'bg-white text-indigo-700 shadow-sm'
-                    : 'text-neutral-500 hover:text-neutral-700'
-                )}
-              >
-                <Icon weight={isActive ? 'fill' : 'regular'} className="w-3.5 h-3.5" />
-                {tab.label}
-              </Button>
-            );
-          })}
+      {/* Content panel */}
+      <PosPanel>
+        {/* Panel header */}
+        <div className="h-12 px-4 border-b border-neutral-200 flex items-center bg-neutral-50 shrink-0">
+          <h2 className="text-[12px] font-semibold text-neutral-800">{TAB_TITLES[activeTab]}</h2>
         </div>
-      </div>
-
-      {/* ── Content ────────────────────────────────────────────────────────── */}
-      <div className="flex-1 min-h-0 overflow-hidden">
-        {activeTab === 'in' && (
-          <div className="h-full overflow-y-auto">
-            <StockInForm onSubmit={handleStockInSubmit} onDone={() => setActiveTab('log')} initialProductId={initialProductId ?? undefined} />
-          </div>
-        )}
-        {activeTab === 'out' && (
-          <div className="h-full overflow-y-auto">
-            <StockOutForm onSubmit={handleStockOutSubmit} onDone={() => setActiveTab('log')} />
-          </div>
-        )}
-        {activeTab === 'adjust' && (
-          <div className="h-full overflow-y-auto">
-            <AdjustmentForm onSubmit={handleAdjustSubmit} onDone={() => setActiveTab('log')} />
-          </div>
-        )}
-        {activeTab === 'transfer' && (
-          <div className="h-full overflow-y-auto">
-            <TransferForm onDone={() => setActiveTab('log')} />
-          </div>
-        )}
-        {activeTab === 'movement' && (
-          <div className="h-full overflow-hidden">
-            <StockMovementReport />
-          </div>
-        )}
-        {activeTab === 'log' && <InventoryLogTable />}
-      </div>
-    </div>
+        {/* Panel body */}
+        <div className="flex-1 min-h-0 overflow-y-auto">
+          {renderContent()}
+        </div>
+      </PosPanel>
+    </PosPage>
   );
 }

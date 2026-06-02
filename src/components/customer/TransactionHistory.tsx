@@ -7,12 +7,11 @@ import {
   Receipt,
   CaretUp,
   CaretDown,
-  CalendarBlank,
   Coins,
   Package,
-  User,
 } from 'phosphor-react';
 import { Button } from '@/components/ui/button';
+import { DataTable } from '@/components/fragments/data-table';
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
@@ -182,89 +181,96 @@ export default function TransactionHistory({ customerId, className }: Transactio
             <p>{error}</p>
             <Button variant="link" size="xs" onClick={loadTransactions} className="text-indigo-600 underline mt-1">Coba lagi</Button>
           </div>
-        ) : sorted.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-48 text-neutral-400">
-            <Receipt className="w-10 h-10 mb-3 opacity-30" />
-            <p className="text-[13px] font-medium">Belum ada transaksi</p>
-            <p className="text-[11px] mt-1">Riwayat transaksi akan muncul di sini</p>
-          </div>
         ) : (
-          <table className="w-full text-left border-separate border-spacing-0">
-            <thead className="sticky top-0 z-10">
-              <tr className="bg-neutral-50 border-b border-neutral-200">
-                <th className="px-3 py-2 text-[10px] font-semibold text-neutral-500 uppercase tracking-wider cursor-pointer hover:text-neutral-700 select-none"
-                  onClick={() => toggleSort('date')}>
+          <DataTable
+            data={sorted}
+            getRowKey={(tx) => tx.id}
+            emptyMessage={
+              <div className="flex flex-col items-center justify-center h-48 text-neutral-400">
+                <Receipt className="w-10 h-10 mb-3 opacity-30" />
+                <p className="text-[13px] font-medium">Belum ada transaksi</p>
+                <p className="text-[11px] mt-1">Riwayat transaksi akan muncul di sini</p>
+              </div>
+            }
+            columns={[
+              {
+                key: 'date',
+                header: (
                   <span className="flex items-center gap-0.5">
-                    <CalendarBlank className="w-3 h-3" />
                     Tanggal
                     {sortKey === 'date' && (sortDir === 'asc' ? <CaretUp className="w-3 h-3" /> : <CaretDown className="w-3 h-3" />)}
                   </span>
-                </th>
-                <th className="px-3 py-2 text-[10px] font-semibold text-neutral-500 uppercase tracking-wider cursor-pointer hover:text-neutral-700 select-none"
-                  onClick={() => toggleSort('invoice')}>
+                ),
+                sortable: true,
+                onHeaderClick: () => toggleSort('date'),
+                render: (tx) => (
+                  <>
+                    <p className="text-[11px] text-neutral-800 tabular-nums">{formatDate(tx.createdAt)}</p>
+                    <p className="text-[10px] text-neutral-400">{formatTime(tx.createdAt)}</p>
+                  </>
+                ),
+              },
+              {
+                key: 'invoiceNumber',
+                sortable: true,
+                onHeaderClick: () => toggleSort('invoice'),
+                header: (
                   <span className="flex items-center gap-0.5">
                     No. Invoice
                     {sortKey === 'invoice' && (sortDir === 'asc' ? <CaretUp className="w-3 h-3" /> : <CaretDown className="w-3 h-3" />)}
                   </span>
-                </th>
-                <th className="px-3 py-2 text-[10px] font-semibold text-neutral-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-3 py-2 text-[10px] font-semibold text-neutral-500 uppercase tracking-wider">
-                  Metode
-                </th>
-                <th className="px-3 py-2 text-[10px] font-semibold text-neutral-500 uppercase tracking-wider text-center">
-                  <Package className="w-3 h-3 inline" />
-                </th>
-                <th className="px-3 py-2 text-[10px] font-semibold text-neutral-500 uppercase tracking-wider text-right cursor-pointer hover:text-neutral-700 select-none"
-                  onClick={() => toggleSort('total')}>
+                ),
+                render: (tx) => (
+                  <p className="text-[11px] text-neutral-800 font-mono">{tx.invoiceNumber}</p>
+                ),
+              },
+              {
+                key: 'status',
+                header: 'Status',
+                render: (tx) => {
+                  const statusStyle = STATUS_COLORS[tx.status] || STATUS_COLORS.completed;
+                  return (
+                    <span className={cn('inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium', statusStyle.bg, statusStyle.text)}>
+                      {STATUS_LABEL[tx.status] || tx.status}
+                    </span>
+                  );
+                },
+              },
+              {
+                key: 'paymentMethod',
+                header: 'Metode',
+                render: (tx) => {
+                  const paymentStyle = PAYMENT_COLORS[tx.paymentMethod] || PAYMENT_COLORS.cash;
+                  return (
+                    <span className={cn('inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border', paymentStyle)}>
+                      {PAYMENT_LABEL[tx.paymentMethod] || tx.paymentMethod}
+                    </span>
+                  );
+                },
+              },
+              {
+                key: 'itemCount',
+                header: <Package className="w-3 h-3 inline" />,
+                headerClassName: 'text-center',
+                cellClassName: 'text-center text-[11px] text-neutral-500 tabular-nums',
+                render: (tx) => tx.itemCount,
+              },
+              {
+                key: 'total',
+                sortable: true,
+                onHeaderClick: () => toggleSort('total'),
+                header: (
                   <span className="flex items-center justify-end gap-0.5">
                     Total
                     {sortKey === 'total' && (sortDir === 'asc' ? <CaretUp className="w-3 h-3" /> : <CaretDown className="w-3 h-3" />)}
                   </span>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {sorted.map((tx) => {
-                const statusStyle = STATUS_COLORS[tx.status] || STATUS_COLORS.completed;
-                const paymentStyle = PAYMENT_COLORS[tx.paymentMethod] || PAYMENT_COLORS.cash;
-
-                return (
-                  <tr key={tx.id} className="border-b border-neutral-100 hover:bg-neutral-50 transition-colors">
-                    <td className="px-3 py-2">
-                      <p className="text-[11px] text-neutral-800 tabular-nums">{formatDate(tx.createdAt)}</p>
-                      <p className="text-[10px] text-neutral-400">{formatTime(tx.createdAt)}</p>
-                    </td>
-                    <td className="px-3 py-2">
-                      <p className="text-[11px] text-neutral-800 font-mono">{tx.invoiceNumber}</p>
-                      {tx.userName && (
-                        <p className="text-[10px] text-neutral-400 flex items-center gap-0.5">
-                          <User className="w-2.5 h-2.5" />{tx.userName}
-                        </p>
-                      )}
-                    </td>
-                    <td className="px-3 py-2">
-                      <span className={cn('inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium', statusStyle.bg, statusStyle.text)}>
-                        {STATUS_LABEL[tx.status] || tx.status}
-                      </span>
-                    </td>
-                    <td className="px-3 py-2">
-                      <span className={cn('inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border', paymentStyle)}>
-                        {PAYMENT_LABEL[tx.paymentMethod] || tx.paymentMethod}
-                      </span>
-                    </td>
-                    <td className="px-3 py-2 text-center text-[11px] text-neutral-500 tabular-nums">
-                      {tx.itemCount}
-                    </td>
-                    <td className="px-3 py-2 text-right text-[12px] font-semibold text-neutral-800 tabular-nums">
-                      {formatRupiah(tx.total)}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                ),
+                headerClassName: 'text-right',
+                cellClassName: 'text-right text-[12px] font-semibold text-neutral-800 tabular-nums',
+                render: (tx) => formatRupiah(tx.total),
+              },
+            ]}
+          />
         )}
       </div>
     </div>

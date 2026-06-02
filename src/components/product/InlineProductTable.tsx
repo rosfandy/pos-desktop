@@ -15,6 +15,7 @@ import {
   WarningCircle,
   Funnel,
 } from 'phosphor-react';
+import { PosTable, PosTableHead } from '@/components/ui/table';
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
@@ -456,8 +457,8 @@ export default function InlineProductTable({ refreshKey }: { refreshKey?: number
 
       {/* ── Table ───────────────────────────────────────────────────────────── */}
       <div className="flex-1 overflow-auto [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-neutral-300 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-neutral-400">
-        <table className="w-full text-left border-collapse min-w-[1100px] [&_td]:border-r [&_th]:border-r [&_td]:border-neutral-200 [&_th]:border-neutral-200">
-          <thead className="sticky top-0 z-10">
+        <PosTable className="min-w-[1100px] [&_td]:border-r [&_th]:border-r [&_td]:border-neutral-200 [&_th]:border-neutral-200">
+          <PosTableHead>
             <tr className="bg-neutral-50 border-b-2 border-neutral-300">
               <th className="px-2 py-1.5 text-[10px] font-semibold text-neutral-500 uppercase w-8">No</th>
               <th className="px-2 py-1.5 text-[10px] font-semibold text-neutral-500 uppercase w-[100px]">SKU</th>
@@ -471,7 +472,7 @@ export default function InlineProductTable({ refreshKey }: { refreshKey?: number
               <th className="px-2 py-1.5 text-[10px] font-semibold text-neutral-500 uppercase text-center w-[60px]">Min</th>
               <th className="px-2 py-1.5 text-[10px] font-semibold text-neutral-500 uppercase text-center w-24 sticky right-0 bg-neutral-50 z-20 border-l border-neutral-200">Aksi</th>
             </tr>
-          </thead>
+          </PosTableHead>
           <tbody>
             {/* ── New rows (editing) ──── */}
             {[...editingRows.entries()]
@@ -679,7 +680,7 @@ export default function InlineProductTable({ refreshKey }: { refreshKey?: number
               </td>
             </tr>
           </tfoot>
-        </table>
+        </PosTable>
       </div>
     </div>
   );

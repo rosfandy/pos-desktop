@@ -3,6 +3,7 @@
 import { useMemo, useState, useEffect } from 'react';
 import { useInventoryStore } from '@/stores/inventoryStore';
 import { Input } from '@/components/ui/input';
+import { DataTable } from '@/components/fragments/data-table';
 import { cn } from '@/lib/utils';
 import { CaretUp, CaretDown, MagnifyingGlass, Funnel, ArrowClockwise } from 'phosphor-react';
 
@@ -141,130 +142,105 @@ export default function InventoryLogTable() {
 
       {/* ── Table ─────────────────────────────────────────────────────────── */}
       <div className="flex-1 overflow-y-auto">
-        <table className="w-full text-left border-collapse">
-          <thead className="sticky top-0 z-10">
-            <tr>
-              <th className="px-3 py-2 text-[10px] font-semibold text-neutral-500 uppercase tracking-wider cursor-pointer hover:text-neutral-700 select-none border-r border-b-2 border-neutral-200 bg-neutral-50"
-                onClick={() => toggleSort('createdAt')}
-              >
+        <DataTable
+          data={filtered}
+          getRowKey={(log) => log.id}
+          emptyMessage={loading ? 'Memuat…' : 'Belum ada log stok'}
+          columns={[
+            {
+              key: 'createdAt',
+              header: (
                 <span className="flex items-center gap-0.5">
                   Tanggal
-                  {sortKey === 'createdAt' && (
-                    sortDir === 'asc' ? <CaretUp className="w-3 h-3" /> : <CaretDown className="w-3 h-3" />
-                  )}
+                  {sortKey === 'createdAt' && (sortDir === 'asc' ? <CaretUp className="w-3 h-3" /> : <CaretDown className="w-3 h-3" />)}
                 </span>
-              </th>
-              <th className="px-3 py-2 text-[10px] font-semibold text-neutral-500 uppercase tracking-wider cursor-pointer hover:text-neutral-700 select-none border-r border-b-2 border-neutral-200 bg-neutral-50"
-                onClick={() => toggleSort('productName')}
-              >
+              ),
+              sortable: true,
+              onHeaderClick: () => toggleSort('createdAt'),
+              cellClassName: 'text-[10px] text-neutral-500 whitespace-nowrap',
+              render: (log) => formatDate(log.createdAt),
+            },
+            {
+              key: 'productName',
+              header: (
                 <span className="flex items-center gap-0.5">
                   Produk
-                  {sortKey === 'productName' && (
-                    sortDir === 'asc' ? <CaretUp className="w-3 h-3" /> : <CaretDown className="w-3 h-3" />
-                  )}
+                  {sortKey === 'productName' && (sortDir === 'asc' ? <CaretUp className="w-3 h-3" /> : <CaretDown className="w-3 h-3" />)}
                 </span>
-              </th>
-              <th className="px-3 py-2 text-[10px] font-semibold text-neutral-500 uppercase tracking-wider cursor-pointer hover:text-neutral-700 select-none border-r border-b-2 border-neutral-200 bg-neutral-50"
-                onClick={() => toggleSort('locationName')}
-              >
+              ),
+              sortable: true,
+              onHeaderClick: () => toggleSort('productName'),
+              cellClassName: 'text-[11px] font-medium text-neutral-800',
+              render: (log) => log.productName || log.productId,
+            },
+            {
+              key: 'locationName',
+              header: (
                 <span className="flex items-center gap-0.5">
                   Lokasi
-                  {sortKey === 'locationName' && (
-                    sortDir === 'asc' ? <CaretUp className="w-3 h-3" /> : <CaretDown className="w-3 h-3" />
-                  )}
+                  {sortKey === 'locationName' && (sortDir === 'asc' ? <CaretUp className="w-3 h-3" /> : <CaretDown className="w-3 h-3" />)}
                 </span>
-              </th>
-              <th className="px-3 py-2 text-[10px] font-semibold text-neutral-500 uppercase tracking-wider cursor-pointer hover:text-neutral-700 select-none border-r border-b-2 border-neutral-200 bg-neutral-50"
-                onClick={() => toggleSort('type')}
-              >
+              ),
+              sortable: true,
+              onHeaderClick: () => toggleSort('locationName'),
+              cellClassName: 'text-[10px] text-neutral-600',
+              render: (log) => log.locationName || <span className="text-neutral-300 italic">—</span>,
+            },
+            {
+              key: 'type',
+              header: (
                 <span className="flex items-center gap-0.5">
                   Tipe
-                  {sortKey === 'type' && (
-                    sortDir === 'asc' ? <CaretUp className="w-3 h-3" /> : <CaretDown className="w-3 h-3" />
-                  )}
+                  {sortKey === 'type' && (sortDir === 'asc' ? <CaretUp className="w-3 h-3" /> : <CaretDown className="w-3 h-3" />)}
                 </span>
-              </th>
-              <th className="px-3 py-2 text-[10px] font-semibold text-neutral-500 uppercase tracking-wider text-right cursor-pointer hover:text-neutral-700 select-none border-r border-b-2 border-neutral-200 bg-neutral-50"
-                onClick={() => toggleSort('quantity')}
-              >
+              ),
+              sortable: true,
+              onHeaderClick: () => toggleSort('type'),
+              render: (log) => {
+                const badge = TYPE_BADGE[log.type] ?? { label: log.type, className: 'bg-neutral-100 text-neutral-600' };
+                return <span className={cn('inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium', badge.className)}>{badge.label}</span>;
+              },
+            },
+            {
+              key: 'quantity',
+              header: (
                 <span className="flex items-center justify-end gap-0.5">
                   Qty
-                  {sortKey === 'quantity' && (
-                    sortDir === 'asc' ? <CaretUp className="w-3 h-3" /> : <CaretDown className="w-3 h-3" />
-                  )}
+                  {sortKey === 'quantity' && (sortDir === 'asc' ? <CaretUp className="w-3 h-3" /> : <CaretDown className="w-3 h-3" />)}
                 </span>
-              </th>
-              <th className="px-3 py-2 text-[10px] font-semibold text-neutral-500 uppercase tracking-wider text-center border-r border-b-2 border-neutral-200 bg-neutral-50">
-                Unit
-              </th>
-              <th className="px-3 py-2 text-[10px] font-semibold text-neutral-500 uppercase tracking-wider border-r border-b-2 border-neutral-200 bg-neutral-50">
-                User
-              </th>
-              <th className="px-3 py-2 text-[10px] font-semibold text-neutral-500 uppercase tracking-wider border-b-2 border-neutral-200 bg-neutral-50">
-                Alasan
-              </th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {loading ? (
-              <tr>
-                <td colSpan={8} className="px-3 py-8 text-center text-neutral-400 text-[11px] border-b border-neutral-100">
-                  Memuat…
-                </td>
-              </tr>
-            ) : filtered.length === 0 ? (
-              <tr>
-                <td colSpan={8} className="px-3 py-8 text-center text-neutral-400 text-[11px] border-b border-neutral-100">
-                  Belum ada log stok
-                </td>
-              </tr>
-            ) : (
-              filtered.map((log) => {
-                const badge = TYPE_BADGE[log.type] ?? { label: log.type, className: 'bg-neutral-100 text-neutral-600' };
+              ),
+              sortable: true,
+              onHeaderClick: () => toggleSort('quantity'),
+              headerClassName: 'text-right',
+              cellClassName: 'text-[11px] text-right tabular-nums font-medium',
+              render: (log) => {
                 const isTransfer = log.type === 'transfer_in' || log.type === 'transfer_out';
                 const isPositive = ['in', 'return', 'transfer_in'].includes(log.type);
                 const qtyColor = isPositive ? 'text-emerald-600' : isTransfer ? 'text-violet-600' : 'text-red-600';
-
-                return (
-                  <tr key={log.id} className="hover:bg-neutral-50 transition-colors">
-                    <td className="px-3 py-1 text-[10px] text-neutral-500 whitespace-nowrap border-r border-b border-neutral-100">
-                      {formatDate(log.createdAt)}
-                    </td>
-                    <td className="px-3 py-1 text-[11px] font-medium text-neutral-800 border-r border-b border-neutral-100">
-                      {log.productName || log.productId}
-                    </td>
-                    <td className="px-3 py-1 text-[10px] text-neutral-600 border-r border-b border-neutral-100">
-                      {log.locationName || (
-                        <span className="text-neutral-300 italic">—</span>
-                      )}
-                    </td>
-                    <td className="px-3 py-1 border-r border-b border-neutral-100">
-                      <span className={cn(
-                        'inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium',
-                        badge.className
-                      )}>
-                        {badge.label}
-                      </span>
-                    </td>
-                    <td className={cn('px-3 py-1 text-[11px] text-right tabular-nums font-medium border-r border-b border-neutral-100', qtyColor)}>
-                      {log.quantity > 0 ? '+' : ''}{log.quantity}
-                    </td>
-                    <td className="px-3 py-1 text-[10px] text-neutral-500 text-center border-r border-b border-neutral-100">
-                      {log.unit}
-                    </td>
-                    <td className="px-3 py-1 text-[10px] text-neutral-400 border-r border-b border-neutral-100">
-                      {log.userName || log.userId.substring(0, 8)}
-                    </td>
-                    <td className="px-3 py-1 text-[10px] text-neutral-500 max-w-[180px] truncate border-b border-neutral-100" title={log.reason ?? undefined}>
-                      {log.reason || '—'}
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
+                return <span className={qtyColor}>{log.quantity > 0 ? '+' : ''}{log.quantity}</span>;
+              },
+            },
+            {
+              key: 'unit',
+              header: 'Unit',
+              headerClassName: 'text-center',
+              cellClassName: 'text-[10px] text-neutral-500 text-center',
+              render: (log) => log.unit,
+            },
+            {
+              key: 'userName',
+              header: 'User',
+              cellClassName: 'text-[10px] text-neutral-400',
+              render: (log) => log.userName || log.userId.substring(0, 8),
+            },
+            {
+              key: 'reason',
+              header: 'Alasan',
+              cellClassName: 'text-[10px] text-neutral-500 max-w-[180px] truncate',
+              render: (log) => <span title={log.reason ?? undefined}>{log.reason || '—'}</span>,
+            },
+          ]}
+        />
       </div>
 
       {/* ── Footer ─────────────────────────────────────────────────────────── */}

@@ -84,7 +84,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
       <Sidebar collapsed={sidebarCollapsed} />
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
         <Toolbar sidebarCollapsed={sidebarCollapsed} onToggleSidebar={toggleSidebar} />
-        <main className="flex-1 overflow-y-auto p-4 bg-neutral-100">{children}</main>
+        <main className="flex-1 overflow-y-auto bg-neutral-100">{children}</main>
         <StatusBar />
       </div>
     </div>
@@ -112,8 +112,8 @@ function Panel({
   className?: string;
 }) {
   return (
-    <div className={cn('flex flex-col bg-white border border-neutral-200 rounded overflow-hidden', className)}>
-      <div className="h-8 flex items-center justify-between px-3 border-b border-neutral-100 bg-neutral-50 shrink-0">
+    <div className={cn('flex flex-col bg-white border border-neutral-300 shadow-sm overflow-hidden', className)}>
+      <div className="h-9 flex items-center justify-between px-3 border-b border-neutral-200 bg-neutral-50 shrink-0">
         <span className="text-[11px] font-semibold text-neutral-700 uppercase tracking-wide">{title}</span>
         {toolbar && <div className="flex items-center gap-1">{toolbar}</div>}
       </div>
@@ -202,8 +202,7 @@ function DashboardPage() {
 
   return (
     <>
-    <div className="flex flex-col gap-3 h-full">
-
+    <div className="flex flex-col gap-3 h-full p-2">
       {/* Stat strip */}
       <div className="grid grid-cols-4 gap-3">
         {[

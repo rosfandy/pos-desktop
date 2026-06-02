@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectPortal, SelectPositioner } from '@/components/ui/select';
@@ -9,10 +8,17 @@ import { cn, unwrap } from '@/lib/utils';
 import type { PrinterInfo } from '@/lib/api';
 import {
   Storefront, MapPin, Phone, Percent, CheckCircle, Warning, FloppyDisk,
-  WarningCircle, Printer, Package, Gear, TextT, ArrowClockwise
+  WarningCircle, Printer, Package, TextT, ArrowClockwise,
+  SidebarSimple, Receipt, Shield,
 } from 'phosphor-react';
+import {
+  PosPageColumn, PosToolbar, PosToolbarTitle,
+  PosSideMenu, PosSideMenuHeader, PosSideMenuNav, PosSideMenuItem,
+  PosPanel, PosPanelBody, PosButton, PosAlert, PosForm, PosFormSection,
+  PosLabel, PosHint,
+} from '@/components/ui/pos-ui';
 
-// ─── Tab definitions ───────────────────────────────────────────────────────────
+// ── Tab definitions ───────────────────────────────────────────────────────────
 
 type TabId = 'general' | 'print' | 'inventory' | 'tampilan';
 
@@ -23,13 +29,290 @@ interface TabItem {
 }
 
 const TABS: TabItem[] = [
-  { id: 'general',   label: 'Umum',        icon: <Gear className="w-4 h-4" /> },
-  { id: 'print',     label: 'Cetak',       icon: <Printer className="w-4 h-4" /> },
-  { id: 'inventory', label: 'Inventaris',  icon: <Package className="w-4 h-4" /> },
-  { id: 'tampilan',  label: 'Tampilan',    icon: <TextT className="w-4 h-4" /> },
+  { id: 'general',   label: 'Umum',        icon: <Storefront className="w-3.5 h-3.5" /> },
+  { id: 'print',     label: 'Cetak',       icon: <Printer className="w-3.5 h-3.5" /> },
+  { id: 'inventory', label: 'Inventaris',  icon: <Package className="w-3.5 h-3.5" /> },
+  { id: 'tampilan',  label: 'Tampilan',    icon: <TextT className="w-3.5 h-3.5" /> },
 ];
 
-// ─── Component ─────────────────────────────────────────────────────────────────
+const TAB_TITLES: Record<TabId, string> = {
+  general:   'Pengaturan Umum',
+  print:     'Pengaturan Cetak',
+  inventory: 'Pengaturan Inventaris',
+  tampilan:  'Tampilan & Ukuran',
+};
+
+const TAB_DESCRIPTIONS: Record<TabId, string> = {
+  general:   'Informasi toko untuk header struk dan laporan.',
+  print:     'Printer thermal, header/footer struk, opsi cetak.',
+  inventory: 'Ambang batas stok rendah global.',
+  tampilan:  'Ukuran huruf keseluruhan aplikasi.',
+};
+
+// ── Section renderers ─────────────────────────────────────────────────────────
+
+function GeneralSection({ form, setForm }: { form: any; setForm: any }) {
+  return (
+    <PosForm>
+      <PosFormSection className="flex items-center gap-2">
+        <Storefront weight="fill" className="w-4 h-4 text-indigo-600" />
+        <span className="text-[11px] font-semibold text-neutral-800 uppercase tracking-wide">Informasi Toko</span>
+      </PosFormSection>
+
+      <div className="space-y-1">
+        <PosLabel htmlFor="storeName">Nama Toko</PosLabel>
+        <div className="relative">
+          <Storefront className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400 pointer-events-none" />
+          <Input
+            id="storeName"
+            value={form.storeName}
+            onChange={(e) => setForm((f: any) => ({ ...f, storeName: e.target.value }))}
+            placeholder="Contoh: Toko Saya"
+            required
+            className="pos-input pl-10 h-9"
+          />
+        </div>
+      </div>
+
+      <div className="space-y-1">
+        <PosLabel htmlFor="storeAddress">Alamat Toko</PosLabel>
+        <div className="relative">
+          <MapPin className="absolute left-3 top-3 w-4 h-4 text-neutral-400 pointer-events-none" />
+          <Textarea
+            id="storeAddress"
+            value={form.storeAddress}
+            onChange={(e) => setForm((f: any) => ({ ...f, storeAddress: e.target.value }))}
+            placeholder="Contoh: Jl. Sudirman No. 123"
+            rows={3}
+            className="pl-10 text-[12px] bg-white border border-neutral-300 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 resize-none"
+          />
+        </div>
+      </div>
+
+      <div className="space-y-1">
+        <PosLabel htmlFor="storePhone">Nomor Telepon</PosLabel>
+        <div className="relative">
+          <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400 pointer-events-none" />
+          <Input
+            id="storePhone"
+            value={form.storePhone}
+            onChange={(e) => setForm((f: any) => ({ ...f, storePhone: e.target.value }))}
+            placeholder="Contoh: 08123456789"
+            className="pos-input pl-10 h-9"
+          />
+        </div>
+      </div>
+
+      <div className="space-y-1">
+        <PosLabel htmlFor="taxRate">Pajak (%)</PosLabel>
+        <div className="relative">
+          <Percent className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400 pointer-events-none" />
+          <Input
+            id="taxRate"
+            type="number"
+            min={0}
+            max={100}
+            step={0.1}
+            value={form.taxRate}
+            onChange={(e) => setForm((f: any) => ({ ...f, taxRate: parseFloat(e.target.value) || 0 }))}
+            placeholder="0"
+            className="pos-input pl-10 h-9"
+          />
+        </div>
+        <PosHint>0 = nonaktif. Pajak akan otomatis ditambahkan ke setiap transaksi.</PosHint>
+      </div>
+    </PosForm>
+  );
+}
+
+function PrintSection({ form, setForm, printers, printersLoading, fetchPrinters }: { form: any; setForm: any; printers: PrinterInfo[]; printersLoading: boolean; fetchPrinters: () => void }) {
+  return (
+    <PosForm>
+      <PosFormSection className="flex items-center gap-2">
+        <Receipt weight="fill" className="w-4 h-4 text-indigo-600" />
+        <span className="text-[11px] font-semibold text-neutral-800 uppercase tracking-wide">Pengaturan Cetak / Struk</span>
+      </PosFormSection>
+
+      <div className="space-y-1">
+        <PosLabel>Printer Thermal</PosLabel>
+        <div className="flex items-center gap-2">
+          <div className="relative flex-1">
+            <Printer className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400 pointer-events-none z-10" />
+            <Select
+              value={form.printerName || '__default__'}
+              onValueChange={(val) => {
+                const v = val ?? '';
+                setForm((f: any) => ({ ...f, printerName: v === '__default__' ? '' : v }));
+              }}
+            >
+              <SelectTrigger className="pos-input h-9 pl-10">
+                <SelectValue placeholder="Pilih printer (kosong = default)" />
+              </SelectTrigger>
+              <SelectPortal>
+                <SelectPositioner>
+                  <SelectContent>
+                    <SelectItem value="__default__" className="text-[11px]">
+                      <span className="text-neutral-400">Default sistem</span>
+                    </SelectItem>
+                    {printers.map((p) => (
+                      <SelectItem key={p.name} value={p.name} className="text-[11px]">
+                        <span className={cn('flex flex-col gap-0', p.status !== 0 ? 'text-amber-600' : '')}>
+                          <span className="font-medium">{p.displayName}</span>
+                          {p.displayName !== p.name && (
+                            <span className="text-[9px] text-neutral-400 font-mono">{p.name}</span>
+                          )}
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </SelectPositioner>
+              </SelectPortal>
+            </Select>
+          </div>
+          <button
+            type="button"
+            onClick={fetchPrinters}
+            disabled={printersLoading}
+            className="h-9 w-9 shrink-0 flex items-center justify-center text-neutral-400 hover:text-indigo-600 hover:bg-neutral-100 transition-colors border border-neutral-300"
+            title="Muat ulang daftar printer"
+          >
+            <ArrowClockwise className={cn('w-4 h-4', printersLoading && 'animate-spin')} />
+          </button>
+        </div>
+        <PosHint>
+          Pilih printer thermal. Nilai yang disimpan adalah <strong>nama sistem</strong> printer.
+        </PosHint>
+        {form.printerName && form.printerName !== '' && (
+          <p className="text-[10px] text-indigo-600 font-mono">Tersimpan: {form.printerName}</p>
+        )}
+        {printers.length === 0 && !printersLoading && (
+          <PosHint className="text-amber-600">
+            Tidak ada printer terdeteksi. Pastikan printer terhubung dan driver terinstal.
+          </PosHint>
+        )}
+      </div>
+
+      <div className="space-y-1">
+        <PosLabel htmlFor="receiptHeader">Teks Header Struk</PosLabel>
+        <Textarea
+          id="receiptHeader"
+          value={form.receiptHeader}
+          onChange={(e) => setForm((f: any) => ({ ...f, receiptHeader: e.target.value }))}
+          placeholder="Terima Kasih"
+          rows={2}
+          className="text-[12px] bg-white border border-neutral-300 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 resize-none"
+        />
+        <PosHint>Teks yang muncul di bagian atas struk.</PosHint>
+      </div>
+
+      <div className="space-y-1">
+        <PosLabel htmlFor="receiptFooter">Teks Footer Struk</PosLabel>
+        <Textarea
+          id="receiptFooter"
+          value={form.receiptFooter}
+          onChange={(e) => setForm((f: any) => ({ ...f, receiptFooter: e.target.value }))}
+          placeholder="Barang yang sudah dibeli tidak dapat dikembalikan"
+          rows={2}
+          className="text-[12px] bg-white border border-neutral-300 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 resize-none"
+        />
+        <PosHint>Teks yang muncul di bagian bawah struk.</PosHint>
+      </div>
+
+      <div className="space-y-2 pt-1">
+        {[
+          { id: 'receiptShowLogo',         label: 'Tampilkan logo toko di struk',            key: 'receiptShowLogo' },
+          { id: 'receiptShowTaxBreakdown', label: 'Tampilkan rincian pajak di struk',       key: 'receiptShowTaxBreakdown' },
+          { id: 'receiptShowQr',           label: 'Tampilkan QR Code pembayaran di struk',  key: 'receiptShowQr' },
+        ].map((opt) => (
+          <div key={opt.id} className="flex items-center gap-2">
+            <Checkbox
+              id={opt.id}
+              checked={form[opt.key]}
+              onCheckedChange={(checked) => setForm((f: any) => ({ ...f, [opt.key]: checked === true }))}
+              className="data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600"
+            />
+            <label htmlFor={opt.id} className="text-[12px] text-neutral-700 cursor-pointer select-none">
+              {opt.label}
+            </label>
+          </div>
+        ))}
+      </div>
+    </PosForm>
+  );
+}
+
+function InventorySection({ form, setForm }: { form: any; setForm: any }) {
+  return (
+    <PosForm>
+      <PosFormSection className="flex items-center gap-2">
+        <Shield weight="fill" className="w-4 h-4 text-indigo-600" />
+        <span className="text-[11px] font-semibold text-neutral-800 uppercase tracking-wide">Pengaturan Inventaris</span>
+      </PosFormSection>
+
+      <div className="space-y-1">
+        <PosLabel htmlFor="minStockThreshold">Ambang Batas Stok Rendah (Global)</PosLabel>
+        <div className="relative">
+          <WarningCircle className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400 pointer-events-none" />
+          <Input
+            id="minStockThreshold"
+            type="number"
+            min={0}
+            value={form.minStockThreshold || ''}
+            onChange={(e) => setForm((f: any) => ({ ...f, minStockThreshold: parseInt(e.target.value || '0', 10) || 0 }))}
+            placeholder="0 (pakai ambang per-produk)"
+            className="pos-input pl-10 h-9"
+          />
+        </div>
+        <PosHint>
+          Jika diisi, produk dengan stok di bawah angka ini akan ditandai stok rendah. Jika 0, gunakan ambang batas per-produk (min_stock).
+        </PosHint>
+      </div>
+    </PosForm>
+  );
+}
+
+function TampilanSection({ form, setForm }: { form: any; setForm: any }) {
+  const sizes: { value: 'small' | 'medium' | 'large'; label: string }[] = [
+    { value: 'small',  label: 'Kecil' },
+    { value: 'medium', label: 'Sedang' },
+    { value: 'large',  label: 'Besar' },
+  ];
+
+  return (
+    <PosForm>
+      <PosFormSection className="flex items-center gap-2">
+        <TextT weight="fill" className="w-4 h-4 text-indigo-600" />
+        <span className="text-[11px] font-semibold text-neutral-800 uppercase tracking-wide">Tampilan & Ukuran</span>
+      </PosFormSection>
+
+      <div className="space-y-2">
+        <PosLabel>Ukuran Huruf</PosLabel>
+        <PosHint>Pilih ukuran huruf keseluruhan aplikasi.</PosHint>
+        <div className="flex gap-2">
+          {sizes.map((s) => (
+            <button
+              key={s.value}
+              type="button"
+              onClick={() => setForm((f: any) => ({ ...f, fontSize: s.value }))}
+              className={cn(
+                'flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium border transition-colors',
+                form.fontSize === s.value
+                  ? 'bg-indigo-50 border-indigo-300 text-indigo-700'
+                  : 'bg-white border-neutral-300 text-neutral-600 hover:bg-neutral-50'
+              )}
+            >
+              <TextT className="w-3.5 h-3.5" />
+              {s.label}
+            </button>
+          ))}
+        </div>
+        <PosHint>Perubahan ukuran huruf akan langsung diterapkan setelah disimpan.</PosHint>
+      </div>
+    </PosForm>
+  );
+}
+
+// ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function SettingsPage() {
   const {
@@ -40,43 +323,26 @@ export default function SettingsPage() {
 
   const [activeTab, setActiveTab] = useState<TabId>('general');
   const [form, setForm] = useState({
-    storeName: '',
-    storeAddress: '',
-    storePhone: '',
-    taxRate: 0,
-    receiptHeader: '',
-    receiptFooter: '',
-    receiptShowLogo: false,
-    receiptShowTaxBreakdown: true,
-    receiptShowQr: false,
-    minStockThreshold: 0,
-    printerName: '',
-    fontSize: 'medium' as 'small' | 'medium' | 'large',
+    storeName: '', storeAddress: '', storePhone: '', taxRate: 0,
+    receiptHeader: '', receiptFooter: '', receiptShowLogo: false,
+    receiptShowTaxBreakdown: true, receiptShowQr: false,
+    minStockThreshold: 0, printerName: '', fontSize: 'medium' as 'small' | 'medium' | 'large',
   });
-
   const [showSuccess, setShowSuccess] = useState(false);
   const [printers, setPrinters] = useState<PrinterInfo[]>([]);
   const [printersLoading, setPrintersLoading] = useState(false);
 
-  // Fetch available printers
   const fetchPrinters = async () => {
     setPrintersLoading(true);
     try {
       const res = await window.api.printerList();
       const data = unwrap<PrinterInfo[]>(res);
       if (data) setPrinters(data);
-    } catch { /* silent */ }
-    finally { setPrintersLoading(false); }
+    } finally { setPrintersLoading(false); }
   };
 
-  useEffect(() => {
-    fetchPrinters();
-  }, []);
-
-  useEffect(() => {
-    loadSettings();
-  }, [loadSettings]);
-
+  useEffect(() => { fetchPrinters(); }, []);
+  useEffect(() => { loadSettings(); }, [loadSettings]);
   useEffect(() => {
     setForm({
       storeName, storeAddress, storePhone, taxRate,
@@ -107,376 +373,86 @@ export default function SettingsPage() {
     form.printerName !== printerName ||
     form.fontSize !== fontSize;
 
-  // ── Section renderers ────────────────────────────────────────────────────────
-
-  function renderGeneral() {
-    return (
-      <div className="space-y-4">
-        <p className="text-[10px] font-semibold text-neutral-500 uppercase tracking-wide">Informasi Toko</p>
-
-        {/* Store Name */}
-        <div className="space-y-1">
-          <label className="text-[10px] font-semibold text-neutral-700 uppercase tracking-wide">Nama Toko</label>
-          <div className="relative">
-            <Storefront className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400 pointer-events-none" />
-            <Input
-              value={form.storeName}
-              onChange={(e) => setForm((f) => ({ ...f, storeName: e.target.value }))}
-              placeholder="Contoh: Toko Saya"
-              required
-              className="h-9 pl-10 text-[12px] bg-white border-neutral-300 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
-            />
-          </div>
-        </div>
-
-        {/* Store Address */}
-        <div className="space-y-1">
-          <label className="text-[10px] font-semibold text-neutral-700 uppercase tracking-wide">Alamat Toko</label>
-          <div className="relative">
-            <MapPin className="absolute left-3 top-3 w-4 h-4 text-neutral-400 pointer-events-none" />
-            <Textarea
-              value={form.storeAddress}
-              onChange={(e) => setForm((f) => ({ ...f, storeAddress: e.target.value }))}
-              placeholder="Contoh: Jl. Sudirman No. 123"
-              rows={3}
-              className="pl-10 text-[12px] bg-white border-neutral-300 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 resize-none"
-            />
-          </div>
-        </div>
-
-        {/* Store Phone */}
-        <div className="space-y-1">
-          <label className="text-[10px] font-semibold text-neutral-700 uppercase tracking-wide">Nomor Telepon</label>
-          <div className="relative">
-            <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400 pointer-events-none" />
-            <Input
-              value={form.storePhone}
-              onChange={(e) => setForm((f) => ({ ...f, storePhone: e.target.value }))}
-              placeholder="Contoh: 08123456789"
-              className="h-9 pl-10 text-[12px] bg-white border-neutral-300 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
-            />
-          </div>
-        </div>
-
-        {/* Tax Rate */}
-        <div className="space-y-1">
-          <label className="text-[10px] font-semibold text-neutral-700 uppercase tracking-wide">Pajak (%)</label>
-          <div className="relative">
-            <Percent className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400 pointer-events-none" />
-            <Input
-              type="number"
-              min={0}
-              max={100}
-              step={0.1}
-              value={form.taxRate}
-              onChange={(e) => setForm((f) => ({ ...f, taxRate: parseFloat(e.target.value) || 0 }))}
-              placeholder="0"
-              className="h-9 pl-10 text-[12px] bg-white border-neutral-300 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
-            />
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  function renderPrint() {
-    return (
-      <div className="space-y-4">
-        <p className="text-[10px] font-semibold text-neutral-500 uppercase tracking-wide">Pengaturan Cetak / Struk</p>
-
-        {/* Printer Name */}
-        <div className="space-y-1">
-          <label className="text-[10px] font-semibold text-neutral-700 uppercase tracking-wide">Printer Thermal</label>
-          <div className="flex items-center gap-2">
-            <div className="relative flex-1">
-              <Printer className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400 pointer-events-none z-10" />
-              <Select
-                value={form.printerName || '__default__'}
-                onValueChange={(val) => {
-                  const v = val ?? '';
-                  setForm((f) => ({ ...f, printerName: v === '__default__' ? '' : v }));
-                }}
-              >
-                <SelectTrigger className="h-9 pl-10 text-[12px] bg-white border-neutral-300 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
-                  <SelectValue placeholder="Pilih printer (kosong = default sistem)" />
-                </SelectTrigger>
-                <SelectPortal>
-                  <SelectPositioner>
-                    <SelectContent>
-                      <SelectItem value="__default__" className="text-[11px]">
-                        <span className="text-neutral-400">Default sistem</span>
-                      </SelectItem>
-                      {printers.map((p) => (
-                        <SelectItem key={p.name} value={p.name} className="text-[11px]">
-                          <span className={cn('flex flex-col gap-0', p.status !== 0 ? 'text-amber-600' : '')}>
-                            <span className="font-medium">{p.displayName}</span>
-                            {p.displayName !== p.name && (
-                              <span className="text-[9px] text-neutral-400 font-mono">{p.name}</span>
-                            )}
-                          </span>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </SelectPositioner>
-                </SelectPortal>
-              </Select>
-            </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={fetchPrinters}
-              disabled={printersLoading}
-              className="h-9 w-9 shrink-0 text-neutral-400 hover:text-indigo-600"
-              title="Muat ulang daftar printer"
-            >
-              <ArrowClockwise className={cn('w-4 h-4', printersLoading && 'animate-spin')} />
-            </Button>
-          </div>
-          <p className="text-[10px] text-neutral-500">
-            Pilih printer thermal. Nilai yang disimpan adalah <strong>nama sistem</strong> printer (ditampilkan dalam font monospace di bawah nama tampilan).
-          </p>
-          {form.printerName && form.printerName !== '' && (
-            <p className="text-[10px] text-indigo-600 font-mono">Tersimpan: {form.printerName}</p>
-          )}
-          {printers.length === 0 && !printersLoading && (
-            <p className="text-[10px] text-amber-600">Tidak ada printer terdeteksi. Pastikan printer terhubung dan driver terinstal.</p>
-          )}
-        </div>
-
-        {/* Receipt Header */}
-        <div className="space-y-1">
-          <label className="text-[10px] font-semibold text-neutral-700 uppercase tracking-wide">Teks Header Struk</label>
-          <Textarea
-            value={form.receiptHeader}
-            onChange={(e) => setForm((f) => ({ ...f, receiptHeader: e.target.value }))}
-            placeholder="Terima Kasih"
-            rows={2}
-            className="text-[12px] bg-white border-neutral-300 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 resize-none"
-          />
-          <p className="text-[10px] text-neutral-500">Teks yang muncul di bagian atas struk.</p>
-        </div>
-
-        {/* Receipt Footer */}
-        <div className="space-y-1">
-          <label className="text-[10px] font-semibold text-neutral-700 uppercase tracking-wide">Teks Footer Struk</label>
-          <Textarea
-            value={form.receiptFooter}
-            onChange={(e) => setForm((f) => ({ ...f, receiptFooter: e.target.value }))}
-            placeholder="Barang yang sudah dibeli tidak dapat dikembalikan"
-            rows={2}
-            className="text-[12px] bg-white border-neutral-300 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 resize-none"
-          />
-          <p className="text-[10px] text-neutral-500">Teks yang muncul di bagian bawah struk.</p>
-        </div>
-
-        {/* Checkbox options */}
-        <div className="space-y-3 pt-1">
-          <div className="flex items-center gap-2">
-            <Checkbox
-              id="receiptShowLogo"
-              checked={form.receiptShowLogo}
-              onCheckedChange={(checked) => setForm((f) => ({ ...f, receiptShowLogo: checked === true }))}
-              className="data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600"
-            />
-            <label htmlFor="receiptShowLogo" className="text-[12px] text-neutral-700 cursor-pointer select-none">
-              Tampilkan logo toko di struk
-            </label>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Checkbox
-              id="receiptShowTaxBreakdown"
-              checked={form.receiptShowTaxBreakdown}
-              onCheckedChange={(checked) => setForm((f) => ({ ...f, receiptShowTaxBreakdown: checked === true }))}
-              className="data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600"
-            />
-            <label htmlFor="receiptShowTaxBreakdown" className="text-[12px] text-neutral-700 cursor-pointer select-none">
-              Tampilkan rincian pajak di struk
-            </label>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Checkbox
-              id="receiptShowQr"
-              checked={form.receiptShowQr}
-              onCheckedChange={(checked) => setForm((f) => ({ ...f, receiptShowQr: checked === true }))}
-              className="data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600"
-            />
-            <label htmlFor="receiptShowQr" className="text-[12px] text-neutral-700 cursor-pointer select-none">
-              Tampilkan QR Code pembayaran di struk
-            </label>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  function renderInventory() {
-    return (
-      <div className="space-y-4">
-        <p className="text-[10px] font-semibold text-neutral-500 uppercase tracking-wide">Pengaturan Inventaris</p>
-
-        {/* Min Stock Threshold */}
-        <div className="space-y-1">
-          <label className="text-[10px] font-semibold text-neutral-700 uppercase tracking-wide">Ambang Batas Stok Rendah (Global)</label>
-          <div className="relative">
-            <WarningCircle className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400 pointer-events-none" />
-            <Input
-              type="number"
-              min={0}
-              value={form.minStockThreshold || ''}
-              onChange={(e) => setForm((f) => ({ ...f, minStockThreshold: parseInt(e.target.value || '0', 10) || 0 }))}
-              placeholder="0 (pakai ambang per-produk)"
-              className="h-9 pl-10 text-[12px] bg-white border-neutral-300 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
-            />
-          </div>
-          <p className="text-[10px] text-neutral-500">
-            Jika diisi, produk dengan stok di bawah angka ini akan ditandai stok rendah. Jika 0, gunakan ambang batas per-produk (min_stock).
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  function renderPreferences() {
-    const sizes: { value: 'small' | 'medium' | 'large'; label: string }[] = [
-      { value: 'small',  label: 'Kecil' },
-      { value: 'medium', label: 'Sedang' },
-      { value: 'large',  label: 'Besar' },
-    ];
-
-    return (
-      <div className="space-y-4">
-        <p className="text-[10px] font-semibold text-neutral-500 uppercase tracking-wide">Ukuran Huruf</p>
-
-        <div className="space-y-1">
-          <p className="text-[10px] text-neutral-600">Pilih ukuran huruf keseluruhan aplikasi.</p>
-          <div className="flex gap-2">
-            {sizes.map((s) => (
-              <button
-                key={s.value}
-                type="button"
-                onClick={() => setForm((f) => ({ ...f, fontSize: s.value }))}
-                className={cn(
-                  'flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded border transition-colors',
-                  form.fontSize === s.value
-                    ? 'bg-indigo-50 border-indigo-300 text-indigo-700'
-                    : 'bg-white border-neutral-200 text-neutral-600 hover:bg-neutral-50'
-                )}
-              >
-                <TextT className="w-4 h-4" />
-                {s.label}
-              </button>
-            ))}
-          </div>
-          <p className="text-[10px] text-neutral-400">
-            Perubahan ukuran huruf akan langsung diterapkan setelah disimpan.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  // ── Loading state ────────────────────────────────────────────────────────────
-
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-full bg-neutral-100">
+      <div className="flex items-center justify-center h-full bg-neutral-200">
         <span className="text-[11px] text-neutral-500">Memuat pengaturan…</span>
       </div>
     );
   }
 
-  // ── Render ───────────────────────────────────────────────────────────────────
-
   return (
-    <div className="flex flex-col h-full bg-neutral-100">
-      {/* Toolbar */}
-      <div className="h-9 shrink-0 flex items-center px-4 border-b border-neutral-200 bg-white">
-        <div className="flex items-center gap-2">
-          <Storefront weight="fill" className="w-4 h-4 text-indigo-600" />
-          <span className="text-[11px] font-semibold text-neutral-700 uppercase tracking-wide">Pengaturan</span>
-        </div>
-      </div>
+    <PosPageColumn>
+      <PosToolbar>
+        <SidebarSimple weight="fill" className="w-3.5 h-3.5 text-indigo-600 mr-2" />
+        <PosToolbarTitle>Pengaturan</PosToolbarTitle>
+      </PosToolbar>
 
-      {/* Body: sidebar + content */}
-      <div className="flex flex-1 min-h-0">
-        {/* ── Sidebar ────────────────────────────────────────────────────────── */}
-        <nav className="w-48 shrink-0 border-r border-neutral-200 bg-white flex flex-col py-2">
-          {TABS.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={cn(
-                'flex items-center gap-2.5 px-4 py-2.5 text-[11px] font-medium text-left transition-colors',
-                activeTab === tab.id
-                  ? 'bg-indigo-50 text-indigo-700 border-r-2 border-indigo-600'
-                  : 'text-neutral-600 hover:bg-neutral-50 hover:text-neutral-800'
-              )}
-            >
-              {tab.icon}
-              {tab.label}
-            </button>
-          ))}
-        </nav>
+      <div className="flex flex-1 min-h-0 gap-2 ">
+        {/* Side menu */}
+        <PosSideMenu className="w-40">
+          <PosSideMenuHeader>
+            <span className="text-[10px] font-semibold text-neutral-500 uppercase tracking-widest">Kategori</span>
+          </PosSideMenuHeader>
+          <PosSideMenuNav>
+            {TABS.map((tab) => (
+              <PosSideMenuItem
+                key={tab.id}
+                active={activeTab === tab.id}
+                onClick={() => setActiveTab(tab.id)}
+              >
+                {tab.icon}
+                {tab.label}
+              </PosSideMenuItem>
+            ))}
+          </PosSideMenuNav>
+        </PosSideMenu>
 
-        {/* ── Content ─────────────────────────────────────────────────────────── */}
-        <div className="flex-1 flex flex-col min-h-0 bg-white">
-          <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
-            {/* Scrollable fields */}
-            <div className="flex-1 overflow-y-auto">
-              <div className="max-w-lg mx-auto p-6 space-y-6">
-                {/* Success */}
-                {showSuccess && (
-                  <div className="flex items-center gap-2 rounded border border-emerald-200 bg-emerald-50 px-3 py-2 text-[11px] text-emerald-700">
-                    <CheckCircle weight="fill" className="w-3.5 h-3.5 shrink-0" />
-                    Pengaturan berhasil disimpan.
-                  </div>
-                )}
-
-                {/* Error */}
-                {error && (
-                  <div className="flex items-center gap-2 rounded border border-red-200 bg-red-50 px-3 py-2 text-[11px] text-red-700">
-                    <Warning weight="fill" className="w-3.5 h-3.5 shrink-0" />
-                    {error}
-                  </div>
-                )}
-
-                {/* Active section */}
-                {activeTab === 'general' && renderGeneral()}
-                {activeTab === 'print' && renderPrint()}
-                {activeTab === 'inventory' && renderInventory()}
-                {activeTab === 'tampilan' && renderPreferences()}
-              </div>
+        {/* Content panel */}
+        <PosPanel className="m-0">
+          {/* Panel header */}
+          <div className="h-12 px-4 border-b border-neutral-200 flex items-center justify-between bg-neutral-50 shrink-0">
+            <div>
+              <h2 className="text-[12px] font-semibold text-neutral-800">{TAB_TITLES[activeTab]}</h2>
+              <p className="text-[10px] text-neutral-500">{TAB_DESCRIPTIONS[activeTab]}</p>
             </div>
+          </div>
 
-            {/* Fixed Save Bar */}
-            <div className="shrink-0 flex items-center justify-between px-6 py-3 border-t border-neutral-200 bg-white">
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
+            <PosPanelBody>
+              {showSuccess && (
+                <PosAlert tone="success" className="mb-3 flex items-center gap-2">
+                  <CheckCircle weight="fill" className="w-3.5 h-3.5 shrink-0" />
+                  Pengaturan berhasil disimpan.
+                </PosAlert>
+              )}
+              {error && (
+                <PosAlert tone="error" className="mb-3 flex items-center gap-2">
+                  <Warning weight="fill" className="w-3.5 h-3.5 shrink-0" />
+                  {error}
+                </PosAlert>
+              )}
+
+              {activeTab === 'general'   && <GeneralSection form={form} setForm={setForm} />}
+              {activeTab === 'print'     && <PrintSection form={form} setForm={setForm} printers={printers} printersLoading={printersLoading} fetchPrinters={fetchPrinters} />}
+              {activeTab === 'inventory' && <InventorySection form={form} setForm={setForm} />}
+              {activeTab === 'tampilan'  && <TampilanSection form={form} setForm={setForm} />}
+            </PosPanelBody>
+
+            {/* Save bar */}
+            <div className="h-10 shrink-0 flex items-center justify-between px-4 border-t border-neutral-200 bg-white">
               <span className={cn('text-[10px]', hasChanges ? 'text-amber-600 font-medium' : 'text-neutral-400')}>
                 {hasChanges ? '● Ada perubahan yang belum disimpan' : '○ Semua perubahan tersimpan'}
               </span>
-              <Button
-                type="submit"
-                disabled={isSaving || !hasChanges}
-                className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-semibold shadow-sm"
-              >
+              <PosButton variant="primary" type="submit" disabled={isSaving || !hasChanges}>
                 <FloppyDisk className="w-3.5 h-3.5" />
                 {isSaving ? 'Menyimpan…' : 'Simpan Pengaturan'}
-              </Button>
+              </PosButton>
             </div>
           </form>
-        </div>
+        </PosPanel>
       </div>
-
-      {/* Status bar */}
-      <div className="h-6 shrink-0 flex items-center justify-between px-4 border-t border-neutral-200 bg-white">
-        <span className="text-[10px] text-neutral-400">
-          {new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-        </span>
-        <span className="text-[10px] text-neutral-500">
-          {storeName || 'Toko Saya'}
-        </span>
-      </div>
-    </div>
+    </PosPageColumn>
   );
 }

@@ -116,6 +116,9 @@ const api = {
 
   // App channels
   getDbPath: () => ipcRenderer.invoke('app:getDbPath'),
+  windowMinimize: () => ipcRenderer.invoke('window:minimize'),
+  windowMaximize: () => ipcRenderer.invoke('window:maximize'),
+  windowClose: () => ipcRenderer.invoke('window:close'),
 
   // Updater channels
   updaterCheck: () => ipcRenderer.invoke('updater:check'),

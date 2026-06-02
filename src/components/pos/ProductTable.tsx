@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import type { ProductPageResult } from '@/lib/api';
 import { MagnifyingGlass, CaretUp, CaretDown, Plus, Barcode, Tag, Spinner } from 'phosphor-react';
+import { PosTable, PosTableHead } from '@/components/ui/table';
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
@@ -192,8 +193,17 @@ export default function ProductTable({
         total: Math.round(product.price * 100),
       });
     }
+
     setAddedId(product.id);
+    setHighlightedIndex(-1);
     setTimeout(() => setAddedId(null), 400);
+
+    // Setelah item masuk keranjang, tetap arahkan operator ke input search
+    // agar workflow kasir bisa langsung scan/ketik item berikutnya.
+    setTimeout(() => {
+      searchRef.current?.focus({ preventScroll: true });
+      searchRef.current?.select();
+    }, 0);
   }, [addItem, onAddToCart]);
 
   // ── Sort toggle ─────────────────────────────────────────────────────────────
@@ -234,12 +244,6 @@ export default function ProductTable({
       if (e.key === 'Enter' && highlightedIndex >= 0) {
         e.preventDefault();
         handleAdd(filtered[highlightedIndex]);
-        const product = filtered[highlightedIndex];
-        setTimeout(() => {
-          window.dispatchEvent(new CustomEvent('pos:focus-cart-item', {
-            detail: { productId: product.id, unit: product.unit || 'pcs' }
-          }));
-        }, 100);
         return;
       }
       return;
@@ -258,12 +262,6 @@ export default function ProductTable({
         e.preventDefault();
         if (highlightedIndex >= 0 && highlightedIndex < filtered.length) {
           handleAdd(filtered[highlightedIndex]);
-          const product = filtered[highlightedIndex];
-          setTimeout(() => {
-            window.dispatchEvent(new CustomEvent('pos:focus-cart-item', {
-              detail: { productId: product.id, unit: product.unit || 'pcs' }
-            }));
-          }, 100);
         }
         break;
       case 'Escape':
@@ -328,8 +326,8 @@ export default function ProductTable({
 
         {!loading && products.length > 0 && (
           <>
-            <table className="w-full text-left border-collapse">
-              <thead className="sticky top-0 z-10">
+            <PosTable>
+              <PosTableHead>
                 <tr className="bg-neutral-50 border-b-2 border-neutral-300">
                   <th className="px-3 py-2 text-[10px] font-semibold text-neutral-500 uppercase tracking-wider w-10 border-r border-neutral-200">No</th>
                   <th
@@ -372,7 +370,7 @@ export default function ProductTable({
                   </th>
                   <th className="px-3 py-2 text-[10px] font-semibold text-neutral-500 uppercase tracking-wider text-center w-20">Aksi</th>
                 </tr>
-              </thead>
+              </PosTableHead>
 
               <tbody>
                 {filtered.map((product, idx) => {
@@ -422,7 +420,7 @@ export default function ProductTable({
                   );
                 })}
               </tbody>
-            </table>
+            </PosTable>
 
             {/* ── Footer ──────────────────────────────────────────────── */}
             <div className="shrink-0 h-7 flex items-center justify-between px-3 border-t border-neutral-200 bg-white text-[10px] text-neutral-500">

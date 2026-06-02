@@ -5,6 +5,7 @@ import { useInventoryStore } from '@/stores/inventoryStore';
 import type { ProductRow } from '@/lib/api';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { DataTable } from '@/components/fragments/data-table';
 import { cn } from '@/lib/utils';
 import { MagnifyingGlass, Funnel, FileArrowUp, CaretUp, CaretDown } from 'phosphor-react';
 
@@ -211,123 +212,103 @@ export default function StockMovementReport() {
 
       {/* ── Table ─────────────────────────────────────────────────────────── */}
       <div className="flex-1 overflow-y-auto">
-        <table className="w-full text-left border-separate border-spacing-0">
-          <thead className="sticky top-0 z-10 bg-neutral-50">
-            <tr className="border-b border-neutral-200">
-              <th
-                className="px-3 py-2 text-[10px] font-semibold text-neutral-500 uppercase tracking-wider cursor-pointer hover:text-neutral-700 select-none"
-                onClick={() => toggleSort('productName')}
-              >
+        <DataTable
+          data={filtered}
+          getRowKey={(row) => row.productId}
+          emptyMessage={movementLoading ? 'Memuat…' : 'Belum ada data pergerakan stok'}
+          columns={[
+            {
+              key: 'productName',
+              header: (
                 <span className="flex items-center gap-0.5">
                   Produk
-                  {sortKey === 'productName' && (
-                    sortDir === 'asc' ? <CaretUp className="w-3 h-3" /> : <CaretDown className="w-3 h-3" />
-                  )}
+                  {sortKey === 'productName' && (sortDir === 'asc' ? <CaretUp className="w-3 h-3" /> : <CaretDown className="w-3 h-3" />)}
                 </span>
-              </th>
-              <th className="px-3 py-2 text-[10px] font-semibold text-neutral-500 uppercase tracking-wider text-center">
-                Satuan
-              </th>
-              <th
-                className="px-3 py-2 text-[10px] font-semibold text-neutral-500 uppercase tracking-wider text-right cursor-pointer hover:text-neutral-700 select-none"
-                onClick={() => toggleSort('openingBalance')}
-              >
+              ),
+              sortable: true,
+              onHeaderClick: () => toggleSort('productName'),
+              cellClassName: 'text-[11px] font-medium text-neutral-800',
+              render: (row) => row.productName,
+            },
+            {
+              key: 'baseUnit',
+              header: 'Satuan',
+              headerClassName: 'text-center',
+              cellClassName: 'text-[10px] text-neutral-500 text-center',
+              render: (row) => row.baseUnit,
+            },
+            {
+              key: 'openingBalance',
+              header: (
                 <span className="flex items-center justify-end gap-0.5">
                   Saldo Awal
-                  {sortKey === 'openingBalance' && (
-                    sortDir === 'asc' ? <CaretUp className="w-3 h-3" /> : <CaretDown className="w-3 h-3" />
-                  )}
+                  {sortKey === 'openingBalance' && (sortDir === 'asc' ? <CaretUp className="w-3 h-3" /> : <CaretDown className="w-3 h-3" />)}
                 </span>
-              </th>
-              <th
-                className="px-3 py-2 text-[10px] font-semibold text-emerald-600 uppercase tracking-wider text-right cursor-pointer hover:text-neutral-700 select-none"
-                onClick={() => toggleSort('totalIn')}
-              >
+              ),
+              sortable: true,
+              onHeaderClick: () => toggleSort('openingBalance'),
+              headerClassName: 'text-right',
+              cellClassName: 'text-[11px] text-right tabular-nums',
+              render: (row) => <span className={qtyColor(row.openingBalance)}>{fmt(row.openingBalance)}</span>,
+            },
+            {
+              key: 'totalIn',
+              header: (
                 <span className="flex items-center justify-end gap-0.5">
                   Masuk
-                  {sortKey === 'totalIn' && (
-                    sortDir === 'asc' ? <CaretUp className="w-3 h-3" /> : <CaretDown className="w-3 h-3" />
-                  )}
+                  {sortKey === 'totalIn' && (sortDir === 'asc' ? <CaretUp className="w-3 h-3" /> : <CaretDown className="w-3 h-3" />)}
                 </span>
-              </th>
-              <th
-                className="px-3 py-2 text-[10px] font-semibold text-red-600 uppercase tracking-wider text-right cursor-pointer hover:text-neutral-700 select-none"
-                onClick={() => toggleSort('totalOut')}
-              >
+              ),
+              sortable: true,
+              onHeaderClick: () => toggleSort('totalIn'),
+              headerClassName: 'text-right text-emerald-600',
+              cellClassName: 'text-[11px] text-right tabular-nums text-emerald-600 font-medium',
+              render: (row) => `+${row.totalIn}`,
+            },
+            {
+              key: 'totalOut',
+              header: (
                 <span className="flex items-center justify-end gap-0.5">
                   Keluar
-                  {sortKey === 'totalOut' && (
-                    sortDir === 'asc' ? <CaretUp className="w-3 h-3" /> : <CaretDown className="w-3 h-3" />
-                  )}
+                  {sortKey === 'totalOut' && (sortDir === 'asc' ? <CaretUp className="w-3 h-3" /> : <CaretDown className="w-3 h-3" />)}
                 </span>
-              </th>
-              <th
-                className="px-3 py-2 text-[10px] font-semibold text-blue-600 uppercase tracking-wider text-right cursor-pointer hover:text-neutral-700 select-none"
-                onClick={() => toggleSort('adjustmentNet')}
-              >
+              ),
+              sortable: true,
+              onHeaderClick: () => toggleSort('totalOut'),
+              headerClassName: 'text-right text-red-600',
+              cellClassName: 'text-[11px] text-right tabular-nums text-red-600 font-medium',
+              render: (row) => `-${row.totalOut}`,
+            },
+            {
+              key: 'adjustmentNet',
+              header: (
                 <span className="flex items-center justify-end gap-0.5">
                   Adjust
-                  {sortKey === 'adjustmentNet' && (
-                    sortDir === 'asc' ? <CaretUp className="w-3 h-3" /> : <CaretDown className="w-3 h-3" />
-                  )}
+                  {sortKey === 'adjustmentNet' && (sortDir === 'asc' ? <CaretUp className="w-3 h-3" /> : <CaretDown className="w-3 h-3" />)}
                 </span>
-              </th>
-              <th
-                className="px-3 py-2 text-[10px] font-semibold text-indigo-600 uppercase tracking-wider text-right cursor-pointer hover:text-neutral-700 select-none"
-                onClick={() => toggleSort('closingBalance')}
-              >
+              ),
+              sortable: true,
+              onHeaderClick: () => toggleSort('adjustmentNet'),
+              headerClassName: 'text-right text-blue-600',
+              cellClassName: 'text-[11px] text-right tabular-nums',
+              render: (row) => <span className={qtyColor(row.adjustmentNet)}>{fmt(row.adjustmentNet)}</span>,
+            },
+            {
+              key: 'closingBalance',
+              header: (
                 <span className="flex items-center justify-end gap-0.5">
                   Saldo Akhir
-                  {sortKey === 'closingBalance' && (
-                    sortDir === 'asc' ? <CaretUp className="w-3 h-3" /> : <CaretDown className="w-3 h-3" />
-                  )}
+                  {sortKey === 'closingBalance' && (sortDir === 'asc' ? <CaretUp className="w-3 h-3" /> : <CaretDown className="w-3 h-3" />)}
                 </span>
-              </th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {movementLoading ? (
-              <tr>
-                <td colSpan={7} className="px-3 py-8 text-center text-neutral-400 text-[11px]">
-                  Memuat…
-                </td>
-              </tr>
-            ) : filtered.length === 0 ? (
-              <tr>
-                <td colSpan={7} className="px-3 py-8 text-center text-neutral-400 text-[11px]">
-                  Belum ada data pergerakan stok
-                </td>
-              </tr>
-            ) : (
-              filtered.map((row) => (
-                <tr key={row.productId} className="border-b border-neutral-100 hover:bg-neutral-50 transition-colors">
-                  <td className="px-3 py-2 text-[11px] font-medium text-neutral-800">
-                    {row.productName}
-                  </td>
-                  <td className="px-3 py-2 text-[10px] text-neutral-500 text-center">
-                    {row.baseUnit}
-                  </td>
-                  <td className={cn('px-3 py-2 text-[11px] text-right tabular-nums', qtyColor(row.openingBalance))}>
-                    {fmt(row.openingBalance)}
-                  </td>
-                  <td className="px-3 py-2 text-[11px] text-right tabular-nums text-emerald-600 font-medium">
-                    +{row.totalIn}
-                  </td>
-                  <td className="px-3 py-2 text-[11px] text-right tabular-nums text-red-600 font-medium">
-                    -{row.totalOut}
-                  </td>
-                  <td className={cn('px-3 py-2 text-[11px] text-right tabular-nums', qtyColor(row.adjustmentNet))}>
-                    {fmt(row.adjustmentNet)}
-                  </td>
-                  <td className={cn('px-3 py-2 text-[11px] text-right tabular-nums font-semibold', qtyColor(row.closingBalance))}>
-                    {fmt(row.closingBalance)}
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ),
+              sortable: true,
+              onHeaderClick: () => toggleSort('closingBalance'),
+              headerClassName: 'text-right text-indigo-600',
+              cellClassName: 'text-[11px] text-right tabular-nums font-semibold',
+              render: (row) => <span className={qtyColor(row.closingBalance)}>{fmt(row.closingBalance)}</span>,
+            },
+          ]}
+        />
       </div>
 
       {/* ── Footer ─────────────────────────────────────────────────────────── */}

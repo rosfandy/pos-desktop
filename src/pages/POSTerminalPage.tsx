@@ -8,7 +8,7 @@ import { TransactionDetailModal } from '@/components/transactions/TransactionDet
 import HoldBillModal from '@/components/pos/HoldBillModal';
 import VoidRefundModal from '@/components/pos/VoidRefundModal';
 import CashOutModal from '@/components/pos/CashOutModal';
-import CustomerSearch from '@/components/customer/CustomerSearch';
+import CustomerSearch from '@/components/fragments/customer-search';
 import useBarcode from '@/hooks/useBarcode';
 import useKeyboardShortcuts from '@/hooks/useKeyboardShortcuts';
 import usePrinter, { type ReceiptData } from '@/hooks/usePrinter';
@@ -422,9 +422,9 @@ export default function POSTerminalPage() {
       )}
 
       {/* ── Main content: 2-column layout ──────────────────────────────────── */}
-      <div className="flex-1 min-h-0 flex">
+      <div className="flex-1 min-h-0 flex gap-2 p-2">
         {/* Left: Product table (takes ~60%) */}
-        <div className="flex-1 min-w-0 flex flex-col border-r border-neutral-200 bg-neutral-50">
+        <div className="flex-1 min-w-0 flex flex-col border border-neutral-200 bg-neutral-50">
           <LowStockWidget className="shrink-0 mx-1 mt-1" />
           <ProductTable
             searchQuery={searchQuery}
@@ -434,7 +434,7 @@ export default function POSTerminalPage() {
         </div>
 
         {/* Right: Cart panel (fixed width ~40%) */}
-        <aside className="w-[360px] shrink-0 flex flex-col bg-white">
+        <aside className="w-[360px] shrink-0 flex flex-col bg-white border">
           <CartPanel onPay={() => setPaymentOpen(true)} />
         </aside>
       </div>

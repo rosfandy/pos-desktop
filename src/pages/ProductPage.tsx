@@ -6,14 +6,19 @@ import InlineCategoryTable from '@/components/product/InlineCategoryTable';
 import BulkImportDialog from '@/components/product/BulkImportDialog';
 import BulkExportDialog from '@/components/product/BulkExportDialog';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
 import type { ProductCounts, CategoryRow } from '@/lib/api';
 import {
   Package,
   Tag,
   Upload,
   Download,
+  List,
 } from 'phosphor-react';
+import {
+  PosPage, PosToolbar, PosToolbarTitle,
+  PosSideMenu, PosSideMenuHeader, PosSideMenuNav, PosSideMenuItem,
+  PosPanel, PosButton,
+} from '@/components/ui/pos-ui';
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -27,6 +32,16 @@ function unwrap<T>(res: unknown, fallback?: T): T | null {
 
 type ActiveTab = 'products' | 'categories';
 
+const TABS: { id: ActiveTab; label: string; icon: React.ElementType; tone: 'indigo' | 'amber' }[] = [
+  { id: 'products',   label: 'Produk',   icon: Package, tone: 'indigo' },
+  { id: 'categories', label: 'Kategori', icon: Tag,     tone: 'amber' },
+];
+
+const TAB_TITLES: Record<ActiveTab, string> = {
+  products:   'Manajemen Produk',
+  categories: 'Manajemen Kategori',
+};
+
 export default function ProductPage() {
   const [counts, setCounts] = useState<ProductCounts>({ total: 0, active: 0, lowStock: 0 });
   const [categories, setCategories] = useState<CategoryRow[]>([]);
@@ -35,18 +50,14 @@ export default function ProductPage() {
   const [showExportDialog, setShowExportDialog] = useState(false);
   const [productRefreshKey, setProductRefreshKey] = useState(0);
 
-  // Load product counts (total, active, lowStock) — 1 cheap query, no rows loaded
   const loadCounts = useCallback(async () => {
     try {
       const res: any = await window.api.productCount();
       const data = unwrap<ProductCounts>(res, { total: 0, active: 0, lowStock: 0 });
       if (data) setCounts(data);
-    } catch {
-      // ignore
-    }
+    } catch { /* ignore */ }
   }, []);
 
-  // Refresh product list when import dialog closes
   const handleImportOpenChange = useCallback((open: boolean) => {
     setShowImportDialog(open);
     if (!open) {
@@ -55,15 +66,12 @@ export default function ProductPage() {
     }
   }, [loadCounts]);
 
-  // Load categories for stats + InlineCategoryTable
   const loadCategories = useCallback(async () => {
     try {
       const res: any = await window.api.categoryList();
       const data = unwrap<CategoryRow[]>(res, []);
       setCategories(data ?? []);
-    } catch {
-      setCategories([]);
-    }
+    } catch { setCategories([]); }
   }, []);
 
   useEffect(() => {
@@ -71,132 +79,118 @@ export default function ProductPage() {
     loadCategories();
   }, [loadCounts, loadCategories]);
 
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'products':   return <InlineProductTable refreshKey={productRefreshKey} />;
+      case 'categories': return <InlineCategoryTable />;
+    }
+  };
+
   return (
-    <div className="flex flex-col h-full">
-      {/* ── Header ───────────────────────────────────────────────────── */}
-      <div className="shrink-0 h-9 flex items-center justify-between px-3 border-b border-neutral-200 bg-white">
-        <div className="flex items-center gap-1.5">
-          {activeTab === 'products' ? (
-            <Package weight="fill" className="w-4 h-4 text-indigo-500" />
-          ) : (
-            <Tag weight="fill" className="w-4 h-4 text-amber-500" />
-          )}
-          <h1 className="text-[13px] font-semibold text-neutral-800">
-            {activeTab === 'products' ? 'Manajemen Produk' : 'Manajemen Kategori'}
-          </h1>
-        </div>
+    <PosPage>
+      {/* ── Side menu ───────────────────────────────────────────────────── */}
+      <PosSideMenu className="w-40">
+        <PosSideMenuHeader>
+          <span className="text-[10px] font-semibold text-neutral-500 uppercase tracking-widest">Master</span>
+        </PosSideMenuHeader>
+        <PosSideMenuNav>
+          {TABS.map(({ id, label, icon: Icon, tone }) => {
+            const active = activeTab === id;
+            const count = id === 'products' ? counts.total : categories.length;
+            return (
+              <PosSideMenuItem
+                key={id}
+                active={active}
+                onClick={() => setActiveTab(id)}
+                className={cn(
+                  active && (tone === 'amber' ? 'bg-amber-100 text-amber-800 border-amber-200' : 'bg-indigo-100 text-indigo-800 border-indigo-200')
+                )}
+              >
+                <Icon weight={active ? 'fill' : 'regular'} className={cn('w-3.5 h-3.5 shrink-0', tone === 'amber' ? 'text-amber-500' : 'text-indigo-500')} />
+                {label}
+                <span className={cn(
+                  'ml-auto text-[10px] px-1.5 py-0.5 tabular-nums font-semibold',
+                  tone === 'amber' ? 'bg-amber-100 text-amber-700' : 'bg-indigo-100 text-indigo-700'
+                )}>
+                  {count}
+                </span>
+              </PosSideMenuItem>
+            );
+          })}
+        </PosSideMenuNav>
 
-        {activeTab === 'products' && (
+        {/* ── Stats footer ─────────────────────────────────────────────── */}
+        <div className="mt-auto px-3 py-2 border-t border-neutral-200 space-y-1.5">
           <div className="flex items-center gap-1.5">
-            <Button
-              variant="outline"
-              size="xs"
-              onClick={() => setShowExportDialog(true)}
-              className="h-7 px-2 text-[10px]"
-            >
-              <Download className="w-3 h-3" />
-              Export
-            </Button>
-            <Button
-              variant="outline"
-              size="xs"
-              onClick={() => setShowImportDialog(true)}
-              className="h-7 px-2 text-[10px]"
-            >
-              <Upload className="w-3 h-3" />
-              Import
-            </Button>
+            <List className="w-3 h-3 text-neutral-500" />
+            <span className="text-[10px] text-neutral-500 uppercase tracking-widest">Ringkasan</span>
           </div>
-        )}
-      </div>
-
-      {/* ═══════════════════════════════════════════════════════════════ */}
-      {/* ── Content: sidebar + table ─────────────────────────────────── */}
-      {/* ═══════════════════════════════════════════════════════════════ */}
-      <div className="flex flex-1 min-h-0">
-        {/* ── Sidebar ─────────────────────────────────────────────────── */}
-        <aside className="w-40 shrink-0 bg-white border-r border-neutral-200 flex flex-col">
-          <nav className="flex flex-col">
-            <Button
-              onClick={() => setActiveTab('products')}
-              variant="ghost"
-              className={cn(
-                'flex items-center gap-2 px-3 py-1.5 text-[11px] font-medium transition-colors border-l-[3px] justify-start rounded-none',
-                activeTab === 'products'
-                  ? 'bg-indigo-50 text-indigo-700 border-indigo-600'
-                  : 'text-neutral-600 hover:bg-neutral-50 border-transparent'
-              )}
-            >
-              <Package className="w-3.5 h-3.5" />
-              Produk
-              <span className="ml-auto text-[10px] bg-indigo-100 text-indigo-600 px-1.5 py-0.5 rounded-full tabular-nums">
-                {counts.total}
-              </span>
-            </Button>
-            <Button
-              onClick={() => setActiveTab('categories')}
-              variant="ghost"
-              className={cn(
-                'flex items-center gap-2 px-3 py-1.5 text-[11px] font-medium transition-colors border-l-[3px] justify-start rounded-none',
-                activeTab === 'categories'
-                  ? 'bg-amber-50 text-amber-700 border-amber-600'
-                  : 'text-neutral-600 hover:bg-neutral-50 border-transparent'
-              )}
-            >
-              <Tag className="w-3.5 h-3.5" />
-              Kategori
-              <span className="ml-auto text-[10px] bg-amber-100 text-amber-600 px-1.5 py-0.5 rounded-full tabular-nums">
-                {categories.length}
-              </span>
-            </Button>
-          </nav>
-
-          {/* ── Sidebar stats ──────────────────────────────────────── */}
-          <div className="mt-auto px-3 py-2 border-t border-neutral-100">
-            <p className="text-[10px] text-neutral-400 uppercase tracking-wider mb-1.5">Ringkasan</p>
-            {activeTab === 'products' ? (
-              <div className="space-y-1">
-                <div className="flex items-center justify-between text-[10px]">
-                  <span className="text-neutral-500">Total produk</span>
-                  <span className="text-neutral-800 font-medium tabular-nums">{counts.total}</span>
-                </div>
-                <div className="flex items-center justify-between text-[10px]">
-                  <span className="text-neutral-500">Aktif</span>
-                  <span className="text-emerald-600 font-medium tabular-nums">{counts.active}</span>
-                </div>
-                <div className="flex items-center justify-between text-[10px]">
-                  <span className="text-neutral-500">Stok rendah</span>
-                  <span className="text-red-500 font-medium tabular-nums">{counts.lowStock}</span>
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-1">
-                <div className="flex items-center justify-between text-[10px]">
-                  <span className="text-neutral-500">Total kategori</span>
-                  <span className="text-neutral-800 font-medium tabular-nums">{categories.length}</span>
-                </div>
-                <div className="flex items-center justify-between text-[10px]">
-                  <span className="text-neutral-500">Aktif</span>
-                  <span className="text-emerald-600 font-medium tabular-nums">{categories.filter((c) => c.isActive).length}</span>
-                </div>
-              </div>
-            )}
-          </div>
-        </aside>
-
-        {/* ── Main content ────────────────────────────────────────────── */}
-        <main className="flex-1 min-w-0 bg-white">
           {activeTab === 'products' ? (
-            <InlineProductTable refreshKey={productRefreshKey} />
+            <>
+              <div className="flex items-center justify-between text-[10px]">
+                <span className="text-neutral-500">Total produk</span>
+                <span className="text-neutral-800 font-medium tabular-nums">{counts.total}</span>
+              </div>
+              <div className="flex items-center justify-between text-[10px]">
+                <span className="text-neutral-500">Aktif</span>
+                <span className="text-emerald-600 font-medium tabular-nums">{counts.active}</span>
+              </div>
+              <div className="flex items-center justify-between text-[10px]">
+                <span className="text-neutral-500">Stok rendah</span>
+                <span className="text-red-500 font-medium tabular-nums">{counts.lowStock}</span>
+              </div>
+            </>
           ) : (
-            <InlineCategoryTable />
+            <>
+              <div className="flex items-center justify-between text-[10px]">
+                <span className="text-neutral-500">Total kategori</span>
+                <span className="text-neutral-800 font-medium tabular-nums">{categories.length}</span>
+              </div>
+              <div className="flex items-center justify-between text-[10px]">
+                <span className="text-neutral-500">Aktif</span>
+                <span className="text-emerald-600 font-medium tabular-nums">{categories.filter((c) => c.isActive).length}</span>
+              </div>
+            </>
           )}
-        </main>
-      </div>
+        </div>
+      </PosSideMenu>
+
+      {/* ── Content panel ──────────────────────────────────────────────── */}
+      <PosPanel className="m-2">
+        {/* Panel header */}
+        <PosToolbar>
+          {activeTab === 'products' ? (
+            <Package weight="fill" className="w-3.5 h-3.5 text-indigo-600 mr-2" />
+          ) : (
+            <Tag weight="fill" className="w-3.5 h-3.5 text-amber-600 mr-2" />
+          )}
+          <PosToolbarTitle>{TAB_TITLES[activeTab]}</PosToolbarTitle>
+
+          <div className="flex-1" />
+
+          {activeTab === 'products' && (
+            <div className="flex items-center gap-1.5">
+              <PosButton variant="secondary" onClick={() => setShowExportDialog(true)}>
+                <Download className="w-3 h-3" />
+                Export
+              </PosButton>
+              <PosButton variant="secondary" onClick={() => setShowImportDialog(true)}>
+                <Upload className="w-3 h-3" />
+                Import
+              </PosButton>
+            </div>
+          )}
+        </PosToolbar>
+
+        {/* Panel body */}
+        <div className="flex-1 min-h-0 overflow-hidden">
+          {renderContent()}
+        </div>
+      </PosPanel>
 
       {/* Dialogs */}
       <BulkImportDialog open={showImportDialog} onOpenChange={handleImportOpenChange} />
       <BulkExportDialog open={showExportDialog} onOpenChange={setShowExportDialog} />
-    </div>
+    </PosPage>
   );
 }

@@ -1,6 +1,6 @@
 {
-  "appId": "com.posdesktop.app",
-  "productName": "POS Desktop",
+  "appId": "com.poskasir.app",
+  "productName": "POS Kasir",
   "copyright": "Copyright © 2026",
   "asar": false,
   "files": [
@@ -14,12 +14,16 @@
       "from": "database/migrations",
       "to": "migrations",
       "filter": ["**/*.sql"]
+    },
+    {
+      "from": "build-resources/icon.png",
+      "to": "icon.png"
     }
   ],
   "win": {
     "target": ["portable"],
-    "icon": "build-resources/icon.ico",
-    "publisherName": "POS Desktop",
+    "icon": "icon.ico",
+    "publisherName": "POS Kasir",
     "publish": null
   }
 }

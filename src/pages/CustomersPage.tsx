@@ -69,7 +69,7 @@ export default function CustomersPage() {
   }, []);
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full bg-white shadow">
       {/* ── Header ──────────────────────────────────────────────────────────── */}
       <div className="shrink-0 h-10 flex items-center gap-2 px-4 border-b border-neutral-200 bg-white">
         <Users className="w-4 h-4 text-indigo-600" />
@@ -126,7 +126,7 @@ export default function CustomersPage() {
       </div>
 
       {/* ── Customer List ───────────────────────────────────────────────────── */}
-      <div className="flex-1 min-h-0">
+      <div className="flex-1 min-h-0 p-2">
         <CustomerList
           className="h-full"
           onEdit={handleEdit}

@@ -19,7 +19,12 @@ import { registerCashFlowHandlers } from './ipc/cashFlow.ts';
 import { registerUpdaterHandlers } from './ipc/updater.ts';
 import { migrate, getDb, seedAdmin, getDbPath } from './db/index.ts';
 
+const APP_NAME = 'POS Kasir';
 const __dirname = join(__filename, '..');
+
+// ── Icon ────────────────────────────────────────────────────────────────────
+// In dev: read directly from build-resources/
+// In production: read from extraResources (copied by electron-builder)
 const iconPath = app.isPackaged
   ? join(process.resourcesPath, 'icon.png')
   : join(__dirname, '..', 'build-resources', 'icon.png');
@@ -27,6 +32,11 @@ const iconPath = app.isPackaged
 let mainWindow: BrowserWindow | null = null;
 
 function createWindow() {
+  // Set app user model id (Windows taskbar grouping + icon)
+  if (process.platform === 'win32') {
+    app.setAppUserModelId('com.poskasir.app');
+  }
+
   const icon = nativeImage.createFromPath(iconPath);
 
   mainWindow = new BrowserWindow({
@@ -34,8 +44,11 @@ function createWindow() {
     height: 800,
     minWidth: 1024,
     minHeight: 768,
-    title: 'POS Desktop',
+    title: APP_NAME,
     icon: icon.isEmpty() ? undefined : icon,
+    fullscreen: false,
+    frame: false,
+    titleBarStyle: 'hidden',
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,
@@ -62,7 +75,8 @@ function createWindow() {
 }
 
 app.whenReady().then(async () => {
-  app.setName('POS Desktop');
+  // Set app name early so Windows uses it for taskbar/title
+  app.setName(APP_NAME);
   console.log('[APP] whenReady fired');
 
   // ── Database ──────────────────────────────────────────────────────────
@@ -95,6 +109,13 @@ app.whenReady().then(async () => {
   registerShiftHandlers();
   registerCashFlowHandlers();
   ipcMain.handle('app:getDbPath', () => getDbPath());
+  ipcMain.handle('window:minimize', () => mainWindow?.minimize());
+  ipcMain.handle('window:maximize', () => {
+    if (!mainWindow) return;
+    if (mainWindow.isMaximized()) mainWindow.unmaximize();
+    else mainWindow.maximize();
+  });
+  ipcMain.handle('window:close', () => mainWindow?.close());
   console.log('[APP] IPC handlers registered');
 
   createWindow();
