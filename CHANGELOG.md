@@ -14,6 +14,26 @@ dan proyek ini mengikuti [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.5.5] — 2026-06-03
+
+### Added
+- **Default title toast per variant** — Toast tanpa `title` eksplisit otomatis pakai judul sesuai variant: `"Berhasil"` (success), `"Error"` (destructive), `"Info"` (info/default).
+- **Kolom Status di laporan keuangan** — Tabel "Uang di Tangan per Shift" menampilkan status shift (Buka/Tutup) dengan badge hijau/abu.
+- **Toast error di TransactionDetailModal** — Gagal load transaksi dan gagal print struk sekarang menampilkan toast, bukan silent catch.
+
+### Changed
+- **Toast posisi ke tengah atas** — Dari pojok kanan bawah ke `top-0 left-1/2 -translate-x-1/2`. Durasi dinaikkan 1200ms → 4000ms.
+- **Toast font variants** — Variant `success`/`destructive`/`info` pakai `text-white` agar terbaca di background gelap.
+- **"Buka Shift" langsung popup di POS** — Tombol Buka Shift di dialog "Shift Belum Dibuka" membuka `OpenShiftModal` inline, tidak redirect ke halaman `/shifts`.
+- **Input qty keranjang pure input** — Qty di CartPanel diganti jadi `<Input>` dengan support desimal (koma/titik). Tombol ± tetap ada.
+- **Search produk dikosongkan setelah tambah** — Input pencarian di POS terminal otomatis clear setelah item ditambahkan ke keranjang.
+- **Shadow/ring dihapus dari semua dialog** — `shadow-2xl` dihapus dari seluruh komponen `DialogContent` (POS modals, shift modals, payment, dll). `ring-1` dihapus dari base `DialogContent`.
+
+### Fixed
+- **Qty 0 tidak remove item** — Tombol decrement di CartPanel tidak lagi menghapus item saat qty mencapai 0 (min qty = 1).
+
+---
+
 ## [1.5.4] — 2026-05-31
 
 ### Changed
