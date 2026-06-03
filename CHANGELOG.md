@@ -14,6 +14,13 @@ dan proyek ini mengikuti [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.5.7] — 2026-06-03
+
+### Changed
+- **Nama proyek: `pos-kasir` → `pos-desktop`** — Package name, APP_NAME (`POS Kasir` → `POS Desktop`), dan AppUserModelId diperbaiki agar folder userData (`%APPDATA%\pos-desktop`) sesuai dengan nama aplikasi yang benar. Memperbaiki inkonsistensi path database.
+
+---
+
 ## [1.5.6] — 2026-06-03
 
 ### Changed
