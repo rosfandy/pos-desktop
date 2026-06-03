@@ -3,6 +3,9 @@ import tsParser from '@typescript-eslint/parser';
 
 export default [
   {
+    ignores: ['check-db-state.js', 'dist-electron/'],
+  },
+  {
     files: ['**/*.ts', '**/*.tsx'],
     languageOptions: {
       parser: tsParser,

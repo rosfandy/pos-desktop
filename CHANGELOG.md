@@ -14,6 +14,16 @@ dan proyek ini mengikuti [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.5.6] — 2026-06-03
+
+### Changed
+- **Produk hanya tampil saat ada pencarian di POS** — `ProductTable` tidak lagi load semua produk dari database saat halaman kasir dibuka. Produk hanya di-load ketika user mengetik di kolom pencarian (debounce 300ms). Mengurangi beban query awal dan mempercepat render halaman.
+
+### Fixed
+- **Icon Windows taskbar** — `BrowserWindow` icon pakai `.ico` di Windows agar taskbar menampilkan icon yang benar (bukan default Electron).
+
+---
+
 ## [1.5.5] — 2026-06-03
 
 ### Added
