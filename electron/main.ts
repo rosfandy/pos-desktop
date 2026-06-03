@@ -19,7 +19,7 @@ import { registerCashFlowHandlers } from './ipc/cashFlow.ts';
 import { registerUpdaterHandlers } from './ipc/updater.ts';
 import { migrate, getDb, seedAdmin, getDbPath } from './db/index.ts';
 
-const APP_NAME = 'POS Kasir';
+const APP_NAME = 'POS Desktop';
 const __dirname = join(__filename, '..');
 
 // ── Icon ────────────────────────────────────────────────────────────────────
@@ -36,7 +36,7 @@ let mainWindow: BrowserWindow | null = null;
 function createWindow() {
   // Set app user model id (Windows taskbar grouping + icon)
   if (process.platform === 'win32') {
-    app.setAppUserModelId('com.poskasir.app');
+    app.setAppUserModelId('com.posdesktop.app');
   }
 
   const icon = nativeImage.createFromPath(iconPath);
