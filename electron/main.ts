@@ -25,9 +25,11 @@ const __dirname = join(__filename, '..');
 // ── Icon ────────────────────────────────────────────────────────────────────
 // In dev: read directly from build-resources/
 // In production: read from extraResources (copied by electron-builder)
+// Windows taskbar needs .ico for best results; use .ico on win32, .png on others
+const iconFile = process.platform === 'win32' ? 'icon.ico' : 'icon.png';
 const iconPath = app.isPackaged
-  ? join(process.resourcesPath, 'icon.png')
-  : join(__dirname, '..', 'build-resources', 'icon.png');
+  ? join(process.resourcesPath, iconFile)
+  : join(__dirname, '..', 'build-resources', iconFile);
 
 let mainWindow: BrowserWindow | null = null;
 
