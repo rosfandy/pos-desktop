@@ -49,8 +49,7 @@ function createWindow() {
     title: APP_NAME,
     icon: icon.isEmpty() ? undefined : icon,
     fullscreen: false,
-    frame: false,
-    titleBarStyle: 'hidden',
+    frame: true,
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,

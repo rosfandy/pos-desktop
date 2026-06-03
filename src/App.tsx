@@ -44,7 +44,6 @@ import UpdateDialog from '@/components/update/UpdateDialog';
 import Sidebar from '@/components/fragments/Sidebar';
 import Toolbar from '@/components/fragments/Toolbar';
 import StatusBar from '@/components/fragments/StatusBar';
-import TitleBar from '@/components/fragments/TitleBar';
 
 // ── App Shell ─────────────────────────────────────────────────────────────────
 
@@ -83,15 +82,12 @@ function AppShell({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <div className="flex h-screen flex-col overflow-hidden bg-neutral-50 font-sans">
-      <TitleBar />
-      <div className="flex flex-1 min-h-0 overflow-hidden">
-        <Sidebar collapsed={sidebarCollapsed} />
-        <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
-          <Toolbar sidebarCollapsed={sidebarCollapsed} onToggleSidebar={toggleSidebar} />
-          <main className="flex-1 overflow-y-auto bg-neutral-100">{children}</main>
-          <StatusBar />
-        </div>
+    <div className="flex h-screen overflow-hidden bg-neutral-50 font-sans">
+      <Sidebar collapsed={sidebarCollapsed} />
+      <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
+        <Toolbar sidebarCollapsed={sidebarCollapsed} onToggleSidebar={toggleSidebar} />
+        <main className="flex-1 overflow-y-auto bg-neutral-100">{children}</main>
+        <StatusBar />
       </div>
     </div>
   );

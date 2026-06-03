@@ -584,16 +584,6 @@ export interface API {
 
   // App
   getDbPath: () => Promise<string>;
-  backupCreate: () => Promise<{ ok: boolean; data?: { filename: string }; error?: { message: string } }>;
-  updaterCheck: () => Promise<void>;
-  windowMinimize: () => Promise<void>;
-  windowMaximize: () => Promise<void>;
-  windowClose: () => Promise<void>;
-
-  // Report (RPT)
-  reportSales: (params: ReportParams) => Promise<ApiResponse<SalesReport>>;
-  reportStock: () => Promise<ApiResponse<StockReport>>;
-  reportFinance: (params: ReportParams) => Promise<ApiResponse<FinanceReport>>;
 }
 
 declare global {
