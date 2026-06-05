@@ -9,7 +9,7 @@ import { useThemeStore } from '@/stores/themeStore';
 import Chart from 'react-apexcharts';
 import type { ApexOptions } from 'apexcharts';
 import type { SalesReport, StockReport, FinanceReport, Transaction, Shift } from '@/lib/api';
-import { TransactionDetailModal } from '@/components/transactions/TransactionDetailModal';
+import { TransactionDetailModal } from '@/features/transaction/components/TransactionDetailModal';
 import { DataTable } from '@/components/fragments/data-table';
 import { Dialog, DialogContent, DialogTitle, DialogHeader } from '@/components/ui/dialog';
 import {

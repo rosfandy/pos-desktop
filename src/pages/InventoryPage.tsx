@@ -5,17 +5,17 @@ import { useSearchParams } from 'react-router-dom';
 import { ArrowDown, ArrowUp, ArrowClockwise, ArrowsOutSimple, Scroll, ChartBar, Cube } from 'phosphor-react';
 import { Input } from '@/components/ui/input';
 import { Select, SelectTrigger, SelectValue, SelectPositioner, SelectContent, SelectItem } from '@/components/ui/select';
-import ProductSearchInput from '@/components/inventory/ProductSearchInput';
-import StockInForm from '@/components/inventory/StockInForm';
-import StockOutForm from '@/components/inventory/StockOutForm';
-import AdjustmentForm from '@/components/inventory/AdjustmentForm';
-import InventoryLogTable from '@/components/inventory/InventoryLogTable';
-import StockMovementReport from '@/components/inventory/StockMovementReport';
+import ProductSearchInput from '@/features/inventory/components/ProductSearchInput';
+import StockInForm from '@/features/inventory/components/StockInForm';
+import StockOutForm from '@/features/inventory/components/StockOutForm';
+import AdjustmentForm from '@/features/inventory/components/AdjustmentForm';
+import InventoryLogTable from '@/features/inventory/components/InventoryLogTable';
+import StockMovementReport from '@/features/inventory/components/StockMovementReport';
 import { useInventoryStore } from '@/stores/inventoryStore';
 import { useAuthStore } from '@/stores/authStore';
-import type { StockInLine } from '@/components/inventory/StockInForm';
-import type { StockOutLine } from '@/components/inventory/StockOutForm';
-import type { AdjustmentLine } from '@/components/inventory/AdjustmentForm';
+import type { StockInLine } from '@/features/inventory/components/StockInForm';
+import type { StockOutLine } from '@/features/inventory/components/StockOutForm';
+import type { AdjustmentLine } from '@/features/inventory/components/AdjustmentForm';
 import type { ProductRow } from '@/lib/api';
 import {
   PosPage, PosSideMenu, PosSideMenuHeader, PosSideMenuNav, PosSideMenuItem,

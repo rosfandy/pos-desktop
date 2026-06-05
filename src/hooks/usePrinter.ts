@@ -20,6 +20,18 @@ export default function usePrinter(): UsePrinterReturn {
     setLoading(true);
     setLastError(null);
     try {
+      // Cek koneksi printer dulu sebelum print
+      const conn = await window.api.printerCheckConnection();
+      if (!conn.ok) {
+        setLastError('Gagal periksa printer');
+        return { ok: false, error: { code: 'PRINT_001', message: 'Gagal periksa printer' } };
+      }
+      if (!conn.data.connected) {
+        const msg = conn.data.message || 'Printer tidak terhubung';
+        setLastError(msg);
+        return { ok: false, error: { code: 'PRINT_001', message: msg } };
+      }
+
       const result = await window.api.printerPrint(data);
       if (!result.ok) {
         setLastError(result.error?.message || 'Print gagal');
@@ -38,6 +50,17 @@ export default function usePrinter(): UsePrinterReturn {
     setLoading(true);
     setLastError(null);
     try {
+      const conn = await window.api.printerCheckConnection();
+      if (!conn.ok) {
+        setLastError('Gagal periksa printer');
+        return { ok: false, error: { code: 'PRINT_001', message: 'Gagal periksa printer' } };
+      }
+      if (!conn.data.connected) {
+        const msg = conn.data.message || 'Printer tidak terhubung';
+        setLastError(msg);
+        return { ok: false, error: { code: 'PRINT_001', message: msg } };
+      }
+
       const result = await window.api.printerTest();
       if (!result.ok) {
         setLastError(result.error?.message || 'Test print gagal');
@@ -56,6 +79,17 @@ export default function usePrinter(): UsePrinterReturn {
     setLoading(true);
     setLastError(null);
     try {
+      const conn = await window.api.printerCheckConnection();
+      if (!conn.ok) {
+        setLastError('Gagal periksa printer');
+        return { ok: false, error: { code: 'PRINT_001', message: 'Gagal periksa printer' } };
+      }
+      if (!conn.data.connected) {
+        const msg = conn.data.message || 'Printer tidak terhubung';
+        setLastError(msg);
+        return { ok: false, error: { code: 'PRINT_001', message: msg } };
+      }
+
       const result = await window.api.printerOpenDrawer();
       if (!result.ok) {
         setLastError(result.error?.message || 'Gagal buka drawer');

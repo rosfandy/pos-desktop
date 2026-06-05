@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { CheckCircle, Circle, Printer } from 'phosphor-react';
 import { useAuthStore } from '@/stores/authStore';
 import { useShiftStore } from '@/stores/shiftStore';
-import PrinterQueuePopover from '@/components/printer/PrinterQueuePopover';
+import PrinterQueuePopover from '@/features/printer/components/PrinterQueuePopover';
 
 function StatusItem({ icon, label }: { icon: React.ReactNode; label: string }) {
   return (

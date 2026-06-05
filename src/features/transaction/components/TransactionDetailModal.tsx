@@ -140,16 +140,29 @@ export function TransactionDetailModal({ open, onClose, transactionId, receiptCu
         pointsEarned: printCust?.earned,
       };
 
+      // Cek koneksi printer dulu
+      const conn = await window.api.printerCheckConnection();
+      if (!conn.ok) {
+        setPrintStatus('error');
+        toast({ description: 'Gagal periksa printer', variant: 'destructive' });
+        return;
+      }
+      if (!conn.data.connected) {
+        setPrintStatus('error');
+        toast({ description: conn.data.message || 'Printer tidak terhubung', variant: 'destructive' });
+        return;
+      }
+
       const result = await window.api.printerPrint(receiptData);
       if (result.ok) {
         setPrintStatus('success');
       } else {
         setPrintStatus('error');
-        toast({ description: 'Print gagal — cek printer', variant: 'destructive' });
+        toast({ description: 'Cetak gagal: ' + (result.error?.message || 'cek printer'), variant: 'destructive' });
       }
     } catch (err: any) {
       setPrintStatus('error');
-      toast({ description: 'Print gagal — cek printer', variant: 'destructive' });
+      toast({ description: 'Cetak gagal: ' + (err.message || 'cek printer'), variant: 'destructive' });
     } finally {
       setPrintLoading(false);
     }

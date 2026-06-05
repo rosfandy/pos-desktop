@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import InlineProductTable from '@/components/product/InlineProductTable';
-import InlineCategoryTable from '@/components/product/InlineCategoryTable';
-import BulkImportDialog from '@/components/product/BulkImportDialog';
-import BulkExportDialog from '@/components/product/BulkExportDialog';
+import InlineProductTable from '@/features/product/components/InlineProductTable';
+import InlineCategoryTable from '@/features/product/components/InlineCategoryTable';
+import BulkImportDialog from '@/features/product/components/BulkImportDialog';
+import BulkExportDialog from '@/features/product/components/BulkExportDialog';
 import { cn } from '@/lib/utils';
 import type { ProductCounts, CategoryRow } from '@/lib/api';
 import {

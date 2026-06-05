@@ -533,6 +533,8 @@ export interface API {
   printerOpenDrawer: () => Promise<ApiResponse<any>>;
   printerQueueList: () => Promise<ApiResponse<PrintJobInfo[]>>;
   printerQueueCancel: (jobId: string) => Promise<ApiResponse<void>>;
+  printerQueueClearAll: () => Promise<ApiResponse<void>>;
+  printerCheckConnection: () => Promise<ApiResponse<{ connected: boolean; name?: string; status?: number; message?: string }>>;
 
   // Product (POS-013 / PROD-002)
   productList: (filter?: ProductFilter) => Promise<ApiResponse<ProductPageResult>>;

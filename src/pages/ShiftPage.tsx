@@ -1,10 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useShiftStore } from '@/stores/shiftStore';
 import { useAuthStore } from '@/stores/authStore';
-import ShiftSummary from '@/components/shift/ShiftSummary';
-import ShiftHistory from '@/components/shift/ShiftHistory';
-import OpenShiftModal from '@/components/shift/OpenShiftModal';
-import CloseShiftModal from '@/components/shift/CloseShiftModal';
+import ShiftSummary from '@/features/shift/components/ShiftSummary';
+import ShiftHistory from '@/features/shift/components/ShiftHistory';
+import OpenShiftModal from '@/features/shift/components/OpenShiftModal';
+import CloseShiftModal from '@/features/shift/components/CloseShiftModal';
 import { Clock, Circle } from 'phosphor-react';
 import { cn } from '@/lib/utils';
 

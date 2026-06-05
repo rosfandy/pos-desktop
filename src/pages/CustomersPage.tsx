@@ -2,10 +2,10 @@
 
 import { useState, useCallback } from 'react';
 import { useCustomerStore } from '@/stores/customerStore';
-import CustomerList from '@/components/customer/CustomerList';
-import CustomerForm from '@/components/customer/CustomerForm';
-import BulkExportDialog from '@/components/customer/BulkExportDialog';
-import BulkImportDialog from '@/components/customer/BulkImportDialog';
+import CustomerList from '@/features/customer/components/CustomerList';
+import CustomerForm from '@/features/customer/components/CustomerForm';
+import BulkExportDialog from '@/features/customer/components/BulkExportDialog';
+import BulkImportDialog from '@/features/customer/components/BulkImportDialog';
 import { Button } from '@/components/ui/button';
 import {
   Plus,

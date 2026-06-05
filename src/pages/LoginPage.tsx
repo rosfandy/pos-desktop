@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/authStore';
-import LoginForm from '@/components/auth/LoginForm';
+import LoginForm from '@/features/auth/components/LoginForm';
 import { Storefront } from 'phosphor-react';
 
 export default function LoginPage() {

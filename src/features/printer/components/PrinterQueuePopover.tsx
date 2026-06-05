@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { Printer, XCircle, Spinner, Warning } from 'phosphor-react';
 import { cn, unwrap } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
 import type { PrintJobInfo } from '@/lib/api';
 
 interface PrinterQueuePopoverProps {
@@ -30,7 +31,13 @@ function formatSize(bytes: number): string {
 function formatTime(submittedAt: string | null): string {
   if (!submittedAt) return '-';
   try {
-    const d = new Date(submittedAt);
+    // Handle berbagai format date dari PowerShell:
+    //   ISO 8601: "2026-06-05T12:34:56"
+    //   /Date(1717565696000)/  — JSON legacy ASP.NET format
+    //   "6/5/2026 12:34:56 PM" — locale-specific
+    const dateMatch = /\/Date\((\d+)\)\//.exec(submittedAt);
+    const d = dateMatch ? new Date(Number(dateMatch[1])) : new Date(submittedAt);
+    if (isNaN(d.getTime())) return submittedAt;
     return d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
   } catch {
     return submittedAt;
@@ -45,6 +52,7 @@ export default function PrinterQueuePopover({ open, onClose, anchorRef }: Printe
   const [error, setError] = useState<string | null>(null);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
 
   // Fetch queue
   const fetchQueue = async () => {
@@ -88,14 +96,39 @@ export default function PrinterQueuePopover({ open, onClose, anchorRef }: Printe
     return () => document.removeEventListener('mousedown', handleClick);
   }, [open, onClose, anchorRef]);
 
+  // Clear all jobs
+  const [clearingAll, setClearingAll] = useState(false);
+
+  const handleClearAll = async () => {
+    setClearingAll(true);
+    try {
+      const res = await window.api.printerQueueClearAll();
+      if (res.ok) {
+        setJobs([]);
+        toast({ description: 'Semua antrian berhasil dihapus' });
+      } else {
+        toast({ description: res.error?.message || 'Gagal hapus semua antrian', variant: 'destructive' });
+      }
+    } catch {
+      toast({ description: 'Gagal hapus semua antrian', variant: 'destructive' });
+    } finally {
+      await fetchQueue();
+      setClearingAll(false);
+    }
+  };
+
   // Cancel a job
   const handleCancel = async (jobId: string) => {
     setCancellingId(jobId);
     try {
-      await window.api.printerQueueCancel(jobId);
-      await fetchQueue();
+      const res = await window.api.printerQueueCancel(jobId);
+      if (res.ok) {
+        setJobs((prev) => prev.filter((j) => j.id !== jobId));
+      } else {
+        toast({ description: res.error?.message || 'Gagal batalkan antrian', variant: 'destructive' });
+      }
     } catch {
-      // ignore
+      toast({ description: 'Gagal batalkan antrian — terjadi kesalahan', variant: 'destructive' });
     } finally {
       setCancellingId(null);
     }
@@ -117,6 +150,16 @@ export default function PrinterQueuePopover({ open, onClose, anchorRef }: Printe
           </span>
         </div>
         <div className="flex items-center gap-1">
+          {jobs.length > 0 && (
+            <button
+              onClick={handleClearAll}
+              disabled={clearingAll}
+              className="text-[10px] text-red-500 hover:text-red-600 px-1.5 py-0.5 hover:bg-red-50 transition-colors disabled:opacity-50"
+              title="Hapus semua antrian"
+            >
+              {clearingAll ? '…' : 'Hapus semua'}
+            </button>
+          )}
           <button
             onClick={fetchQueue}
             className="text-[10px] text-muted-foreground hover:text-foreground px-1.5 py-0.5 hover:bg-muted transition-colors"

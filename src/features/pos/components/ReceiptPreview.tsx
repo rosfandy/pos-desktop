@@ -2,8 +2,8 @@ import { useCartStore } from '@/stores/cartStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { Button } from '@/components/ui/button';
 import { Printer } from 'phosphor-react';
-import { ReceiptCard } from '@/components/receipt/ReceiptCard';
-import type { ReceiptCardData } from '@/components/receipt/ReceiptCard';
+import { ReceiptCard } from '@/features/receipt/components/ReceiptCard';
+import type { ReceiptCardData } from '@/features/receipt/components/ReceiptCard';
 import { cn } from '@/lib/utils';
 
 interface ReceiptPreviewProps {
