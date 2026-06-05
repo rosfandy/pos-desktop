@@ -475,6 +475,16 @@ export interface PrinterInfo {
   status: number; // 0=ready, 1=busy, 2=error, 3=unknown
 }
 
+export interface PrintJobInfo {
+  id: string;
+  documentName: string;
+  status: string;
+  pages: number;
+  sizeBytes: number;
+  submittedAt: string | null;
+  printerName: string;
+}
+
 export interface CategoryInput {
   name: string;
   parentId?: string | null;
@@ -521,6 +531,8 @@ export interface API {
   printerPrint: (data: any) => Promise<ApiResponse<any>>;
   printerTest: () => Promise<ApiResponse<any>>;
   printerOpenDrawer: () => Promise<ApiResponse<any>>;
+  printerQueueList: () => Promise<ApiResponse<PrintJobInfo[]>>;
+  printerQueueCancel: (jobId: string) => Promise<ApiResponse<void>>;
 
   // Product (POS-013 / PROD-002)
   productList: (filter?: ProductFilter) => Promise<ApiResponse<ProductPageResult>>;

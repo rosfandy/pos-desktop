@@ -218,13 +218,15 @@ function buildEscposBuffer(data: ReceiptData): Buffer {
 
 // ─── Send ESC/POS buffer to Windows printer via PowerShell RAW ────────────────
 
-function sendRawToPrinter(buffer: Buffer, printerName: string): Promise<void> {
+function sendRawToPrinter(buffer: Buffer, printerName: string, documentName?: string): Promise<void> {
   return new Promise((resolve, reject) => {
     const tmpFile = join(tmpdir(), "pos_print_" + Date.now() + ".bin");
     try { writeFileSync(tmpFile, buffer); }
     catch (e: any) { return reject(new Error("Gagal tulis file: " + e.message)); }
 
     console.log("[printer] " + buffer.length + " bytes -> [" + printerName + "]");
+
+    const docName = (documentName || "POS").replace(/"/g, '\\"').replace(/\\\\/g, '\\');
 
     // Tulis PS1 script ke file temp untuk avoid quoting nightmare
     const psFile = tmpFile + ".ps1";
@@ -245,10 +247,10 @@ function sendRawToPrinter(buffer: Buffer, printerName: string): Promise<void> {
       "  [DllImport(\"winspool.drv\",CharSet=CharSet.Unicode)] public static extern bool StartPagePrinter(IntPtr h);",
       "  [DllImport(\"winspool.drv\",CharSet=CharSet.Unicode)] public static extern bool EndPagePrinter(IntPtr h);",
       "  [DllImport(\"winspool.drv\",CharSet=CharSet.Unicode)] public static extern bool WritePrinter(IntPtr h,byte[] b,int n,out int w);",
-      "  public static int Send(string printer,string path){",
+      "  public static int Send(string printer,string path,string docname){",
       "    IntPtr hp;",
       "    if(!OpenPrinter(printer,out hp,IntPtr.Zero))return 1;",
-      "    var di=new DOC{pDocName=\"POS\",pOutputFile=null,pDataType=\"RAW\"};",
+      "    var di=new DOC{pDocName=docname,pOutputFile=null,pDataType=\"RAW\"};",
       "    if(StartDocPrinter(hp,1,di)<=0){ClosePrinter(hp);return 2;}",
       "    StartPagePrinter(hp);",
       "    byte[] data=File.ReadAllBytes(path); int w=0;",
@@ -263,7 +265,7 @@ function sendRawToPrinter(buffer: Buffer, printerName: string): Promise<void> {
       "Add-Type -TypeDefinition @\"",
       csharp,
       "\"@ -Language CSharp -ErrorAction Stop",
-      "$r = [WinRaw]::Send(\"" + printerEsc + "\", \"" + fileEsc + "\")",
+      "$r = [WinRaw]::Send(\"" + printerEsc + "\", \"" + fileEsc + "\", \"" + docName + "\")",
       "Write-Host (\"exit=\" + $r)",
       "exit $r",
     ].join("\n");
@@ -334,7 +336,8 @@ export async function printReceipt(data: ReceiptData, printerName?: string): Pro
   }
   try {
     const buffer = buildEscposBuffer(data);
-    await sendRawToPrinter(buffer, printerName);
+    const docName = data.invoiceNumber ? `Struk ${data.invoiceNumber}` : undefined;
+    await sendRawToPrinter(buffer, printerName, docName);
     return { ok: true };
   } catch (err: any) {
     return { ok: false, error: { code: PRINT_ERRORS.PRINT_FAILED, message: err.message || 'Print gagal' } };
@@ -347,7 +350,7 @@ export async function printTestPage(printerName?: string): Promise<{ ok: boolean
   }
   try {
     const buffer = buildTestBuffer();
-    await sendRawToPrinter(buffer, printerName);
+    await sendRawToPrinter(buffer, printerName, 'Test Print POS');
     return { ok: true };
   } catch (err: any) {
     return { ok: false, error: { code: PRINT_ERRORS.PRINTER_NOT_FOUND, message: err.message || 'Printer tidak terhubung' } };

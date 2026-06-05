@@ -46,6 +46,8 @@ const api = {
   printerPrint: (data: any) => ipcRenderer.invoke('printer:print', data),
   printerTest: () => ipcRenderer.invoke('printer:test'),
   printerOpenDrawer: () => ipcRenderer.invoke('printer:open-drawer'),
+  printerQueueList: () => ipcRenderer.invoke('printer:queueList'),
+  printerQueueCancel: (jobId: string) => ipcRenderer.invoke('printer:queueCancel', jobId),
 
   // Product channels (POS-013 / PROD-002)
   productList: (filter?: any) => ipcRenderer.invoke('product:list', filter),
