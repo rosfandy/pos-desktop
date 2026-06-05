@@ -12,7 +12,7 @@ export default function CartPanel({ onPay }: CartPanelProps) {
   const {
     items, discount, tax, discountPercent, taxPercent, total,
     updateQuantity, updateItemDiscount, setDiscount, setTax,
-    clearCart,
+    clearCart, removeItem,
   } = useCartStore();
 
   const subtotal = items.reduce((s, i) => s + i.quantity * i.price, 0);
@@ -155,11 +155,11 @@ export default function CartPanel({ onPay }: CartPanelProps) {
                     />
                   </div>
 
-                  {/* Delete */}
+                  {/* Hapus item */}
                   <Button
                     variant="ghost"
                     size="icon-sm"
-                    onClick={() => updateQuantity(item.productId, item.unit, 0)}
+                    onClick={() => removeItem(item.productId, item.unit)}
                     className="text-neutral-400 hover:text-red-500 hover:bg-red-50"
                     title="Hapus item"
                   >
@@ -249,7 +249,7 @@ export default function CartPanel({ onPay }: CartPanelProps) {
               <CurrencyDollar weight="fill" className="w-5 h-5" />
               Bayar
               <span className="text-[11px] font-semibold opacity-80 ml-1">
-                (F4)
+                (Ctrl + Enter)
               </span>
             </Button>
           </div>

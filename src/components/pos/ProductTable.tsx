@@ -1,5 +1,8 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { useCartStore } from '@/stores/cartStore';
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
+} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
@@ -78,8 +81,15 @@ export default function ProductTable({
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const searchRef = useRef<HTMLInputElement>(null);
   const tableRef = useRef<HTMLDivElement>(null);
+  const qtyInputRef = useRef<HTMLInputElement>(null);
+  const nonEmptySearchCountRef = useRef(0);
 
   const addItem = useCartStore((s) => s.addItem);
+
+  // ── Qty dialog state ──────────────────────────────────────────────────────────
+  const [qtyDialogOpen, setQtyDialogOpen] = useState(false);
+  const [pendingProduct, setPendingProduct] = useState<Product | null>(null);
+  const [qtyValue, setQtyValue] = useState('');
 
   const search = externalSearch ?? internalSearch;
   const setSearch = onSearchChange ?? setInternalSearch;
@@ -90,8 +100,10 @@ export default function ProductTable({
     if (!debouncedSearch.trim()) {
       setProducts([]);
       setLoading(false);
+      nonEmptySearchCountRef.current = 0; // reset — user clear search
       return;
     }
+    nonEmptySearchCountRef.current++;
     setLoading(true);
     window.api.productList({ search: debouncedSearch.trim(), limit: 0 }).then((res: any) => {
       const page = unwrap<ProductPageResult>(res, { data: [], nextCursor: null, hasMore: false });
@@ -176,34 +188,75 @@ export default function ProductTable({
     return list;
   }, [mappedProducts, sortKey, sortDir]);
 
-  // ── Add to cart ─────────────────────────────────────────────────────────────
+  // ── Add to cart (opens qty dialog) ────────────────────────────────────────
   const handleAdd = useCallback((product: Product) => {
-    if (onAddToCart) {
-      onAddToCart(product);
-    } else {
-      addItem({
-        productId: product.id,
-        productName: product.name,
-        quantity: 1,
-        unit: product.unit || 'pcs',
-        unitConversion: product.unitConversion || 1,
-        price: Math.round(product.price * 100),
-        discount: 0,
-        total: Math.round(product.price * 100),
-      });
-    }
+    setPendingProduct(product);
+    setQtyValue('');
+    setQtyDialogOpen(true);
+    // Focus handled by dialog's autoFocus
+  }, []);
+
+  // ── Confirm qty and add to cart ──────────────────────────────────────────────
+  const handleConfirmQty = useCallback(() => {
+    const product = pendingProduct;
+    if (!product) return;
+
+    const qty = parseFloat(qtyValue) || 1;
+
+    addItem({
+      productId: product.id,
+      productName: product.name,
+      quantity: qty,
+      unit: product.unit || 'pcs',
+      unitConversion: product.unitConversion || 1,
+      price: Math.round(product.price * 100),
+      discount: 0,
+      total: Math.round(product.price * 100 * qty),
+    });
 
     setAddedId(product.id);
     setHighlightedIndex(-1);
     setTimeout(() => setAddedId(null), 400);
 
-    // Setelah item masuk keranjang, tetap arahkan operator ke input search
+    // Setelah item masuk keranjang, arahkan operator ke input search
     // agar workflow kasir bisa langsung scan/ketik item berikutnya.
     setTimeout(() => {
       searchRef.current?.focus({ preventScroll: true });
       searchRef.current?.select();
     }, 0);
-  }, [addItem, onAddToCart]);
+
+    setQtyDialogOpen(false);
+    setPendingProduct(null);
+    onAddToCart?.(product);
+  }, [pendingProduct, qtyValue, addItem, onAddToCart]);
+
+  // ── Cancel qty dialog ──────────────────────────────────────────────────────
+  const handleCancelQty = useCallback(() => {
+    setQtyDialogOpen(false);
+    setPendingProduct(null);
+    // Kembalikan fokus ke search
+    setTimeout(() => {
+      searchRef.current?.focus({ preventScroll: true });
+      searchRef.current?.select();
+    }, 0);
+  }, []);
+
+  // ── Auto-select if exact match (barcode scan / exact name) ──────────────────
+  useEffect(() => {
+    if (loading || products.length !== 1 || !debouncedSearch.trim()) return;
+    // Hanya auto-select jika search diinput 1x (scan/paste), bukan ketik manual
+    if (nonEmptySearchCountRef.current !== 1) return;
+
+    const p = products[0];
+    const query = debouncedSearch.trim().toLowerCase();
+    const isExactBarcode = p.barcode && p.barcode.toLowerCase() === query;
+    const isExactName = p.name.toLowerCase() === query;
+
+    if (isExactBarcode || isExactName) {
+      const mapped = mappedProducts[0];
+      if (mapped) handleAdd(mapped);
+    }
+  }, [products, debouncedSearch, loading, mappedProducts, handleAdd]);
 
   // ── Sort toggle ─────────────────────────────────────────────────────────────
   const toggleSort = (key: SortKey) => {
@@ -240,7 +293,7 @@ export default function ProductTable({
         setHighlightedIndex((i) => (i > 0 ? Math.max(i - 1, 0) : maxIdx));
         return;
       }
-      if (e.key === 'Enter' && highlightedIndex >= 0) {
+      if (e.key === 'Enter' && !e.ctrlKey && !e.metaKey && highlightedIndex >= 0) {
         e.preventDefault();
         handleAdd(filtered[highlightedIndex]);
         return;
@@ -258,6 +311,7 @@ export default function ProductTable({
         setHighlightedIndex((i) => (i > 0 ? Math.max(i - 1, 0) : maxIdx));
         break;
       case 'Enter':
+        if (e.ctrlKey || e.metaKey) break; // Ctrl+Enter is for payment modal
         e.preventDefault();
         if (highlightedIndex >= 0 && highlightedIndex < filtered.length) {
           handleAdd(filtered[highlightedIndex]);
@@ -432,6 +486,61 @@ export default function ProductTable({
           </>
         )}
       </div>
+
+      {/* ── Qty Dialog ───────────────────────────────────────────────── */}
+      <Dialog open={qtyDialogOpen} onOpenChange={(open) => { if (!open) handleCancelQty(); }}>
+        <DialogContent className="w-[300px] sm:max-w-[300px] p-4">
+          <DialogHeader className="pb-1">
+            <DialogTitle className="text-[13px]">Jumlah Item</DialogTitle>
+            <DialogDescription className="text-[11px] break-words leading-tight">
+              {pendingProduct?.name}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-[12px]">
+              <span className="text-neutral-600">Harga satuan</span>
+              <span className="font-semibold">Rp{pendingProduct?.price.toLocaleString('id-ID')}</span>
+            </div>
+
+            <label className="text-[11px] font-medium text-neutral-600">Jumlah</label>
+            <Input
+              ref={qtyInputRef}
+              type="number"
+              step="any"
+              value={qtyValue}
+              onChange={(e) => setQtyValue(e.target.value)}
+              onKeyDown={(e) => {
+                e.stopPropagation();
+                if (e.key === 'Enter') handleConfirmQty();
+                if (e.key === 'Escape') handleCancelQty();
+              }}
+              autoFocus
+              placeholder="0"
+              className="h-9 text-[13px] font-semibold"
+            />
+
+            {pendingProduct && (
+              <div className="flex items-center justify-between text-[12px]">
+                <span className="text-neutral-600">Total</span>
+                <span className="font-bold text-indigo-600">
+                  Rp{((parseFloat(qtyValue) || 0) * pendingProduct.price).toLocaleString('id-ID')}
+                </span>
+              </div>
+            )}
+          </div>
+
+          <div className="flex items-center justify-end gap-2 mt-2">
+            <Button variant="outline" size="sm" onClick={handleCancelQty}>
+              Batal
+            </Button>
+            <Button size="sm" onClick={handleConfirmQty}>
+              <Plus className="w-3.5 h-3.5 mr-1" weight="bold" />
+              Tambahkan
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

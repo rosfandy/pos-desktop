@@ -119,7 +119,7 @@ export default function POSTerminalPage() {
     }
   }, [user?.id, checkCurrentShift]);
 
-  // ── Open payment modal on F4 ────────────────────────────────────────────────
+  // ── Open payment modal on Ctrl+Enter ────────────────────────────────────────
   useEffect(() => {
     const handler = () => {
       if (cartStore.items.length === 0) {
@@ -314,19 +314,11 @@ export default function POSTerminalPage() {
   }, []);
 
   // ── Handle product add from table ──────────────────────────────────────────
-  const handleAddProduct = useCallback((product: Product) => {
-    cartStore.addItem({
-      productId: product.id,
-      productName: product.name,
-      quantity: 1,
-      unit: product.unit || 'pcs',
-      unitConversion: product.unitConversion || 1,
-      price: Math.round(product.price * 100),
-      discount: 0,
-      total: Math.round(product.price * 100),
-    });
+  // Produk sudah ditambahkan ke keranjang oleh ProductTable (via qty dialog).
+  // Fungsi ini hanya membersihkan input search agar operator bisa scan item berikutnya.
+  const handleAddProduct = useCallback((_product: Product) => {
     setSearchQuery(''); // kosongkan input search
-  }, [cartStore]);
+  }, []);
 
   // ── Cash out success ──────────────────────────────────────────────────────
   const handleCashOutSuccess = useCallback(() => {

@@ -1,6 +1,9 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* ── Dark mode: pakai class .dark (bukan prefers-color-scheme) ─────────────── */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --radius: 0.625rem;
   --color-background: oklch(1 0 0);
@@ -124,7 +127,7 @@ html {
 }
 
 html.dark {
-  --background: oklch(0.17 0 0);
+  --background: #0f0f0f;
   --foreground: oklch(0.94 0 0);
   --card: oklch(0.21 0 0);
   --card-foreground: oklch(0.94 0 0);
@@ -178,6 +181,8 @@ html.dark .bg-white        { background-color: var(--card); }
 html.dark .bg-neutral-50  { background-color: var(--muted); }
 html.dark .bg-neutral-100 { background-color: var(--background); }
 html.dark .bg-neutral-200 { background-color: var(--muted); }
+html.dark .bg-neutral-300,
+html.dark .hover\:bg-neutral-300:hover { background-color: color-mix(in oklch, var(--muted) 80%, var(--foreground) 20%); }
 html.dark .text-neutral-900 { color: var(--foreground); }
 html.dark .text-neutral-800 { color: var(--foreground); }
 html.dark .text-neutral-700 { color: var(--foreground); }
@@ -188,7 +193,13 @@ html.dark .text-neutral-300 { color: oklch(0.42 0.01 264); }
 html.dark .text-neutral-200 { color: oklch(0.32 0.01 264); }
 html.dark .border-neutral-200,
 html.dark .border-neutral-300,
-html.dark .border-neutral-100 { border-color: var(--border); }
+html.dark .border-neutral-100,
+html.dark .border-neutral-400 { border-color: var(--border); }
+html.dark .border-red-200 { border-color: color-mix(in oklch, var(--destructive) 40%, transparent); }
+html.dark .border-emerald-200 { border-color: color-mix(in oklch, oklch(0.7 0.18 155) 40%, transparent); }
+html.dark .border-amber-200 { border-color: color-mix(in oklch, oklch(0.78 0.16 70) 40%, transparent); }
+html.dark .border-blue-200,
+html.dark .border-blue-300 { border-color: color-mix(in oklch, oklch(0.7 0.16 240) 40%, transparent); }
 html.dark .divide-neutral-100 > * + * { border-color: var(--border); }
 html.dark .hover\:bg-neutral-50:hover  { background-color: var(--muted); }
 html.dark .hover\:bg-neutral-100:hover { background-color: var(--muted); }
@@ -196,9 +207,11 @@ html.dark .hover\:bg-indigo-50:hover  { background-color: color-mix(in oklch, va
 html.dark .placeholder\:text-neutral-400::placeholder { color: var(--muted-foreground); }
 html.dark .bg-indigo-100 { background-color: color-mix(in oklch, var(--primary) 18%, transparent); }
 html.dark .bg-indigo-50  { background-color: color-mix(in oklch, var(--primary) 12%, transparent); }
+html.dark .text-indigo-500,
 html.dark .text-indigo-600,
 html.dark .text-indigo-700,
 html.dark .text-indigo-800 { color: var(--primary); }
+html.dark .text-indigo-400 { color: color-mix(in oklch, var(--primary) 70%, transparent); }
 html.dark .bg-emerald-100 { background-color: color-mix(in oklch, oklch(0.7 0.18 155) 18%, transparent); }
 html.dark .bg-emerald-50  { background-color: color-mix(in oklch, oklch(0.7 0.18 155) 12%, transparent); }
 html.dark .text-emerald-700,
@@ -446,4 +459,8 @@ html.dark input[type="time"] {
   .pos-stat-change {
     @apply text-[10px] font-medium flex items-center gap-0.5;
   }
+}
+
+.border-input {
+  @apply border-black/20! dark:border-white/20!
 }

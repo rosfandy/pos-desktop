@@ -85,7 +85,7 @@ function GeneralSection({ form, setForm }: { form: any; setForm: any }) {
             onChange={(e) => setForm((f: any) => ({ ...f, storeAddress: e.target.value }))}
             placeholder="Contoh: Jl. Sudirman No. 123"
             rows={3}
-            className="pl-10 text-[12px] bg-background text-foreground border border-input shadow-sm focus:border-primary focus:ring-1 focus:ring-primary resize-none"
+            className="pl-10"
           />
         </div>
       </div>
@@ -201,7 +201,6 @@ function PrintSection({ form, setForm, printers, printersLoading, fetchPrinters 
           onChange={(e) => setForm((f: any) => ({ ...f, receiptHeader: e.target.value }))}
           placeholder="Terima Kasih"
           rows={2}
-          className="text-[12px] bg-background text-foreground border border-input shadow-sm focus:border-primary focus:ring-1 focus:ring-primary resize-none"
         />
         <PosHint>Teks yang muncul di bagian atas struk.</PosHint>
       </div>
@@ -214,7 +213,6 @@ function PrintSection({ form, setForm, printers, printersLoading, fetchPrinters 
           onChange={(e) => setForm((f: any) => ({ ...f, receiptFooter: e.target.value }))}
           placeholder="Barang yang sudah dibeli tidak dapat dikembalikan"
           rows={2}
-          className="text-[12px] bg-background text-foreground border border-input shadow-sm focus:border-primary focus:ring-1 focus:ring-primary resize-none"
         />
         <PosHint>Teks yang muncul di bagian bawah struk.</PosHint>
       </div>

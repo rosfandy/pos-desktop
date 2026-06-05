@@ -80,6 +80,9 @@ function buildEscposBuffer(data: ReceiptData): Buffer {
     lineCharacter: '-',
   });
 
+  // Reset printer ke default state — pastikan tidak dalam page mode
+  printer.raw(Buffer.from([0x1B, 0x40])); // ESC @ — initialize printer
+
   const PAYMENT_LABELS: Record<string, string> = {
     cash: 'Tunai', debit: 'Debit', qris: 'QRIS',
     transfer: 'Transfer', credit: 'Kredit',
@@ -205,8 +208,10 @@ function buildEscposBuffer(data: ReceiptData): Buffer {
     printer.println('[QR Code]');
   }
 
-  printer.newLine();
-  printer.cut();
+  // ── AKHIR STRUK: feed + cut ────────────────────────────────────
+  printer.newLine();           // 1 baris spasi
+  printer.newLine();           // 2 baris spasi — biar cutter tidak potong teks
+  printer.cut(true, false);    // full cut, tanpa auto-feed (biar clean)
 
   return printer.getBuffer() as Buffer;
 }

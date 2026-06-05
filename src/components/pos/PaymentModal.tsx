@@ -17,7 +17,7 @@ interface PaymentModalProps {
   total: number;
 }
 
-const QUICK_AMOUNTS = [0, 50000, 100000, 200000, 500000];
+const QUICK_AMOUNTS = [0];
 
 export default function PaymentModal({ open, onClose, onConfirm, total }: PaymentModalProps) {
   const [method, setMethod] = useState<PaymentMethod>('cash');
@@ -38,6 +38,45 @@ export default function PaymentModal({ open, onClose, onConfirm, total }: Paymen
     }
   }, [open, method]);
 
+  // ── Keyboard shortcuts ──────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!open) return;
+
+    const handler = (e: KeyboardEvent) => {
+      // Ctrl+1..4 / Cmd+1..4 untuk pilih metode (bekerja walau fokus di input)
+      if ((e.key === '1' || e.key === '2' || e.key === '3' || e.key === '4') && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        switch (e.key) {
+          case '1': setMethod('cash'); break;
+          case '2': setMethod('qris'); break;
+          case '3': setMethod('debit'); break;
+          case '4': setMethod('transfer'); break;
+        }
+        return;
+      }
+
+      // Space untuk Uang Pas (bekerja walau fokus di input)
+      if (e.key === ' ' && method === 'cash') {
+        e.preventDefault();
+        handleQuickAmount(0);
+        return;
+      }
+
+      // Enter untuk konfirmasi (bekerja walau fokus di input)
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        confirmRef.current();
+        return;
+      }
+
+      // Skip jika fokus di input (biar user bisa ngetik angka)
+      if ((e.target as HTMLElement).tagName === 'INPUT') return;
+    };
+
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [open]);
+
   // Calculate current amount in cents
   const currentAmountCents = method === 'cash'
     ? (parseFloat(inputAmount) * 100 || total)
@@ -56,6 +95,10 @@ export default function PaymentModal({ open, onClose, onConfirm, total }: Paymen
     setMethod('cash');
   };
 
+  // ── Ref for handleConfirm (avoid stale closure in keyboard handler) ──────────
+  const confirmRef = useRef(handleConfirm);
+  confirmRef.current = handleConfirm;
+
   const handleQuickAmount = (amount: number) => {
     if (amount === 0) {
       // Uang Pas — set sesuai total tagihan
@@ -66,11 +109,11 @@ export default function PaymentModal({ open, onClose, onConfirm, total }: Paymen
     setShowError(false);
   };
 
-  const methods: { key: PaymentMethod; label: string; icon: any; color: string }[] = [
-    { key: 'cash', label: 'Tunai', icon: Money, color: 'bg-emerald-500' },
-    { key: 'qris', label: 'QRIS', icon: QrCode, color: 'bg-blue-500' },
-    { key: 'debit', label: 'Debit', icon: CreditCard, color: 'bg-purple-500' },
-    { key: 'transfer', label: 'Transfer', icon: ArrowClockwise, color: 'bg-amber-500' },
+  const methods: { key: PaymentMethod; label: string; icon: any; color: string; shortcut: string }[] = [
+    { key: 'cash', label: 'Tunai', icon: Money, color: 'bg-emerald-500', shortcut: 'Ctrl+1' },
+    { key: 'qris', label: 'QRIS', icon: QrCode, color: 'bg-blue-500', shortcut: 'Ctrl+2' },
+    { key: 'debit', label: 'Debit', icon: CreditCard, color: 'bg-purple-500', shortcut: 'Ctrl+3' },
+    { key: 'transfer', label: 'Transfer', icon: ArrowClockwise, color: 'bg-amber-500', shortcut: 'Ctrl+4' },
   ];
 
   if (!open) return null;
@@ -99,6 +142,22 @@ export default function PaymentModal({ open, onClose, onConfirm, total }: Paymen
               </p>
             </div>
 
+            {/* Kembalian — langsung di bawah total */}
+            {method === 'cash' && currentAmountCents > 0 && (
+              <div className={cn(
+                'flex items-center justify-between rounded-lg px-3 py-2',
+                currentAmountCents < total ? 'bg-red-50' : 'bg-emerald-50'
+              )}>
+                <span className="text-[11px] text-neutral-500">Kembalian</span>
+                <span className={cn(
+                  'text-[14px] font-bold',
+                  currentAmountCents < total ? 'text-red-600' : 'text-emerald-600'
+                )}>
+                  {currentAmountCents < total ? '-' : ''}Rp{(Math.abs(currentAmountCents - total) / 100).toLocaleString('id-ID')}
+                </span>
+              </div>
+            )}
+
             {/* Payment Methods */}
             <div className="grid grid-cols-4 gap-2">
               {methods.map((m) => {
@@ -118,6 +177,12 @@ export default function PaymentModal({ open, onClose, onConfirm, total }: Paymen
                   >
                     <Icon weight="fill" className={cn('w-5 h-5', isActive && 'text-white')} />
                     <span className={cn('text-[10px] font-semibold', isActive && 'text-white')}>{m.label}</span>
+                    <span className={cn(
+                      'px-1.5 py-0.5 rounded text-[9px] font-bold font-mono leading-none border',
+                      isActive
+                        ? 'bg-white/30 text-white border-white/30'
+                        : 'bg-blue-50 text-blue-600 border-blue-300'
+                    )}>{m.shortcut}</span>
                   </Button>
                 );
               })}
@@ -148,31 +213,18 @@ export default function PaymentModal({ open, onClose, onConfirm, total }: Paymen
                   {QUICK_AMOUNTS.map((amt) => (
                     <Button
                       key={amt}
-                      variant="outline"
+                      variant="secondary"
                       size="sm"
                       onClick={() => handleQuickAmount(amt)}
-                      className="text-[11px] h-8 px-3 flex-1 min-w-[4rem]"
+                      className="text-[11px] h-8 px-3 flex-1 min-w-[4rem] bg-neutral-300! hover:bg-neutral-300"
                     >
                       {amt === 0 ? 'Uang Pas' : `+${(amt / 1000).toFixed(0)}rb`}
+                      {amt === 0 && (
+                        <span className="ml-1.5 px-1 py-0.5 rounded text-[8px] font-bold font-mono leading-none border bg-blue-50 text-blue-600 border-blue-300">Space</span>
+                      )}
                     </Button>
                   ))}
                 </div>
-
-                {/* Change */}
-                {currentAmountCents > 0 && (
-                  <div className={cn(
-                    'flex items-center justify-between rounded-lg px-3 py-2',
-                    currentAmountCents < total ? 'bg-red-50' : 'bg-emerald-50'
-                  )}>
-                    <span className="text-[11px] text-neutral-500">Kembalian</span>
-                    <span className={cn(
-                      'text-[14px] font-bold',
-                      currentAmountCents < total ? 'text-red-600' : 'text-emerald-600'
-                    )}>
-                      {currentAmountCents < total ? '-' : ''}Rp{(Math.abs(currentAmountCents - total) / 100).toLocaleString('id-ID')}
-                    </span>
-                  </div>
-                )}
 
                 {/* Error */}
                 {showError && (
@@ -198,15 +250,15 @@ export default function PaymentModal({ open, onClose, onConfirm, total }: Paymen
           {/* Footer */}
           <div className="shrink-0 h-12 flex items-center justify-end gap-2 px-4 border-t border-neutral-200 bg-neutral-50">
             <Button variant="outline" size="sm" onClick={onClose} className="h-8 px-4 text-[11px]">
-              Batal
+              Batal (Esc)
             </Button>
             <Button
               size="sm"
               onClick={handleConfirm}
               disabled={method === 'cash' && currentAmountCents < total}
-              className="h-8 px-4 bg-indigo-600 hover:bg-indigo-700 text-[11px] text-white"
+              className="h-8 px-4 hover:bg-indigo-700 text-[11px] text-white"
             >
-              Konfirmasi
+              Konfirmasi (Enter)
             </Button>
           </div>
       </DialogContent>

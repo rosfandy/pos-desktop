@@ -57,7 +57,6 @@ export default function useKeyboardShortcuts() {
     const handlers: Record<string, KeyHandler> = {
       F2: focusSearch,
       f: focusSearch, // Ctrl+F
-      F4: openPayment,
       F5: holdBill,
       F6: loadHeldBill,
       F7: reprintLast,
@@ -73,6 +72,16 @@ export default function useKeyboardShortcuts() {
     };
 
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Jika sudah di-handle oleh modal (misal PaymentModal), skip
+      if (e.defaultPrevented) return;
+
+      // Ctrl+Enter / Cmd+Enter to open payment
+      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        openPayment();
+        return;
+      }
+
       // Ignore if typing in input
       const target = e.target as HTMLElement;
       const isInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable;

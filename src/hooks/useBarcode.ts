@@ -39,6 +39,9 @@ export default function useBarcode({ onScan, threshold = 50, terminator = 'Enter
         return;
       }
 
+      // Ignore jika Ctrl/Cmd ditekan (user shortcut, bukan scan)
+      if (e.ctrlKey || e.metaKey) return;
+
       // Detect terminator (Enter)
       if (e.key === terminator && activeRef.current) {
         const barcode = bufferRef.current.join('');
