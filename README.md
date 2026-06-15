@@ -59,6 +59,17 @@ Buka menu **Pengaturan** untuk mengubah:
 - Konfigurasi printer dan template struk
 - Preferensi tampilan (ukuran huruf, tema)
 
+## Preview
+
+1. Kasir Module
+![Module Kasir|697](https://ik.imagekit.io/mesifer/blog/pos-module-kasir.gif)
+
+2. Report Module
+![Module Report|697](https://ik.imagekit.io/mesifer/blog/pos-module-report.gif)
+
+3. Auto-Updater Module
+![Module Updater|697](https://ik.imagekit.io/mesifer/blog/pos-module-updater.gif)
+
 ## Kontak
 
 Repository: [github.com/rosfandy/pos-desktop](https://github.com/rosfandy/pos-desktop)

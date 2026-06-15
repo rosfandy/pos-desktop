@@ -30,6 +30,9 @@ data/pos.db
 .structurizr
 C
 *.old
+.opencode
+.agents
+PRD-POS-Electron.md
 
 # Database
 database/*.db
