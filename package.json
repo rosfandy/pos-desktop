@@ -1,7 +1,7 @@
 {
   "name": "pos-desktop",
   "author": "rosfandy",
-  "version": "1.5.11",
+  "version": "1.5.12",
   "description": "POS Kasir - Aplikasi kasir",
   "main": "dist-electron/main.js",
   "scripts": {
