@@ -1,4 +1,5 @@
 import { createTransaction, getTransactionById, listTransactions, updateTransactionStatus, esc } from './repo.ts';
+export { listTransactions, getTransactionsByCustomerId } from './repo.ts';
 import type { TransactionWithItems } from '../../db/schema.ts';
 import { getDb } from '../../db/index.ts';
 
