@@ -100,12 +100,14 @@ export default function ProductTable({
     if (!debouncedSearch.trim()) {
       setProducts([]);
       setLoading(false);
-      nonEmptySearchCountRef.current = 0; // reset — user clear search
+      nonEmptySearchCountRef.current = 0;
       return;
     }
+    const controller = new AbortController();
     nonEmptySearchCountRef.current++;
     setLoading(true);
     window.api.productList({ search: debouncedSearch.trim(), limit: 0 }).then((res: any) => {
+      if (controller.signal.aborted) return;
       const page = unwrap<ProductPageResult>(res, { data: [], nextCursor: null, hasMore: false });
       if (page && page.data) {
         const raw: ProductRaw[] = page.data.map((p) => ({
@@ -124,9 +126,11 @@ export default function ProductTable({
       }
       setLoading(false);
     }).catch(() => {
+      if (controller.signal.aborted) return;
       setProducts([]);
       setLoading(false);
     });
+    return () => controller.abort();
   }, [debouncedSearch]);
 
   // ── Auto-focus search on mount ───────────────────────────────────────────────
