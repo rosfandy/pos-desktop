@@ -1,0 +1,25 @@
+dynamic reactApp "TransaksiPenjualan" {
+    title "[Flow] - Transaksi Penjualan"
+    autoLayout
+
+    kasir -> posPage "1. Scan / pilih produk"
+    posPage -> productTable "2. Cari produk"
+    productTable -> handleBarcode "3. Cari via barcode"
+    handleBarcode -> productList "4. IPC: product:search"
+    productList -> productService "5. Query products"
+    productService -> productRepo "6. Query DB"
+    kasir -> posPage "7. Pilih quantity"
+    posPage -> cartPanel "8. Tambah ke keranjang"
+    cartPanel -> calculateCart "9. Update subtotal"
+    kasir -> posPage "10. Bayar (Ctrl+Enter)"
+    posPage -> paymentModal "11. Buka modal bayar"
+    kasir -> paymentModal "12. Input jumlah bayar"
+    paymentModal -> processPayment "13. Proses bayar"
+    processPayment -> posSaveTransaction "14. IPC: transaction:save"
+    posSaveTransaction -> posService "15. Insert transaksi"
+    posService -> salesRepo "16. Query insert"
+    paymentModal -> receiptPreview "17. Tampilkan struk"
+    processPayment -> printerPrint "18. IPC: printer:print"
+    printerPrint -> printerSvc "19. Cetak struk"
+    printerSvc -> printer "20. USB RAW"
+}

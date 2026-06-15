@@ -1,0 +1,6 @@
+kasir -> reactApp "Menggunakan UI"
+admin -> reactApp "Mengelola data"
+pemilik -> reactApp "Melihat laporan"
+reactApp -> zustandStore "Membaca/menulis state"
+reactApp -> electronMain "IPC call" "contextBridge"
+electronMain -> sqlite "Query" "SQL"

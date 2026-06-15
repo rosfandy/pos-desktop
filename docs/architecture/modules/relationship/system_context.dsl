@@ -1,0 +1,6 @@
+kasir -> posApp "Melakukan transaksi penjualan"
+pemilik -> posApp "Melihat laporan dan data master"
+admin -> posApp "Mengelola master data dan pengaturan"
+posApp -> printer "Mengirim perintah cetak" "ESC/POS"
+scanner -> posApp "Input barcode" "USB/HID"
+posApp -> laci "Membuka laci" "ESC/POS"

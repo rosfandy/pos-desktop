@@ -1,0 +1,11 @@
+// ── Repo → Table ──
+authRepo -> tableUsers "Read/write"
+salesRepo -> tableTransactions "Read/write"
+productRepo -> tableProducts "Read/write"
+inventoryRepo -> tableInventoryLog "Read/write"
+customerRepo -> tableCustomers "Read/write"
+reportRepo -> tableTransactions "Read/write"
+reportRepo -> tableTransactionItems "Read/write"
+reportRepo -> tableProducts "Read/write"
+reportRepo -> tableInventoryLog "Read/write"
+shiftRepo -> tableShifts "Read/write"

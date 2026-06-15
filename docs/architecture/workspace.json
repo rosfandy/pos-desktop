@@ -1,0 +1,6212 @@
+{
+  "configuration" : { },
+  "description" : "POS Desktop adalah aplikasi kasir desktop untuk UMKM/retail dengan arsitektur offline-first.\nTeknologi: Electron 28, React 18, TypeScript, Tailwind CSS, shadcn/ui, Zustand, better-sqlite3.\nMendukung thermal printer ESC/POS, barcode scanner USB/HID, dan cash drawer.\nModul: Core, POS Terminal, Product Management, Inventory, Customer CRM,\nReports & Analytics, Shift Management.",
+  "documentation" : { },
+  "id" : 1,
+  "lastModifiedDate" : "2026-06-06T11:19:36Z",
+  "model" : {
+    "deploymentNodes" : [ {
+      "children" : [ {
+        "children" : [ {
+          "containerInstances" : [ {
+            "containerId" : "16",
+            "environment" : "Production",
+            "id" : "479",
+            "instanceId" : 1,
+            "properties" : {
+              "structurizr.dsl.identifier" : "b9897171-0e53-4122-b454-c2b94951fab0"
+            },
+            "relationships" : [ {
+              "description" : "Return result",
+              "destinationId" : "480",
+              "id" : "482",
+              "linkedRelationshipId" : "320",
+              "sourceId" : "479"
+            } ],
+            "tags" : "Container Instance"
+          }, {
+            "containerId" : "71",
+            "environment" : "Production",
+            "id" : "480",
+            "instanceId" : 1,
+            "properties" : {
+              "structurizr.dsl.identifier" : "b918d054-efb9-414c-8ac6-bbb324a447d4"
+            },
+            "relationships" : [ {
+              "description" : "IPC call",
+              "destinationId" : "479",
+              "id" : "481",
+              "linkedRelationshipId" : "151",
+              "sourceId" : "480",
+              "technology" : "contextBridge"
+            } ],
+            "tags" : "Container Instance"
+          } ],
+          "description" : "electron-builder",
+          "environment" : "Production",
+          "id" : "478",
+          "instances" : "1",
+          "name" : "POS Desktop",
+          "properties" : {
+            "structurizr.dsl.identifier" : "posDesktop"
+          },
+          "tags" : "Element,Deployment Node"
+        } ],
+        "description" : "x64",
+        "environment" : "Production",
+        "id" : "477",
+        "instances" : "1",
+        "name" : "Windows OS",
+        "properties" : {
+          "structurizr.dsl.identifier" : "windows"
+        },
+        "tags" : "Element,Deployment Node"
+      } ],
+      "description" : "Windows 10/11",
+      "environment" : "Production",
+      "id" : "476",
+      "instances" : "1",
+      "name" : "PC Kasir",
+      "properties" : {
+        "structurizr.dsl.identifier" : "pc"
+      },
+      "tags" : "Element,Deployment Node"
+    } ],
+    "people" : [ {
+      "description" : "Operator yang melayani transaksi penjualan",
+      "id" : "1",
+      "name" : "Kasir",
+      "properties" : {
+        "structurizr.dsl.identifier" : "kasir"
+      },
+      "relationships" : [ {
+        "description" : "Melakukan transaksi penjualan",
+        "destinationId" : "7",
+        "id" : "141",
+        "sourceId" : "1",
+        "tags" : "Relationship"
+      }, {
+        "description" : "Menggunakan UI",
+        "destinationId" : "71",
+        "id" : "147",
+        "sourceId" : "1",
+        "tags" : "Relationship"
+      }, {
+        "description" : "Login dengan PIN",
+        "destinationId" : "72",
+        "id" : "153",
+        "sourceId" : "1",
+        "tags" : "Relationship"
+      }, {
+        "description" : "Interaksi transaksi",
+        "destinationId" : "78",
+        "id" : "170",
+        "sourceId" : "1",
+        "tags" : "Relationship"
+      }, {
+        "description" : "Input jumlah bayar",
+        "destinationId" : "88",
+        "id" : "171",
+        "sourceId" : "1",
+        "tags" : "Relationship"
+      }, {
+        "description" : "Kelola shift",
+        "destinationId" : "131",
+        "id" : "295",
+        "sourceId" : "1",
+        "tags" : "Relationship"
+      }, {
+        "description" : "Buka shift baru",
+        "destinationId" : "132",
+        "id" : "296",
+        "sourceId" : "1",
+        "tags" : "Relationship"
+      }, {
+        "description" : "Tutup shift",
+        "destinationId" : "133",
+        "id" : "297",
+        "sourceId" : "1",
+        "tags" : "Relationship"
+      } ],
+      "tags" : "Element,Person"
+    }, {
+      "description" : "Melihat laporan dan mengelola data master",
+      "id" : "2",
+      "name" : "Pemilik Toko",
+      "properties" : {
+        "structurizr.dsl.identifier" : "pemilik"
+      },
+      "relationships" : [ {
+        "description" : "Melihat laporan dan data master",
+        "destinationId" : "7",
+        "id" : "142",
+        "sourceId" : "2",
+        "tags" : "Relationship"
+      }, {
+        "description" : "Melihat laporan",
+        "destinationId" : "71",
+        "id" : "149",
+        "sourceId" : "2",
+        "tags" : "Relationship"
+      }, {
+        "description" : "Lihat data customer",
+        "destinationId" : "112",
+        "id" : "248",
+        "sourceId" : "2",
+        "tags" : "Relationship"
+      }, {
+        "description" : "Lihat dashboard",
+        "destinationId" : "120",
+        "id" : "266",
+        "sourceId" : "2",
+        "tags" : "Relationship"
+      }, {
+        "description" : "Lihat laporan penjualan",
+        "destinationId" : "121",
+        "id" : "267",
+        "sourceId" : "2",
+        "tags" : "Relationship"
+      }, {
+        "description" : "Lihat laporan stok",
+        "destinationId" : "122",
+        "id" : "268",
+        "sourceId" : "2",
+        "tags" : "Relationship"
+      }, {
+        "description" : "Lihat laporan keuangan",
+        "destinationId" : "123",
+        "id" : "269",
+        "sourceId" : "2",
+        "tags" : "Relationship"
+      } ],
+      "tags" : "Element,Person"
+    }, {
+      "description" : "Mengelola produk, inventory, customer, dan pengaturan sistem",
+      "id" : "3",
+      "name" : "Admin",
+      "properties" : {
+        "structurizr.dsl.identifier" : "admin"
+      },
+      "relationships" : [ {
+        "description" : "Mengelola master data dan pengaturan",
+        "destinationId" : "7",
+        "id" : "143",
+        "sourceId" : "3",
+        "tags" : "Relationship"
+      }, {
+        "description" : "Mengelola data",
+        "destinationId" : "71",
+        "id" : "148",
+        "sourceId" : "3",
+        "tags" : "Relationship"
+      }, {
+        "description" : "Login dengan PIN",
+        "destinationId" : "72",
+        "id" : "154",
+        "sourceId" : "3",
+        "tags" : "Relationship"
+      }, {
+        "description" : "Konfigurasi aplikasi",
+        "destinationId" : "75",
+        "id" : "165",
+        "sourceId" : "3",
+        "tags" : "Relationship"
+      }, {
+        "description" : "Kelola produk",
+        "destinationId" : "93",
+        "id" : "204",
+        "sourceId" : "3",
+        "tags" : "Relationship"
+      }, {
+        "description" : "Tambah/edit produk",
+        "destinationId" : "94",
+        "id" : "205",
+        "sourceId" : "3",
+        "tags" : "Relationship"
+      }, {
+        "description" : "Atur kategori",
+        "destinationId" : "95",
+        "id" : "206",
+        "sourceId" : "3",
+        "tags" : "Relationship"
+      }, {
+        "description" : "Import produk massal",
+        "destinationId" : "96",
+        "id" : "207",
+        "sourceId" : "3",
+        "tags" : "Relationship"
+      }, {
+        "description" : "Kelola stok",
+        "destinationId" : "102",
+        "id" : "222",
+        "sourceId" : "3",
+        "tags" : "Relationship"
+      }, {
+        "description" : "Stok masuk",
+        "destinationId" : "103",
+        "id" : "223",
+        "sourceId" : "3",
+        "tags" : "Relationship"
+      }, {
+        "description" : "Stok keluar",
+        "destinationId" : "104",
+        "id" : "224",
+        "sourceId" : "3",
+        "tags" : "Relationship"
+      }, {
+        "description" : "Adjustment stok",
+        "destinationId" : "105",
+        "id" : "225",
+        "sourceId" : "3",
+        "tags" : "Relationship"
+      }, {
+        "description" : "Lihat log stok",
+        "destinationId" : "106",
+        "id" : "226",
+        "sourceId" : "3",
+        "tags" : "Relationship"
+      }, {
+        "description" : "Kelola pelanggan",
+        "destinationId" : "112",
+        "id" : "247",
+        "sourceId" : "3",
+        "tags" : "Relationship"
+      }, {
+        "description" : "Tambah customer",
+        "destinationId" : "113",
+        "id" : "249",
+        "sourceId" : "3",
+        "tags" : "Relationship"
+      }, {
+        "description" : "Lihat riwayat",
+        "destinationId" : "116",
+        "id" : "250",
+        "sourceId" : "3",
+        "tags" : "Relationship"
+      } ],
+      "tags" : "Element,Person"
+    } ],
+    "softwareSystems" : [ {
+      "description" : "Mencetak struk belanja via ESC/POS",
+      "documentation" : { },
+      "id" : "4",
+      "name" : "Thermal Printer",
+      "properties" : {
+        "structurizr.dsl.identifier" : "printer"
+      },
+      "tags" : "Element,Software System,External"
+    }, {
+      "description" : "Memindai barcode produk (USB/HID)",
+      "documentation" : { },
+      "id" : "5",
+      "name" : "Barcode Scanner",
+      "properties" : {
+        "structurizr.dsl.identifier" : "scanner"
+      },
+      "relationships" : [ {
+        "description" : "Input barcode",
+        "destinationId" : "7",
+        "id" : "145",
+        "sourceId" : "5",
+        "tags" : "Relationship",
+        "technology" : "USB/HID"
+      } ],
+      "tags" : "Element,Software System,External"
+    }, {
+      "description" : "Menyimpan uang kas, terbuka via ESC/POS",
+      "documentation" : { },
+      "id" : "6",
+      "name" : "Cash Drawer",
+      "properties" : {
+        "structurizr.dsl.identifier" : "laci"
+      },
+      "tags" : "Element,Software System,External"
+    }, {
+      "containers" : [ {
+        "components" : [ {
+          "description" : "database/tables/users",
+          "documentation" : { },
+          "id" : "9",
+          "name" : "Table Users",
+          "properties" : {
+            "structurizr.dsl.identifier" : "tableUsers"
+          },
+          "tags" : "Element,Component",
+          "technology" : "User account + PIN hash"
+        }, {
+          "description" : "database/tables/products",
+          "documentation" : { },
+          "id" : "10",
+          "name" : "Table Products",
+          "properties" : {
+            "structurizr.dsl.identifier" : "tableProducts"
+          },
+          "tags" : "Element,Component",
+          "technology" : "Product catalog + barcode + stock"
+        }, {
+          "description" : "database/tables/transactions",
+          "documentation" : { },
+          "id" : "11",
+          "name" : "Table Transactions",
+          "properties" : {
+            "structurizr.dsl.identifier" : "tableTransactions"
+          },
+          "tags" : "Element,Component",
+          "technology" : "Sales header"
+        }, {
+          "description" : "database/tables/transaction_items",
+          "documentation" : { },
+          "id" : "12",
+          "name" : "Table TransactionItems",
+          "properties" : {
+            "structurizr.dsl.identifier" : "tableTransactionItems"
+          },
+          "tags" : "Element,Component",
+          "technology" : "Sales line items"
+        }, {
+          "description" : "database/tables/inventory_log",
+          "documentation" : { },
+          "id" : "13",
+          "name" : "Table InventoryLog",
+          "properties" : {
+            "structurizr.dsl.identifier" : "tableInventoryLog"
+          },
+          "tags" : "Element,Component",
+          "technology" : "Stock movement audit"
+        }, {
+          "description" : "database/tables/customers",
+          "documentation" : { },
+          "id" : "14",
+          "name" : "Table Customers",
+          "properties" : {
+            "structurizr.dsl.identifier" : "tableCustomers"
+          },
+          "tags" : "Element,Component",
+          "technology" : "Customer master + points + tier"
+        }, {
+          "description" : "database/tables/shifts",
+          "documentation" : { },
+          "id" : "15",
+          "name" : "Table Shifts",
+          "properties" : {
+            "structurizr.dsl.identifier" : "tableShifts"
+          },
+          "tags" : "Element,Component",
+          "technology" : "Shift records"
+        } ],
+        "description" : "SQLite 3",
+        "documentation" : { },
+        "id" : "8",
+        "name" : "Database",
+        "properties" : {
+          "structurizr.dsl.identifier" : "database"
+        },
+        "relationships" : [ {
+          "description" : "Runs on",
+          "destinationId" : "139",
+          "id" : "410",
+          "sourceId" : "8",
+          "tags" : "Relationship"
+        } ],
+        "tags" : "Element,Container,Database",
+        "technology" : "Persistent storage - better-sqlite3"
+      }, {
+        "components" : [ {
+          "description" : "electron/main.ts",
+          "documentation" : { },
+          "id" : "17",
+          "name" : "main.ts",
+          "properties" : {
+            "structurizr.dsl.identifier" : "mainEntry"
+          },
+          "relationships" : [ {
+            "description" : "Register setelah app ready",
+            "destinationId" : "19",
+            "id" : "402",
+            "sourceId" : "17",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "App ready, window creation, IPC init"
+        }, {
+          "description" : "electron/preload.ts",
+          "documentation" : { },
+          "id" : "18",
+          "name" : "preload.ts",
+          "properties" : {
+            "structurizr.dsl.identifier" : "preload"
+          },
+          "relationships" : [ {
+            "description" : "Expose API channels",
+            "destinationId" : "19",
+            "id" : "419",
+            "sourceId" : "18",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "contextBridge API whitelist"
+        }, {
+          "description" : "electron/ipc/handlers.ts",
+          "documentation" : { },
+          "id" : "19",
+          "name" : "ipcHandlers",
+          "properties" : {
+            "structurizr.dsl.identifier" : "ipcHandlers"
+          },
+          "relationships" : [ {
+            "description" : "Cetak struk",
+            "destinationId" : "20",
+            "id" : "403",
+            "sourceId" : "19",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Buka laci",
+            "destinationId" : "21",
+            "id" : "404",
+            "sourceId" : "19",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Read/write config",
+            "destinationId" : "22",
+            "id" : "405",
+            "sourceId" : "19",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Channel registry for all modules"
+        }, {
+          "description" : "electron/printer/service.ts",
+          "documentation" : { },
+          "id" : "20",
+          "name" : "printerService",
+          "properties" : {
+            "structurizr.dsl.identifier" : "printerSvc"
+          },
+          "relationships" : [ {
+            "description" : "Cetak struk",
+            "destinationId" : "4",
+            "id" : "398",
+            "sourceId" : "20",
+            "tags" : "Relationship",
+            "technology" : "USB RAW"
+          }, {
+            "description" : "Render HTML",
+            "destinationId" : "23",
+            "id" : "418",
+            "sourceId" : "20",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "ESC/POS buffer builder"
+        }, {
+          "description" : "electron/printer/cashDrawer.ts",
+          "documentation" : { },
+          "id" : "21",
+          "name" : "cashDrawerService",
+          "properties" : {
+            "structurizr.dsl.identifier" : "cashDrawerSvc"
+          },
+          "relationships" : [ {
+            "description" : "Buka laci",
+            "destinationId" : "6",
+            "id" : "400",
+            "sourceId" : "21",
+            "tags" : "Relationship",
+            "technology" : "USB"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Open laci via ESC/POS"
+        }, {
+          "description" : "electron/database/settings.ts",
+          "documentation" : { },
+          "id" : "22",
+          "name" : "settingsService",
+          "properties" : {
+            "structurizr.dsl.identifier" : "settingsSvc"
+          },
+          "tags" : "Element,Component",
+          "technology" : "electron-store persistent config"
+        }, {
+          "description" : "electron/printer/templates/receipt.html",
+          "documentation" : { },
+          "id" : "23",
+          "name" : "receiptTemplate",
+          "properties" : {
+            "structurizr.dsl.identifier" : "receiptTpl"
+          },
+          "tags" : "Element,Component",
+          "technology" : "Print layout thermal 80mm"
+        }, {
+          "description" : "electron/database/service.ts",
+          "documentation" : { },
+          "group" : "Foundation",
+          "id" : "24",
+          "name" : "databaseService",
+          "properties" : {
+            "structurizr.dsl.identifier" : "dbService"
+          },
+          "relationships" : [ {
+            "description" : "Query",
+            "destinationId" : "139",
+            "id" : "406",
+            "sourceId" : "24",
+            "tags" : "Relationship",
+            "technology" : "SQL"
+          }, {
+            "description" : "Run migration on connect",
+            "destinationId" : "25",
+            "id" : "407",
+            "sourceId" : "24",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Manage schema",
+            "destinationId" : "8",
+            "id" : "408",
+            "sourceId" : "24",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "better-sqlite3 wrapper + WAL mode"
+        }, {
+          "description" : "electron/database/migrations/runner.ts",
+          "documentation" : { },
+          "group" : "Foundation",
+          "id" : "25",
+          "name" : "migrationRunner",
+          "properties" : {
+            "structurizr.dsl.identifier" : "migrationRun"
+          },
+          "tags" : "Element,Component",
+          "technology" : "Schema migration versioning"
+        }, {
+          "description" : "electron/ipc/api.ts",
+          "documentation" : { },
+          "id" : "26",
+          "name" : "api",
+          "properties" : {
+            "structurizr.dsl.identifier" : "api"
+          },
+          "relationships" : [ {
+            "description" : "Return search results",
+            "destinationId" : "79",
+            "id" : "380",
+            "sourceId" : "26",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Return search results",
+            "destinationId" : "71",
+            "id" : "381",
+            "linkedRelationshipId" : "380",
+            "sourceId" : "26"
+          }, {
+            "description" : "Return aggregate data",
+            "destinationId" : "120",
+            "id" : "383",
+            "sourceId" : "26",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Return sales data",
+            "destinationId" : "121",
+            "id" : "385",
+            "sourceId" : "26",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Return stock data",
+            "destinationId" : "122",
+            "id" : "387",
+            "sourceId" : "26",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Return finance data",
+            "destinationId" : "123",
+            "id" : "389",
+            "sourceId" : "26",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Return inventory logs",
+            "destinationId" : "106",
+            "id" : "391",
+            "sourceId" : "26",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Return customer transactions",
+            "destinationId" : "116",
+            "id" : "393",
+            "sourceId" : "26",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Return login result",
+            "destinationId" : "77",
+            "id" : "395",
+            "sourceId" : "26",
+            "tags" : "Relationship"
+          }, {
+            "description" : "IPC invoke",
+            "destinationId" : "19",
+            "id" : "420",
+            "sourceId" : "26",
+            "tags" : "Relationship"
+          }, {
+            "description" : "contextBridge",
+            "destinationId" : "18",
+            "id" : "421",
+            "sourceId" : "26",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Channel registration & entry point"
+        }, {
+          "description" : "electron/ipc/auth/route.ts",
+          "documentation" : { },
+          "group" : "[IPC] auth",
+          "id" : "27",
+          "name" : "auth:login",
+          "properties" : {
+            "structurizr.dsl.identifier" : "authLogin"
+          },
+          "relationships" : [ {
+            "description" : "Return result",
+            "destinationId" : "73",
+            "id" : "317",
+            "sourceId" : "27",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Return result",
+            "destinationId" : "71",
+            "id" : "318",
+            "linkedRelationshipId" : "317",
+            "sourceId" : "27"
+          }, {
+            "description" : "verifyPin",
+            "destinationId" : "30",
+            "id" : "321",
+            "sourceId" : "27",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Route auth",
+            "destinationId" : "19",
+            "id" : "446",
+            "sourceId" : "27",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Validasi PIN login"
+        }, {
+          "description" : "electron/ipc/auth/route.ts",
+          "documentation" : { },
+          "group" : "[IPC] auth",
+          "id" : "28",
+          "name" : "auth:logout",
+          "properties" : {
+            "structurizr.dsl.identifier" : "authLogout"
+          },
+          "relationships" : [ {
+            "description" : "createSession",
+            "destinationId" : "30",
+            "id" : "322",
+            "sourceId" : "28",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Route auth",
+            "destinationId" : "19",
+            "id" : "447",
+            "sourceId" : "28",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Hapus session"
+        }, {
+          "description" : "electron/ipc/auth/route.ts",
+          "documentation" : { },
+          "group" : "[IPC] auth",
+          "id" : "29",
+          "name" : "auth:checkSession",
+          "properties" : {
+            "structurizr.dsl.identifier" : "authCheckSession"
+          },
+          "relationships" : [ {
+            "description" : "checkSession",
+            "destinationId" : "30",
+            "id" : "323",
+            "sourceId" : "29",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Route auth",
+            "destinationId" : "19",
+            "id" : "448",
+            "sourceId" : "29",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Cek masa berlaku session"
+        }, {
+          "description" : "electron/ipc/auth/service.ts",
+          "documentation" : { },
+          "group" : "[IPC] auth",
+          "id" : "30",
+          "name" : "authService",
+          "properties" : {
+            "structurizr.dsl.identifier" : "authService"
+          },
+          "relationships" : [ {
+            "description" : "Query user/manage session",
+            "destinationId" : "31",
+            "id" : "350",
+            "sourceId" : "30",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "verifyPin, createSession, checkSession"
+        }, {
+          "description" : "electron/ipc/auth/repo.ts",
+          "documentation" : { },
+          "group" : "[IPC] auth",
+          "id" : "31",
+          "name" : "authRepo",
+          "properties" : {
+            "structurizr.dsl.identifier" : "authRepo"
+          },
+          "relationships" : [ {
+            "description" : "Return user",
+            "destinationId" : "27",
+            "id" : "361",
+            "sourceId" : "31",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Return session",
+            "destinationId" : "29",
+            "id" : "362",
+            "sourceId" : "31",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Exec query",
+            "destinationId" : "24",
+            "id" : "411",
+            "sourceId" : "31",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Read/write",
+            "destinationId" : "9",
+            "id" : "422",
+            "sourceId" : "31",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Read/write",
+            "destinationId" : "8",
+            "id" : "423",
+            "linkedRelationshipId" : "422",
+            "sourceId" : "31"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "queryUserByPin, manageSession"
+        }, {
+          "description" : "electron/ipc/pos/route.ts",
+          "documentation" : { },
+          "group" : "[IPC] pos",
+          "id" : "32",
+          "name" : "pos:saveTransaction",
+          "properties" : {
+            "structurizr.dsl.identifier" : "posSaveTransaction"
+          },
+          "relationships" : [ {
+            "description" : "saveTransaction",
+            "destinationId" : "35",
+            "id" : "324",
+            "sourceId" : "32",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Route pos",
+            "destinationId" : "19",
+            "id" : "449",
+            "sourceId" : "32",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Simpan transaksi + kurangi stock"
+        }, {
+          "description" : "electron/ipc/pos/route.ts",
+          "documentation" : { },
+          "group" : "[IPC] pos",
+          "id" : "33",
+          "name" : "pos:hold",
+          "properties" : {
+            "structurizr.dsl.identifier" : "posHold"
+          },
+          "relationships" : [ {
+            "description" : "holdBill",
+            "destinationId" : "35",
+            "id" : "325",
+            "sourceId" : "33",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Route pos",
+            "destinationId" : "19",
+            "id" : "450",
+            "sourceId" : "33",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Tahan transaksi"
+        }, {
+          "description" : "electron/ipc/pos/route.ts",
+          "documentation" : { },
+          "group" : "[IPC] pos",
+          "id" : "34",
+          "name" : "pos:release",
+          "properties" : {
+            "structurizr.dsl.identifier" : "posRelease"
+          },
+          "relationships" : [ {
+            "description" : "releaseBill",
+            "destinationId" : "35",
+            "id" : "326",
+            "sourceId" : "34",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Route pos",
+            "destinationId" : "19",
+            "id" : "451",
+            "sourceId" : "34",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Lepas transaksi ditahan"
+        }, {
+          "description" : "electron/ipc/pos/service.ts",
+          "documentation" : { },
+          "group" : "[IPC] pos",
+          "id" : "35",
+          "name" : "posService",
+          "properties" : {
+            "structurizr.dsl.identifier" : "posService"
+          },
+          "relationships" : [ {
+            "description" : "Insert transaction/hold bill",
+            "destinationId" : "36",
+            "id" : "351",
+            "sourceId" : "35",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Update stock",
+            "destinationId" : "43",
+            "id" : "352",
+            "sourceId" : "35",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "saveTransaction, holdBill, releaseBill"
+        }, {
+          "description" : "electron/ipc/pos/repo.ts",
+          "documentation" : { },
+          "group" : "[IPC] pos",
+          "id" : "36",
+          "name" : "salesRepo",
+          "properties" : {
+            "structurizr.dsl.identifier" : "salesRepo"
+          },
+          "relationships" : [ {
+            "description" : "Return",
+            "destinationId" : "32",
+            "id" : "363",
+            "sourceId" : "36",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Return",
+            "destinationId" : "56",
+            "id" : "377",
+            "sourceId" : "36",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Exec query",
+            "destinationId" : "24",
+            "id" : "412",
+            "sourceId" : "36",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Read/write",
+            "destinationId" : "11",
+            "id" : "425",
+            "sourceId" : "36",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Read/write",
+            "destinationId" : "8",
+            "id" : "426",
+            "linkedRelationshipId" : "425",
+            "sourceId" : "36"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "insertTransaction, queryItems"
+        }, {
+          "description" : "electron/ipc/product/route.ts",
+          "documentation" : { },
+          "group" : "[IPC] product",
+          "id" : "37",
+          "name" : "product:list",
+          "properties" : {
+            "structurizr.dsl.identifier" : "productList"
+          },
+          "relationships" : [ {
+            "description" : "listProducts",
+            "destinationId" : "42",
+            "id" : "327",
+            "sourceId" : "37",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Route product",
+            "destinationId" : "19",
+            "id" : "452",
+            "sourceId" : "37",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Cari/list produk"
+        }, {
+          "description" : "electron/ipc/product/route.ts",
+          "documentation" : { },
+          "group" : "[IPC] product",
+          "id" : "38",
+          "name" : "product:getById",
+          "properties" : {
+            "structurizr.dsl.identifier" : "productGetById"
+          },
+          "relationships" : [ {
+            "description" : "getProduct",
+            "destinationId" : "42",
+            "id" : "328",
+            "sourceId" : "38",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Route product",
+            "destinationId" : "19",
+            "id" : "453",
+            "sourceId" : "38",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Ambil produk by ID"
+        }, {
+          "description" : "electron/ipc/product/route.ts",
+          "documentation" : { },
+          "group" : "[IPC] product",
+          "id" : "39",
+          "name" : "product:create",
+          "properties" : {
+            "structurizr.dsl.identifier" : "productCreate"
+          },
+          "relationships" : [ {
+            "description" : "saveProduct",
+            "destinationId" : "42",
+            "id" : "329",
+            "sourceId" : "39",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Route product",
+            "destinationId" : "19",
+            "id" : "454",
+            "sourceId" : "39",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Tambah/update produk"
+        }, {
+          "description" : "electron/ipc/product/route.ts",
+          "documentation" : { },
+          "group" : "[IPC] product",
+          "id" : "40",
+          "name" : "product:delete",
+          "properties" : {
+            "structurizr.dsl.identifier" : "productDelete"
+          },
+          "relationships" : [ {
+            "description" : "deleteProduct",
+            "destinationId" : "42",
+            "id" : "330",
+            "sourceId" : "40",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Route product",
+            "destinationId" : "19",
+            "id" : "455",
+            "sourceId" : "40",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Hapus produk"
+        }, {
+          "description" : "electron/ipc/product/route.ts",
+          "documentation" : { },
+          "group" : "[IPC] product",
+          "id" : "41",
+          "name" : "product:bulkImport",
+          "properties" : {
+            "structurizr.dsl.identifier" : "productBulkImport"
+          },
+          "relationships" : [ {
+            "description" : "bulkImport",
+            "destinationId" : "42",
+            "id" : "331",
+            "sourceId" : "41",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Route product",
+            "destinationId" : "19",
+            "id" : "456",
+            "sourceId" : "41",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Import massal CSV"
+        }, {
+          "description" : "electron/ipc/product/service.ts",
+          "documentation" : { },
+          "group" : "[IPC] product",
+          "id" : "42",
+          "name" : "productService",
+          "properties" : {
+            "structurizr.dsl.identifier" : "productService"
+          },
+          "relationships" : [ {
+            "description" : "CRUD products",
+            "destinationId" : "43",
+            "id" : "353",
+            "sourceId" : "42",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "listProducts, saveProduct, bulkImport"
+        }, {
+          "description" : "electron/ipc/product/repo.ts",
+          "documentation" : { },
+          "group" : "[IPC] product",
+          "id" : "43",
+          "name" : "productRepo",
+          "properties" : {
+            "structurizr.dsl.identifier" : "productRepo"
+          },
+          "relationships" : [ {
+            "description" : "Return",
+            "destinationId" : "37",
+            "id" : "364",
+            "sourceId" : "43",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Return",
+            "destinationId" : "39",
+            "id" : "365",
+            "sourceId" : "43",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Return",
+            "destinationId" : "41",
+            "id" : "366",
+            "sourceId" : "43",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Exec query",
+            "destinationId" : "24",
+            "id" : "413",
+            "sourceId" : "43",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Read/write",
+            "destinationId" : "10",
+            "id" : "428",
+            "sourceId" : "43",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Read/write",
+            "destinationId" : "8",
+            "id" : "429",
+            "linkedRelationshipId" : "428",
+            "sourceId" : "43"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "queryProducts, insertProduct, updateStock"
+        }, {
+          "description" : "electron/ipc/inventory/route.ts",
+          "documentation" : { },
+          "group" : "[IPC] inventory",
+          "id" : "44",
+          "name" : "inventory:stockIn",
+          "properties" : {
+            "structurizr.dsl.identifier" : "inventoryStockIn"
+          },
+          "relationships" : [ {
+            "description" : "stockIn",
+            "destinationId" : "48",
+            "id" : "332",
+            "sourceId" : "44",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Route inventory",
+            "destinationId" : "19",
+            "id" : "457",
+            "sourceId" : "44",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Catat stok masuk"
+        }, {
+          "description" : "electron/ipc/inventory/route.ts",
+          "documentation" : { },
+          "group" : "[IPC] inventory",
+          "id" : "45",
+          "name" : "inventory:stockOut",
+          "properties" : {
+            "structurizr.dsl.identifier" : "inventoryStockOut"
+          },
+          "relationships" : [ {
+            "description" : "stockOut",
+            "destinationId" : "48",
+            "id" : "333",
+            "sourceId" : "45",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Route inventory",
+            "destinationId" : "19",
+            "id" : "458",
+            "sourceId" : "45",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Catat stok keluar"
+        }, {
+          "description" : "electron/ipc/inventory/route.ts",
+          "documentation" : { },
+          "group" : "[IPC] inventory",
+          "id" : "46",
+          "name" : "inventory:adjust",
+          "properties" : {
+            "structurizr.dsl.identifier" : "inventoryAdjust"
+          },
+          "relationships" : [ {
+            "description" : "adjustStock",
+            "destinationId" : "48",
+            "id" : "334",
+            "sourceId" : "46",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Route inventory",
+            "destinationId" : "19",
+            "id" : "459",
+            "sourceId" : "46",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Adjust/koreksi stok"
+        }, {
+          "description" : "electron/ipc/inventory/route.ts",
+          "documentation" : { },
+          "group" : "[IPC] inventory",
+          "id" : "47",
+          "name" : "inventory:logs",
+          "properties" : {
+            "structurizr.dsl.identifier" : "inventoryLogs"
+          },
+          "relationships" : [ {
+            "description" : "queryLogs",
+            "destinationId" : "48",
+            "id" : "335",
+            "sourceId" : "47",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Route inventory",
+            "destinationId" : "19",
+            "id" : "460",
+            "sourceId" : "47",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Query log stok"
+        }, {
+          "description" : "electron/ipc/inventory/service.ts",
+          "documentation" : { },
+          "group" : "[IPC] inventory",
+          "id" : "48",
+          "name" : "inventoryService",
+          "properties" : {
+            "structurizr.dsl.identifier" : "inventoryService"
+          },
+          "relationships" : [ {
+            "description" : "Log/adjust stock",
+            "destinationId" : "49",
+            "id" : "354",
+            "sourceId" : "48",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Update stock",
+            "destinationId" : "43",
+            "id" : "355",
+            "sourceId" : "48",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "stockIn, stockOut, adjustStock, queryLogs"
+        }, {
+          "description" : "electron/ipc/inventory/repo.ts",
+          "documentation" : { },
+          "group" : "[IPC] inventory",
+          "id" : "49",
+          "name" : "inventoryRepo",
+          "properties" : {
+            "structurizr.dsl.identifier" : "inventoryRepo"
+          },
+          "relationships" : [ {
+            "description" : "Return",
+            "destinationId" : "44",
+            "id" : "367",
+            "sourceId" : "49",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Return",
+            "destinationId" : "46",
+            "id" : "368",
+            "sourceId" : "49",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Return",
+            "destinationId" : "47",
+            "id" : "369",
+            "sourceId" : "49",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Exec query",
+            "destinationId" : "24",
+            "id" : "414",
+            "sourceId" : "49",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Read/write",
+            "destinationId" : "13",
+            "id" : "431",
+            "sourceId" : "49",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Read/write",
+            "destinationId" : "8",
+            "id" : "432",
+            "linkedRelationshipId" : "431",
+            "sourceId" : "49"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "insertLog, queryInventoryLogs, updateInvStock"
+        }, {
+          "description" : "electron/ipc/customer/route.ts",
+          "documentation" : { },
+          "group" : "[IPC] customer",
+          "id" : "50",
+          "name" : "customer:list",
+          "properties" : {
+            "structurizr.dsl.identifier" : "customerList"
+          },
+          "relationships" : [ {
+            "description" : "listCustomers",
+            "destinationId" : "53",
+            "id" : "336",
+            "sourceId" : "50",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Route customer",
+            "destinationId" : "19",
+            "id" : "461",
+            "sourceId" : "50",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Cari/list customer"
+        }, {
+          "description" : "electron/ipc/customer/route.ts",
+          "documentation" : { },
+          "group" : "[IPC] customer",
+          "id" : "51",
+          "name" : "customer:create",
+          "properties" : {
+            "structurizr.dsl.identifier" : "customerCreate"
+          },
+          "relationships" : [ {
+            "description" : "saveCustomer",
+            "destinationId" : "53",
+            "id" : "337",
+            "sourceId" : "51",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Route customer",
+            "destinationId" : "19",
+            "id" : "462",
+            "sourceId" : "51",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Tambah/update customer"
+        }, {
+          "description" : "electron/ipc/customer/route.ts",
+          "documentation" : { },
+          "group" : "[IPC] customer",
+          "id" : "52",
+          "name" : "customer:getPoints",
+          "properties" : {
+            "structurizr.dsl.identifier" : "customerGetPoints"
+          },
+          "relationships" : [ {
+            "description" : "getPoints",
+            "destinationId" : "53",
+            "id" : "338",
+            "sourceId" : "52",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Route customer",
+            "destinationId" : "19",
+            "id" : "463",
+            "sourceId" : "52",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Ambil poin & tier"
+        }, {
+          "description" : "electron/ipc/customer/service.ts",
+          "documentation" : { },
+          "group" : "[IPC] customer",
+          "id" : "53",
+          "name" : "customerService",
+          "properties" : {
+            "structurizr.dsl.identifier" : "customerService"
+          },
+          "relationships" : [ {
+            "description" : "CRUD customers",
+            "destinationId" : "54",
+            "id" : "356",
+            "sourceId" : "53",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "listCustomers, saveCustomer, getPoints"
+        }, {
+          "description" : "electron/ipc/customer/repo.ts",
+          "documentation" : { },
+          "group" : "[IPC] customer",
+          "id" : "54",
+          "name" : "customerRepo",
+          "properties" : {
+            "structurizr.dsl.identifier" : "customerRepo"
+          },
+          "relationships" : [ {
+            "description" : "Return",
+            "destinationId" : "50",
+            "id" : "370",
+            "sourceId" : "54",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Return",
+            "destinationId" : "51",
+            "id" : "371",
+            "sourceId" : "54",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Return points",
+            "destinationId" : "52",
+            "id" : "372",
+            "sourceId" : "54",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Exec query",
+            "destinationId" : "24",
+            "id" : "415",
+            "sourceId" : "54",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Read/write",
+            "destinationId" : "14",
+            "id" : "434",
+            "sourceId" : "54",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Read/write",
+            "destinationId" : "8",
+            "id" : "435",
+            "linkedRelationshipId" : "434",
+            "sourceId" : "54"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "queryCustomers, insertCustomer, updatePoints"
+        }, {
+          "description" : "electron/ipc/report/route.ts",
+          "documentation" : { },
+          "group" : "[IPC] report",
+          "id" : "55",
+          "name" : "report:dashboard",
+          "properties" : {
+            "structurizr.dsl.identifier" : "reportDashboard"
+          },
+          "relationships" : [ {
+            "description" : "aggregateKPIs",
+            "destinationId" : "60",
+            "id" : "339",
+            "sourceId" : "55",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Route report",
+            "destinationId" : "19",
+            "id" : "464",
+            "sourceId" : "55",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "KPI dashboard"
+        }, {
+          "description" : "electron/ipc/report/route.ts",
+          "documentation" : { },
+          "group" : "[IPC] report",
+          "id" : "56",
+          "name" : "report:sales",
+          "properties" : {
+            "structurizr.dsl.identifier" : "reportSales"
+          },
+          "relationships" : [ {
+            "description" : "salesReport",
+            "destinationId" : "60",
+            "id" : "340",
+            "sourceId" : "56",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Route report",
+            "destinationId" : "19",
+            "id" : "465",
+            "sourceId" : "56",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Laporan penjualan"
+        }, {
+          "description" : "electron/ipc/report/route.ts",
+          "documentation" : { },
+          "group" : "[IPC] report",
+          "id" : "57",
+          "name" : "report:stock",
+          "properties" : {
+            "structurizr.dsl.identifier" : "reportStock"
+          },
+          "relationships" : [ {
+            "description" : "stockReport",
+            "destinationId" : "60",
+            "id" : "341",
+            "sourceId" : "57",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Route report",
+            "destinationId" : "19",
+            "id" : "466",
+            "sourceId" : "57",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Laporan stok"
+        }, {
+          "description" : "electron/ipc/report/route.ts",
+          "documentation" : { },
+          "group" : "[IPC] report",
+          "id" : "58",
+          "name" : "report:finance",
+          "properties" : {
+            "structurizr.dsl.identifier" : "reportFinance"
+          },
+          "relationships" : [ {
+            "description" : "financeReport",
+            "destinationId" : "60",
+            "id" : "342",
+            "sourceId" : "58",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Route report",
+            "destinationId" : "19",
+            "id" : "467",
+            "sourceId" : "58",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Laporan COGS/profit"
+        }, {
+          "description" : "electron/ipc/report/route.ts",
+          "documentation" : { },
+          "group" : "[IPC] report",
+          "id" : "59",
+          "name" : "report:export",
+          "properties" : {
+            "structurizr.dsl.identifier" : "reportExportFile"
+          },
+          "relationships" : [ {
+            "description" : "exportData",
+            "destinationId" : "60",
+            "id" : "343",
+            "sourceId" : "59",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Route report",
+            "destinationId" : "19",
+            "id" : "468",
+            "sourceId" : "59",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Generate PDF/Excel"
+        }, {
+          "description" : "electron/ipc/report/service.ts",
+          "documentation" : { },
+          "group" : "[IPC] report",
+          "id" : "60",
+          "name" : "reportService",
+          "properties" : {
+            "structurizr.dsl.identifier" : "reportService"
+          },
+          "relationships" : [ {
+            "description" : "Aggregate/finance/export",
+            "destinationId" : "61",
+            "id" : "357",
+            "sourceId" : "60",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Stock query",
+            "destinationId" : "43",
+            "id" : "358",
+            "sourceId" : "60",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Sales query",
+            "destinationId" : "36",
+            "id" : "359",
+            "sourceId" : "60",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "aggregateKPIs, salesReport, exportData"
+        }, {
+          "description" : "electron/ipc/report/repo.ts",
+          "documentation" : { },
+          "group" : "[IPC] report",
+          "id" : "61",
+          "name" : "reportRepo",
+          "properties" : {
+            "structurizr.dsl.identifier" : "reportRepo"
+          },
+          "relationships" : [ {
+            "description" : "Return",
+            "destinationId" : "55",
+            "id" : "376",
+            "sourceId" : "61",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Return",
+            "destinationId" : "59",
+            "id" : "378",
+            "sourceId" : "61",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Return",
+            "destinationId" : "58",
+            "id" : "379",
+            "sourceId" : "61",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Exec query",
+            "destinationId" : "24",
+            "id" : "416",
+            "sourceId" : "61",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Read/write",
+            "destinationId" : "11",
+            "id" : "437",
+            "sourceId" : "61",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Read/write",
+            "destinationId" : "8",
+            "id" : "438",
+            "linkedRelationshipId" : "437",
+            "sourceId" : "61"
+          }, {
+            "description" : "Read/write",
+            "destinationId" : "12",
+            "id" : "439",
+            "sourceId" : "61",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Read/write",
+            "destinationId" : "10",
+            "id" : "441",
+            "sourceId" : "61",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Read/write",
+            "destinationId" : "13",
+            "id" : "442",
+            "sourceId" : "61",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "aggregateSales, financeSummary"
+        }, {
+          "description" : "electron/ipc/shift/route.ts",
+          "documentation" : { },
+          "group" : "[IPC] shift",
+          "id" : "62",
+          "name" : "shift:open",
+          "properties" : {
+            "structurizr.dsl.identifier" : "shiftOpen"
+          },
+          "relationships" : [ {
+            "description" : "openShift",
+            "destinationId" : "65",
+            "id" : "344",
+            "sourceId" : "62",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Route shift",
+            "destinationId" : "19",
+            "id" : "469",
+            "sourceId" : "62",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Buka shift"
+        }, {
+          "description" : "electron/ipc/shift/route.ts",
+          "documentation" : { },
+          "group" : "[IPC] shift",
+          "id" : "63",
+          "name" : "shift:close",
+          "properties" : {
+            "structurizr.dsl.identifier" : "shiftClose"
+          },
+          "relationships" : [ {
+            "description" : "closeShift",
+            "destinationId" : "65",
+            "id" : "345",
+            "sourceId" : "63",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Route shift",
+            "destinationId" : "19",
+            "id" : "470",
+            "sourceId" : "63",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Tutup shift + rekap"
+        }, {
+          "description" : "electron/ipc/shift/route.ts",
+          "documentation" : { },
+          "group" : "[IPC] shift",
+          "id" : "64",
+          "name" : "shift:current",
+          "properties" : {
+            "structurizr.dsl.identifier" : "shiftCurrent"
+          },
+          "relationships" : [ {
+            "description" : "currentShift",
+            "destinationId" : "65",
+            "id" : "346",
+            "sourceId" : "64",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Route shift",
+            "destinationId" : "19",
+            "id" : "471",
+            "sourceId" : "64",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Ambil shift aktif"
+        }, {
+          "description" : "electron/ipc/shift/service.ts",
+          "documentation" : { },
+          "group" : "[IPC] shift",
+          "id" : "65",
+          "name" : "shiftService",
+          "properties" : {
+            "structurizr.dsl.identifier" : "shiftService"
+          },
+          "relationships" : [ {
+            "description" : "Shift CRUD",
+            "destinationId" : "66",
+            "id" : "360",
+            "sourceId" : "65",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "openShift, closeShift, currentShift"
+        }, {
+          "description" : "electron/ipc/shift/repo.ts",
+          "documentation" : { },
+          "group" : "[IPC] shift",
+          "id" : "66",
+          "name" : "shiftRepo",
+          "properties" : {
+            "structurizr.dsl.identifier" : "shiftRepo"
+          },
+          "relationships" : [ {
+            "description" : "Return",
+            "destinationId" : "62",
+            "id" : "373",
+            "sourceId" : "66",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Return",
+            "destinationId" : "64",
+            "id" : "374",
+            "sourceId" : "66",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Return",
+            "destinationId" : "63",
+            "id" : "375",
+            "sourceId" : "66",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Exec query",
+            "destinationId" : "24",
+            "id" : "417",
+            "sourceId" : "66",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Read/write",
+            "destinationId" : "15",
+            "id" : "443",
+            "sourceId" : "66",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Read/write",
+            "destinationId" : "8",
+            "id" : "444",
+            "linkedRelationshipId" : "443",
+            "sourceId" : "66"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "insertShift, updateShift, queryCurrent"
+        }, {
+          "description" : "electron/ipc/settings/route.ts",
+          "documentation" : { },
+          "group" : "[IPC] settings",
+          "id" : "67",
+          "name" : "settings:read",
+          "properties" : {
+            "structurizr.dsl.identifier" : "settingsRead"
+          },
+          "relationships" : [ {
+            "description" : "Read config",
+            "destinationId" : "22",
+            "id" : "347",
+            "sourceId" : "67",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Route settings",
+            "destinationId" : "19",
+            "id" : "472",
+            "sourceId" : "67",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Baca setting"
+        }, {
+          "description" : "electron/ipc/settings/route.ts",
+          "documentation" : { },
+          "group" : "[IPC] settings",
+          "id" : "68",
+          "name" : "settings:write",
+          "properties" : {
+            "structurizr.dsl.identifier" : "settingsWrite"
+          },
+          "relationships" : [ {
+            "description" : "Write config",
+            "destinationId" : "22",
+            "id" : "348",
+            "sourceId" : "68",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Route settings",
+            "destinationId" : "19",
+            "id" : "473",
+            "sourceId" : "68",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Tulis setting"
+        }, {
+          "description" : "electron/ipc/printer/route.ts",
+          "documentation" : { },
+          "group" : "[IPC] printer",
+          "id" : "69",
+          "name" : "printer:print",
+          "properties" : {
+            "structurizr.dsl.identifier" : "printerPrint"
+          },
+          "relationships" : [ {
+            "description" : "Print receipt",
+            "destinationId" : "20",
+            "id" : "349",
+            "sourceId" : "69",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Route printer",
+            "destinationId" : "19",
+            "id" : "474",
+            "sourceId" : "69",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Cetak struk thermal"
+        }, {
+          "description" : "electron/ipc/printer/route.ts",
+          "documentation" : { },
+          "group" : "[IPC] printer",
+          "id" : "70",
+          "name" : "printer:cashDrawer",
+          "properties" : {
+            "structurizr.dsl.identifier" : "printerCashDrawer"
+          },
+          "relationships" : [ {
+            "description" : "Route printer",
+            "destinationId" : "19",
+            "id" : "475",
+            "sourceId" : "70",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Buka laci uang"
+        } ],
+        "description" : "Electron 28, Node.js",
+        "documentation" : { },
+        "id" : "16",
+        "name" : "Electron Main Process",
+        "properties" : {
+          "structurizr.dsl.identifier" : "electronMain"
+        },
+        "relationships" : [ {
+          "description" : "Query",
+          "destinationId" : "139",
+          "id" : "152",
+          "sourceId" : "16",
+          "tags" : "Relationship",
+          "technology" : "SQL"
+        }, {
+          "description" : "Return result",
+          "destinationId" : "73",
+          "id" : "319",
+          "linkedRelationshipId" : "317",
+          "sourceId" : "16"
+        }, {
+          "description" : "Return result",
+          "destinationId" : "71",
+          "id" : "320",
+          "linkedRelationshipId" : "317",
+          "sourceId" : "16"
+        }, {
+          "description" : "Return search results",
+          "destinationId" : "79",
+          "id" : "382",
+          "linkedRelationshipId" : "380",
+          "sourceId" : "16"
+        }, {
+          "description" : "Return aggregate data",
+          "destinationId" : "120",
+          "id" : "384",
+          "linkedRelationshipId" : "383",
+          "sourceId" : "16"
+        }, {
+          "description" : "Return sales data",
+          "destinationId" : "121",
+          "id" : "386",
+          "linkedRelationshipId" : "385",
+          "sourceId" : "16"
+        }, {
+          "description" : "Return stock data",
+          "destinationId" : "122",
+          "id" : "388",
+          "linkedRelationshipId" : "387",
+          "sourceId" : "16"
+        }, {
+          "description" : "Return finance data",
+          "destinationId" : "123",
+          "id" : "390",
+          "linkedRelationshipId" : "389",
+          "sourceId" : "16"
+        }, {
+          "description" : "Return inventory logs",
+          "destinationId" : "106",
+          "id" : "392",
+          "linkedRelationshipId" : "391",
+          "sourceId" : "16"
+        }, {
+          "description" : "Return customer transactions",
+          "destinationId" : "116",
+          "id" : "394",
+          "linkedRelationshipId" : "393",
+          "sourceId" : "16"
+        }, {
+          "description" : "Return login result",
+          "destinationId" : "77",
+          "id" : "396",
+          "linkedRelationshipId" : "395",
+          "sourceId" : "16"
+        }, {
+          "description" : "Cetak struk",
+          "destinationId" : "4",
+          "id" : "399",
+          "linkedRelationshipId" : "398",
+          "sourceId" : "16",
+          "technology" : "USB RAW"
+        }, {
+          "description" : "Buka laci",
+          "destinationId" : "6",
+          "id" : "401",
+          "linkedRelationshipId" : "400",
+          "sourceId" : "16",
+          "technology" : "USB"
+        }, {
+          "description" : "Manage schema",
+          "destinationId" : "8",
+          "id" : "409",
+          "linkedRelationshipId" : "408",
+          "sourceId" : "16"
+        }, {
+          "description" : "Read/write",
+          "destinationId" : "9",
+          "id" : "424",
+          "linkedRelationshipId" : "422",
+          "sourceId" : "16"
+        }, {
+          "description" : "Read/write",
+          "destinationId" : "11",
+          "id" : "427",
+          "linkedRelationshipId" : "425",
+          "sourceId" : "16"
+        }, {
+          "description" : "Read/write",
+          "destinationId" : "10",
+          "id" : "430",
+          "linkedRelationshipId" : "428",
+          "sourceId" : "16"
+        }, {
+          "description" : "Read/write",
+          "destinationId" : "13",
+          "id" : "433",
+          "linkedRelationshipId" : "431",
+          "sourceId" : "16"
+        }, {
+          "description" : "Read/write",
+          "destinationId" : "14",
+          "id" : "436",
+          "linkedRelationshipId" : "434",
+          "sourceId" : "16"
+        }, {
+          "description" : "Read/write",
+          "destinationId" : "12",
+          "id" : "440",
+          "linkedRelationshipId" : "439",
+          "sourceId" : "16"
+        }, {
+          "description" : "Read/write",
+          "destinationId" : "15",
+          "id" : "445",
+          "linkedRelationshipId" : "443",
+          "sourceId" : "16"
+        } ],
+        "tags" : "Element,Container",
+        "technology" : "IPC handler, printer, DB, window management"
+      }, {
+        "components" : [ {
+          "description" : "pages/LoginPage.tsx",
+          "documentation" : { },
+          "group" : "[Page] Login",
+          "id" : "72",
+          "name" : "LoginPage",
+          "properties" : {
+            "structurizr.dsl.identifier" : "loginPage"
+          },
+          "relationships" : [ {
+            "description" : "Validasi PIN",
+            "destinationId" : "73",
+            "id" : "155",
+            "sourceId" : "72",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Cek session",
+            "destinationId" : "74",
+            "id" : "156",
+            "sourceId" : "72",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Login form + PinPad PIN 6 digit"
+        }, {
+          "description" : "auth/pin.ts",
+          "documentation" : { },
+          "group" : "[Page] Login",
+          "id" : "73",
+          "name" : "validatePin",
+          "properties" : {
+            "structurizr.dsl.identifier" : "validatePin"
+          },
+          "relationships" : [ {
+            "description" : "Set session",
+            "destinationId" : "77",
+            "id" : "157",
+            "sourceId" : "73",
+            "tags" : "Relationship"
+          }, {
+            "description" : "IPC",
+            "destinationId" : "27",
+            "id" : "158",
+            "sourceId" : "73",
+            "tags" : "Relationship",
+            "technology" : "IPC: auth:login"
+          }, {
+            "description" : "IPC",
+            "destinationId" : "16",
+            "id" : "159",
+            "linkedRelationshipId" : "158",
+            "sourceId" : "73",
+            "technology" : "IPC: auth:login"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Validasi PIN 6 digit hash"
+        }, {
+          "description" : "auth/session.ts",
+          "documentation" : { },
+          "group" : "[Page] Login",
+          "id" : "74",
+          "name" : "checkSession",
+          "properties" : {
+            "structurizr.dsl.identifier" : "checkSession"
+          },
+          "relationships" : [ {
+            "description" : "Validate token",
+            "destinationId" : "77",
+            "id" : "161",
+            "sourceId" : "74",
+            "tags" : "Relationship"
+          }, {
+            "description" : "IPC",
+            "destinationId" : "29",
+            "id" : "162",
+            "sourceId" : "74",
+            "tags" : "Relationship",
+            "technology" : "IPC: auth:check"
+          }, {
+            "description" : "IPC",
+            "destinationId" : "16",
+            "id" : "163",
+            "linkedRelationshipId" : "162",
+            "sourceId" : "74",
+            "technology" : "IPC: auth:check"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Cek session token expiry"
+        }, {
+          "description" : "pages/SettingsPage.tsx",
+          "documentation" : { },
+          "group" : "Settings",
+          "id" : "75",
+          "name" : "SettingsPage",
+          "properties" : {
+            "structurizr.dsl.identifier" : "settingsPage"
+          },
+          "relationships" : [ {
+            "description" : "Read/write settings",
+            "destinationId" : "76",
+            "id" : "166",
+            "sourceId" : "75",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Pengaturan printer, receipt template"
+        }, {
+          "description" : "stores/settingsStore.ts",
+          "documentation" : { },
+          "group" : "Settings",
+          "id" : "76",
+          "name" : "settingsStore",
+          "properties" : {
+            "structurizr.dsl.identifier" : "settingsStore"
+          },
+          "relationships" : [ {
+            "description" : "IPC",
+            "destinationId" : "68",
+            "id" : "167",
+            "sourceId" : "76",
+            "tags" : "Relationship",
+            "technology" : "IPC: settings:*"
+          }, {
+            "description" : "IPC",
+            "destinationId" : "16",
+            "id" : "168",
+            "linkedRelationshipId" : "167",
+            "sourceId" : "76",
+            "technology" : "IPC: settings:*"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "State pengaturan aplikasi"
+        }, {
+          "description" : "stores/authStore.ts",
+          "documentation" : { },
+          "group" : "Auth Store",
+          "id" : "77",
+          "name" : "authStore",
+          "properties" : {
+            "structurizr.dsl.identifier" : "authStore"
+          },
+          "relationships" : [ {
+            "description" : "IPC",
+            "destinationId" : "27",
+            "id" : "315",
+            "sourceId" : "77",
+            "tags" : "Relationship",
+            "technology" : "IPC: auth:login"
+          }, {
+            "description" : "IPC",
+            "destinationId" : "16",
+            "id" : "316",
+            "linkedRelationshipId" : "315",
+            "sourceId" : "77",
+            "technology" : "IPC: auth:login"
+          }, {
+            "description" : "Redirect setelah login",
+            "destinationId" : "78",
+            "id" : "397",
+            "sourceId" : "77",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "State user, role, session"
+        }, {
+          "description" : "pages/POSTerminalPage.tsx",
+          "documentation" : { },
+          "group" : "[Page] POSTerminal",
+          "id" : "78",
+          "name" : "POSTerminalPage",
+          "properties" : {
+            "structurizr.dsl.identifier" : "posPage"
+          },
+          "relationships" : [ {
+            "description" : "Cari & pilih produk",
+            "destinationId" : "79",
+            "id" : "172",
+            "sourceId" : "78",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Tampilkan keranjang",
+            "destinationId" : "80",
+            "id" : "173",
+            "sourceId" : "78",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Buka pembayaran",
+            "destinationId" : "88",
+            "id" : "174",
+            "sourceId" : "78",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Simpan/muat bill",
+            "destinationId" : "81",
+            "id" : "175",
+            "sourceId" : "78",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Pilih customer",
+            "destinationId" : "114",
+            "id" : "176",
+            "sourceId" : "78",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Receive barcode input",
+            "destinationId" : "82",
+            "id" : "177",
+            "sourceId" : "78",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Register shortcuts",
+            "destinationId" : "83",
+            "id" : "178",
+            "sourceId" : "78",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Halaman utama transaksi kasir 3 panel"
+        }, {
+          "description" : "components/ProductTable.tsx",
+          "documentation" : { },
+          "group" : "[Page] POSTerminal",
+          "id" : "79",
+          "name" : "ProductTable",
+          "properties" : {
+            "structurizr.dsl.identifier" : "productTable"
+          },
+          "relationships" : [ {
+            "description" : "Cari via barcode",
+            "destinationId" : "84",
+            "id" : "179",
+            "sourceId" : "79",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Cari via teks",
+            "destinationId" : "98",
+            "id" : "180",
+            "sourceId" : "79",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Cari & pilih produk + qty dialog"
+        }, {
+          "description" : "components/CartPanel.tsx",
+          "documentation" : { },
+          "group" : "[Page] POSTerminal",
+          "id" : "80",
+          "name" : "CartPanel",
+          "properties" : {
+            "structurizr.dsl.identifier" : "cartPanel"
+          },
+          "relationships" : [ {
+            "description" : "Update kalkulasi",
+            "destinationId" : "85",
+            "id" : "181",
+            "sourceId" : "80",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Keranjang belanja, subtotal"
+        }, {
+          "description" : "components/HoldBillModal.tsx",
+          "documentation" : { },
+          "group" : "[Page] POSTerminal",
+          "id" : "81",
+          "name" : "HoldBillModal",
+          "properties" : {
+            "structurizr.dsl.identifier" : "holdBillModal"
+          },
+          "relationships" : [ {
+            "description" : "Simpan/muat bill",
+            "destinationId" : "87",
+            "id" : "187",
+            "sourceId" : "81",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Simpan/muat transaksi ditahan"
+        }, {
+          "description" : "hooks/useBarcode.ts",
+          "documentation" : { },
+          "group" : "[Page] POSTerminal",
+          "id" : "82",
+          "name" : "useBarcode",
+          "properties" : {
+            "structurizr.dsl.identifier" : "useBarcode"
+          },
+          "tags" : "Element,Component",
+          "technology" : "Input barcode scanner via keyboard"
+        }, {
+          "description" : "hooks/useKeyboardShortcuts.ts",
+          "documentation" : { },
+          "group" : "[Page] POSTerminal",
+          "id" : "83",
+          "name" : "useKeyboardShortcuts",
+          "properties" : {
+            "structurizr.dsl.identifier" : "useKeyboardShortcuts"
+          },
+          "tags" : "Element,Component",
+          "technology" : "Shortcut keyboard global"
+        }, {
+          "description" : "pos/barcode.ts",
+          "documentation" : { },
+          "group" : "[Page] POSTerminal",
+          "id" : "84",
+          "name" : "handleBarcode",
+          "properties" : {
+            "structurizr.dsl.identifier" : "handleBarcode"
+          },
+          "relationships" : [ {
+            "description" : "IPC",
+            "destinationId" : "37",
+            "id" : "188",
+            "sourceId" : "84",
+            "tags" : "Relationship",
+            "technology" : "IPC: product:search"
+          }, {
+            "description" : "IPC",
+            "destinationId" : "16",
+            "id" : "189",
+            "linkedRelationshipId" : "188",
+            "sourceId" : "84",
+            "technology" : "IPC: product:search"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Process scan + lookup produk"
+        }, {
+          "description" : "pos/cart.ts",
+          "documentation" : { },
+          "group" : "[Page] POSTerminal",
+          "id" : "85",
+          "name" : "calculateCart",
+          "properties" : {
+            "structurizr.dsl.identifier" : "calculateCart"
+          },
+          "tags" : "Element,Component",
+          "technology" : "Hitung subtotal, tax, total"
+        }, {
+          "description" : "pos/customer.ts",
+          "documentation" : { },
+          "group" : "[Page] POSTerminal",
+          "id" : "86",
+          "name" : "selectCustomer",
+          "properties" : {
+            "structurizr.dsl.identifier" : "selectCustomer"
+          },
+          "relationships" : [ {
+            "description" : "IPC",
+            "destinationId" : "50",
+            "id" : "193",
+            "sourceId" : "86",
+            "tags" : "Relationship",
+            "technology" : "IPC: customer:search"
+          }, {
+            "description" : "IPC",
+            "destinationId" : "16",
+            "id" : "194",
+            "linkedRelationshipId" : "193",
+            "sourceId" : "86",
+            "technology" : "IPC: customer:search"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Pilih customer untuk transaksi"
+        }, {
+          "description" : "pos/holdBill.ts",
+          "documentation" : { },
+          "group" : "[Page] POSTerminal",
+          "id" : "87",
+          "name" : "holdBill",
+          "properties" : {
+            "structurizr.dsl.identifier" : "holdBill"
+          },
+          "relationships" : [ {
+            "description" : "IPC",
+            "destinationId" : "33",
+            "id" : "196",
+            "sourceId" : "87",
+            "tags" : "Relationship",
+            "technology" : "IPC: pos:holdBill"
+          }, {
+            "description" : "IPC",
+            "destinationId" : "16",
+            "id" : "197",
+            "linkedRelationshipId" : "196",
+            "sourceId" : "87",
+            "technology" : "IPC: pos:holdBill"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Simpan/muat transaksi ditahan"
+        }, {
+          "description" : "components/PaymentModal.tsx",
+          "documentation" : { },
+          "group" : "PaymentModal",
+          "id" : "88",
+          "name" : "PaymentModal",
+          "properties" : {
+            "structurizr.dsl.identifier" : "paymentModal"
+          },
+          "relationships" : [ {
+            "description" : "Proses bayar",
+            "destinationId" : "90",
+            "id" : "182",
+            "sourceId" : "88",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Hitung kembalian",
+            "destinationId" : "91",
+            "id" : "183",
+            "sourceId" : "88",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Tampilkan struk",
+            "destinationId" : "89",
+            "id" : "184",
+            "sourceId" : "88",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Bayar tunai, QRIS, debit"
+        }, {
+          "description" : "components/ReceiptPreview.tsx",
+          "documentation" : { },
+          "group" : "PaymentModal",
+          "id" : "89",
+          "name" : "ReceiptPreview",
+          "properties" : {
+            "structurizr.dsl.identifier" : "receiptPreview"
+          },
+          "relationships" : [ {
+            "description" : "Preview struk",
+            "destinationId" : "90",
+            "id" : "186",
+            "sourceId" : "89",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Preview struk sebelum cetak"
+        }, {
+          "description" : "pos/payment.ts",
+          "documentation" : { },
+          "group" : "PaymentModal",
+          "id" : "90",
+          "name" : "processPayment",
+          "properties" : {
+            "structurizr.dsl.identifier" : "processPayment"
+          },
+          "relationships" : [ {
+            "description" : "IPC",
+            "destinationId" : "32",
+            "id" : "199",
+            "sourceId" : "90",
+            "tags" : "Relationship",
+            "technology" : "IPC: transaction:save"
+          }, {
+            "description" : "IPC",
+            "destinationId" : "16",
+            "id" : "200",
+            "linkedRelationshipId" : "199",
+            "sourceId" : "90",
+            "technology" : "IPC: transaction:save"
+          }, {
+            "description" : "IPC",
+            "destinationId" : "69",
+            "id" : "202",
+            "sourceId" : "90",
+            "tags" : "Relationship",
+            "technology" : "IPC: printer:print"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Simpan transaksi + update stock"
+        }, {
+          "description" : "pos/payment.ts",
+          "documentation" : { },
+          "group" : "PaymentModal",
+          "id" : "91",
+          "name" : "calculateChange",
+          "properties" : {
+            "structurizr.dsl.identifier" : "calculateChange"
+          },
+          "tags" : "Element,Component",
+          "technology" : "Hitung kembalian"
+        }, {
+          "description" : "components/PaymentMethodSelector.tsx",
+          "documentation" : { },
+          "group" : "PaymentModal",
+          "id" : "92",
+          "name" : "selectMethod",
+          "properties" : {
+            "structurizr.dsl.identifier" : "selectMethod"
+          },
+          "relationships" : [ {
+            "description" : "Pilih metode",
+            "destinationId" : "90",
+            "id" : "185",
+            "sourceId" : "92",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Pilih tunai/QRIS/debit"
+        }, {
+          "description" : "pages/ProductsPage.tsx",
+          "documentation" : { },
+          "group" : "[Page] Products",
+          "id" : "93",
+          "name" : "ProductsPage",
+          "properties" : {
+            "structurizr.dsl.identifier" : "productsPage"
+          },
+          "relationships" : [ {
+            "description" : "Create/edit",
+            "destinationId" : "94",
+            "id" : "208",
+            "sourceId" : "93",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Atur kategori",
+            "destinationId" : "95",
+            "id" : "209",
+            "sourceId" : "93",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Import massal",
+            "destinationId" : "96",
+            "id" : "210",
+            "sourceId" : "93",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "List, search, filter produk"
+        }, {
+          "description" : "components/ProductForm.tsx",
+          "documentation" : { },
+          "group" : "[Page] Products",
+          "id" : "94",
+          "name" : "ProductForm",
+          "properties" : {
+            "structurizr.dsl.identifier" : "productForm"
+          },
+          "relationships" : [ {
+            "description" : "Simpan produk",
+            "destinationId" : "99",
+            "id" : "211",
+            "sourceId" : "94",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Create/edit produk + multi-unit"
+        }, {
+          "description" : "components/CategoryTree.tsx",
+          "documentation" : { },
+          "group" : "[Page] Products",
+          "id" : "95",
+          "name" : "CategoryTree",
+          "properties" : {
+            "structurizr.dsl.identifier" : "categoryTree"
+          },
+          "relationships" : [ {
+            "description" : "Atur kategori",
+            "destinationId" : "100",
+            "id" : "212",
+            "sourceId" : "95",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Tree kategori dengan CRUD"
+        }, {
+          "description" : "components/BulkImport.tsx",
+          "documentation" : { },
+          "group" : "[Page] Products",
+          "id" : "96",
+          "name" : "BulkImport",
+          "properties" : {
+            "structurizr.dsl.identifier" : "bulkImport"
+          },
+          "relationships" : [ {
+            "description" : "Import massal",
+            "destinationId" : "101",
+            "id" : "213",
+            "sourceId" : "96",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Import CSV/Excel + preview"
+        }, {
+          "description" : "components/ProductCard.tsx",
+          "documentation" : { },
+          "group" : "[Page] Products",
+          "id" : "97",
+          "name" : "ProductCard",
+          "properties" : {
+            "structurizr.dsl.identifier" : "productCard"
+          },
+          "tags" : "Element,Component",
+          "technology" : "Card view + thumbnail"
+        }, {
+          "description" : "hooks/useProductSearch.ts",
+          "documentation" : { },
+          "group" : "[Page] Products",
+          "id" : "98",
+          "name" : "searchProducts",
+          "properties" : {
+            "structurizr.dsl.identifier" : "searchProducts"
+          },
+          "relationships" : [ {
+            "description" : "IPC",
+            "destinationId" : "37",
+            "id" : "191",
+            "sourceId" : "98",
+            "tags" : "Relationship",
+            "technology" : "IPC: product:search"
+          }, {
+            "description" : "IPC",
+            "destinationId" : "16",
+            "id" : "192",
+            "linkedRelationshipId" : "191",
+            "sourceId" : "98",
+            "technology" : "IPC: product:search"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Debounce search produk"
+        }, {
+          "description" : "api/products.ts",
+          "documentation" : { },
+          "group" : "[Page] Products",
+          "id" : "99",
+          "name" : "saveProduct",
+          "properties" : {
+            "structurizr.dsl.identifier" : "saveProduct"
+          },
+          "relationships" : [ {
+            "description" : "IPC",
+            "destinationId" : "39",
+            "id" : "214",
+            "sourceId" : "99",
+            "tags" : "Relationship",
+            "technology" : "IPC: product:create"
+          }, {
+            "description" : "IPC",
+            "destinationId" : "16",
+            "id" : "215",
+            "linkedRelationshipId" : "214",
+            "sourceId" : "99",
+            "technology" : "IPC: product:create"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Create/update produk"
+        }, {
+          "description" : "api/categories.ts",
+          "documentation" : { },
+          "group" : "[Page] Products",
+          "id" : "100",
+          "name" : "manageCategories",
+          "properties" : {
+            "structurizr.dsl.identifier" : "manageCategories"
+          },
+          "relationships" : [ {
+            "description" : "IPC",
+            "destinationId" : "39",
+            "id" : "217",
+            "sourceId" : "100",
+            "tags" : "Relationship",
+            "technology" : "IPC: category:*"
+          }, {
+            "description" : "IPC",
+            "destinationId" : "16",
+            "id" : "218",
+            "linkedRelationshipId" : "217",
+            "sourceId" : "100",
+            "technology" : "IPC: category:*"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "CRUD kategori"
+        }, {
+          "description" : "api/bulkImport.ts",
+          "documentation" : { },
+          "group" : "[Page] Products",
+          "id" : "101",
+          "name" : "importBulk",
+          "properties" : {
+            "structurizr.dsl.identifier" : "importBulk"
+          },
+          "relationships" : [ {
+            "description" : "IPC",
+            "destinationId" : "41",
+            "id" : "219",
+            "sourceId" : "101",
+            "tags" : "Relationship",
+            "technology" : "IPC: product:bulkImport"
+          }, {
+            "description" : "IPC",
+            "destinationId" : "16",
+            "id" : "220",
+            "linkedRelationshipId" : "219",
+            "sourceId" : "101",
+            "technology" : "IPC: product:bulkImport"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Parse & import CSV/Excel"
+        }, {
+          "description" : "pages/InventoryPage.tsx",
+          "documentation" : { },
+          "group" : "[Page] Inventory",
+          "id" : "102",
+          "name" : "InventoryPage",
+          "properties" : {
+            "structurizr.dsl.identifier" : "inventoryPage"
+          },
+          "relationships" : [ {
+            "description" : "Penerimaan",
+            "destinationId" : "103",
+            "id" : "227",
+            "sourceId" : "102",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Pengeluaran",
+            "destinationId" : "104",
+            "id" : "228",
+            "sourceId" : "102",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Koreksi",
+            "destinationId" : "105",
+            "id" : "229",
+            "sourceId" : "102",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Audit trail",
+            "destinationId" : "106",
+            "id" : "230",
+            "sourceId" : "102",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Halaman utama manajemen stok"
+        }, {
+          "description" : "components/StockInForm.tsx",
+          "documentation" : { },
+          "group" : "[Page] Inventory",
+          "id" : "103",
+          "name" : "StockInForm",
+          "properties" : {
+            "structurizr.dsl.identifier" : "stockInForm"
+          },
+          "relationships" : [ {
+            "description" : "Proses masuk",
+            "destinationId" : "108",
+            "id" : "231",
+            "sourceId" : "103",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Penerimaan stok barang"
+        }, {
+          "description" : "components/StockOutForm.tsx",
+          "documentation" : { },
+          "group" : "[Page] Inventory",
+          "id" : "104",
+          "name" : "StockOutForm",
+          "properties" : {
+            "structurizr.dsl.identifier" : "stockOutForm"
+          },
+          "relationships" : [ {
+            "description" : "Proses keluar",
+            "destinationId" : "109",
+            "id" : "232",
+            "sourceId" : "104",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Pengeluaran stok non-penjualan"
+        }, {
+          "description" : "components/AdjustmentForm.tsx",
+          "documentation" : { },
+          "group" : "[Page] Inventory",
+          "id" : "105",
+          "name" : "AdjustmentForm",
+          "properties" : {
+            "structurizr.dsl.identifier" : "adjustmentForm"
+          },
+          "relationships" : [ {
+            "description" : "Proses koreksi",
+            "destinationId" : "110",
+            "id" : "233",
+            "sourceId" : "105",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Koreksi/damage/expired stock"
+        }, {
+          "description" : "components/StockLogTable.tsx",
+          "documentation" : { },
+          "group" : "[Page] Inventory",
+          "id" : "106",
+          "name" : "StockLogTable",
+          "properties" : {
+            "structurizr.dsl.identifier" : "stockLogTable"
+          },
+          "relationships" : [ {
+            "description" : "Query log",
+            "destinationId" : "111",
+            "id" : "234",
+            "sourceId" : "106",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Audit trail pergerakan stok"
+        }, {
+          "description" : "components/LowStockAlert.tsx",
+          "documentation" : { },
+          "group" : "[Page] Inventory",
+          "id" : "107",
+          "name" : "LowStockAlert",
+          "properties" : {
+            "structurizr.dsl.identifier" : "lowStockAlert"
+          },
+          "tags" : "Element,Component",
+          "technology" : "Alert stok minimal dashboard"
+        }, {
+          "description" : "api/inventory.ts",
+          "documentation" : { },
+          "group" : "[Page] Inventory",
+          "id" : "108",
+          "name" : "processStockIn",
+          "properties" : {
+            "structurizr.dsl.identifier" : "processStockIn"
+          },
+          "relationships" : [ {
+            "description" : "IPC",
+            "destinationId" : "44",
+            "id" : "235",
+            "sourceId" : "108",
+            "tags" : "Relationship",
+            "technology" : "IPC: inventory:stockIn"
+          }, {
+            "description" : "IPC",
+            "destinationId" : "16",
+            "id" : "236",
+            "linkedRelationshipId" : "235",
+            "sourceId" : "108",
+            "technology" : "IPC: inventory:stockIn"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Proses stok masuk"
+        }, {
+          "description" : "api/inventory.ts",
+          "documentation" : { },
+          "group" : "[Page] Inventory",
+          "id" : "109",
+          "name" : "processStockOut",
+          "properties" : {
+            "structurizr.dsl.identifier" : "processStockOut"
+          },
+          "relationships" : [ {
+            "description" : "IPC",
+            "destinationId" : "45",
+            "id" : "238",
+            "sourceId" : "109",
+            "tags" : "Relationship",
+            "technology" : "IPC: inventory:stockOut"
+          }, {
+            "description" : "IPC",
+            "destinationId" : "16",
+            "id" : "239",
+            "linkedRelationshipId" : "238",
+            "sourceId" : "109",
+            "technology" : "IPC: inventory:stockOut"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Proses stok keluar"
+        }, {
+          "description" : "api/inventory.ts",
+          "documentation" : { },
+          "group" : "[Page] Inventory",
+          "id" : "110",
+          "name" : "adjustStock",
+          "properties" : {
+            "structurizr.dsl.identifier" : "adjustStock"
+          },
+          "relationships" : [ {
+            "description" : "IPC",
+            "destinationId" : "46",
+            "id" : "241",
+            "sourceId" : "110",
+            "tags" : "Relationship",
+            "technology" : "IPC: inventory:adjust"
+          }, {
+            "description" : "IPC",
+            "destinationId" : "16",
+            "id" : "242",
+            "linkedRelationshipId" : "241",
+            "sourceId" : "110",
+            "technology" : "IPC: inventory:adjust"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Koreksi/damage/expired"
+        }, {
+          "description" : "api/inventory.ts",
+          "documentation" : { },
+          "group" : "[Page] Inventory",
+          "id" : "111",
+          "name" : "queryLogs",
+          "properties" : {
+            "structurizr.dsl.identifier" : "queryLogs"
+          },
+          "relationships" : [ {
+            "description" : "IPC",
+            "destinationId" : "47",
+            "id" : "244",
+            "sourceId" : "111",
+            "tags" : "Relationship",
+            "technology" : "IPC: inventory:logs"
+          }, {
+            "description" : "IPC",
+            "destinationId" : "16",
+            "id" : "245",
+            "linkedRelationshipId" : "244",
+            "sourceId" : "111",
+            "technology" : "IPC: inventory:logs"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Query audit trail"
+        }, {
+          "description" : "pages/CustomersPage.tsx",
+          "documentation" : { },
+          "group" : "[Page] Customers",
+          "id" : "112",
+          "name" : "CustomersPage",
+          "properties" : {
+            "structurizr.dsl.identifier" : "customersPage"
+          },
+          "relationships" : [ {
+            "description" : "Create/edit",
+            "destinationId" : "113",
+            "id" : "251",
+            "sourceId" : "112",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Riwayat transaksi",
+            "destinationId" : "116",
+            "id" : "252",
+            "sourceId" : "112",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Tampilkan poin",
+            "destinationId" : "115",
+            "id" : "253",
+            "sourceId" : "112",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Cari customer",
+            "destinationId" : "114",
+            "id" : "254",
+            "sourceId" : "112",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "List, search, filter pelanggan"
+        }, {
+          "description" : "components/CustomerForm.tsx",
+          "documentation" : { },
+          "group" : "[Page] Customers",
+          "id" : "113",
+          "name" : "CustomerForm",
+          "properties" : {
+            "structurizr.dsl.identifier" : "customerForm"
+          },
+          "relationships" : [ {
+            "description" : "Simpan customer",
+            "destinationId" : "118",
+            "id" : "255",
+            "sourceId" : "113",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Create/edit pelanggan"
+        }, {
+          "description" : "components/CustomerSearch.tsx",
+          "documentation" : { },
+          "group" : "[Page] Customers",
+          "id" : "114",
+          "name" : "CustomerSearch",
+          "properties" : {
+            "structurizr.dsl.identifier" : "customerSearch"
+          },
+          "relationships" : [ {
+            "description" : "Cari customer",
+            "destinationId" : "117",
+            "id" : "256",
+            "sourceId" : "114",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Cari customer by phone/name di POS"
+        }, {
+          "description" : "components/LoyaltyCard.tsx",
+          "documentation" : { },
+          "group" : "[Page] Customers",
+          "id" : "115",
+          "name" : "LoyaltyCard",
+          "properties" : {
+            "structurizr.dsl.identifier" : "loyaltyCard"
+          },
+          "tags" : "Element,Component",
+          "technology" : "Display points & tier"
+        }, {
+          "description" : "components/TransactionHistory.tsx",
+          "documentation" : { },
+          "group" : "[Page] Customers",
+          "id" : "116",
+          "name" : "TransactionHistory",
+          "properties" : {
+            "structurizr.dsl.identifier" : "transactionHistory"
+          },
+          "relationships" : [ {
+            "description" : "Query transaksi",
+            "destinationId" : "117",
+            "id" : "262",
+            "sourceId" : "116",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Riwayat transaksi per customer"
+        }, {
+          "description" : "hooks/useCustomerSearch.ts",
+          "documentation" : { },
+          "group" : "[Page] Customers",
+          "id" : "117",
+          "name" : "searchCustomer",
+          "properties" : {
+            "structurizr.dsl.identifier" : "searchCustomer"
+          },
+          "relationships" : [ {
+            "description" : "IPC",
+            "destinationId" : "50",
+            "id" : "260",
+            "sourceId" : "117",
+            "tags" : "Relationship",
+            "technology" : "IPC: customer:search"
+          }, {
+            "description" : "IPC",
+            "destinationId" : "16",
+            "id" : "261",
+            "linkedRelationshipId" : "260",
+            "sourceId" : "117",
+            "technology" : "IPC: customer:search"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Cari via telepon/nama"
+        }, {
+          "description" : "api/customers.ts",
+          "documentation" : { },
+          "group" : "[Page] Customers",
+          "id" : "118",
+          "name" : "saveCustomer",
+          "properties" : {
+            "structurizr.dsl.identifier" : "saveCustomer"
+          },
+          "relationships" : [ {
+            "description" : "IPC",
+            "destinationId" : "51",
+            "id" : "257",
+            "sourceId" : "118",
+            "tags" : "Relationship",
+            "technology" : "IPC: customer:*"
+          }, {
+            "description" : "IPC",
+            "destinationId" : "16",
+            "id" : "258",
+            "linkedRelationshipId" : "257",
+            "sourceId" : "118",
+            "technology" : "IPC: customer:*"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Create/update customer"
+        }, {
+          "description" : "crm/loyalty.ts",
+          "documentation" : { },
+          "group" : "[Page] Customers",
+          "id" : "119",
+          "name" : "calculatePoints",
+          "properties" : {
+            "structurizr.dsl.identifier" : "calculatePoints"
+          },
+          "relationships" : [ {
+            "description" : "IPC",
+            "destinationId" : "52",
+            "id" : "263",
+            "sourceId" : "119",
+            "tags" : "Relationship",
+            "technology" : "IPC: customer:points"
+          }, {
+            "description" : "IPC",
+            "destinationId" : "16",
+            "id" : "264",
+            "linkedRelationshipId" : "263",
+            "sourceId" : "119",
+            "technology" : "IPC: customer:points"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Hitung points & tier"
+        }, {
+          "description" : "pages/DashboardPage.tsx",
+          "documentation" : { },
+          "group" : "Reports",
+          "id" : "120",
+          "name" : "DashboardPage",
+          "properties" : {
+            "structurizr.dsl.identifier" : "dashboardPage"
+          },
+          "relationships" : [ {
+            "description" : "Load KPI",
+            "destinationId" : "126",
+            "id" : "270",
+            "sourceId" : "120",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Read filter/state",
+            "destinationId" : "125",
+            "id" : "271",
+            "sourceId" : "120",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "KPI cards: today sales, transactions"
+        }, {
+          "description" : "pages/SalesReportPage.tsx",
+          "documentation" : { },
+          "group" : "Reports",
+          "id" : "121",
+          "name" : "SalesReportPage",
+          "properties" : {
+            "structurizr.dsl.identifier" : "salesReportPage"
+          },
+          "relationships" : [ {
+            "description" : "Load chart",
+            "destinationId" : "127",
+            "id" : "272",
+            "sourceId" : "121",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Read filter/state",
+            "destinationId" : "125",
+            "id" : "273",
+            "sourceId" : "121",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Export PDF/Excel",
+            "destinationId" : "124",
+            "id" : "274",
+            "sourceId" : "121",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Laporan penjualan + filter & chart"
+        }, {
+          "description" : "pages/StockReportPage.tsx",
+          "documentation" : { },
+          "group" : "Reports",
+          "id" : "122",
+          "name" : "StockReportPage",
+          "properties" : {
+            "structurizr.dsl.identifier" : "stockReportPage"
+          },
+          "relationships" : [ {
+            "description" : "Load data",
+            "destinationId" : "129",
+            "id" : "275",
+            "sourceId" : "122",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Export PDF/Excel",
+            "destinationId" : "124",
+            "id" : "276",
+            "sourceId" : "122",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Laporan stok per produk"
+        }, {
+          "description" : "pages/FinanceReportPage.tsx",
+          "documentation" : { },
+          "group" : "Reports",
+          "id" : "123",
+          "name" : "FinanceReportPage",
+          "properties" : {
+            "structurizr.dsl.identifier" : "financeReportPage"
+          },
+          "relationships" : [ {
+            "description" : "Load data",
+            "destinationId" : "130",
+            "id" : "277",
+            "sourceId" : "123",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Export PDF/Excel",
+            "destinationId" : "124",
+            "id" : "278",
+            "sourceId" : "123",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Laporan COGS, profit"
+        }, {
+          "description" : "components/ExportButton.tsx",
+          "documentation" : { },
+          "group" : "Reports",
+          "id" : "124",
+          "name" : "ExportButton",
+          "properties" : {
+            "structurizr.dsl.identifier" : "reportExport"
+          },
+          "relationships" : [ {
+            "description" : "Generate export",
+            "destinationId" : "128",
+            "id" : "279",
+            "sourceId" : "124",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Export PDF/Excel"
+        }, {
+          "description" : "stores/reportStore.ts",
+          "documentation" : { },
+          "group" : "Reports",
+          "id" : "125",
+          "name" : "reportStore",
+          "properties" : {
+            "structurizr.dsl.identifier" : "reportStore"
+          },
+          "tags" : "Element,Component",
+          "technology" : "State filter & data laporan"
+        }, {
+          "description" : "api/reports.ts",
+          "documentation" : { },
+          "group" : "Reports",
+          "id" : "126",
+          "name" : "loadKPIs",
+          "properties" : {
+            "structurizr.dsl.identifier" : "loadKPIs"
+          },
+          "relationships" : [ {
+            "description" : "IPC",
+            "destinationId" : "55",
+            "id" : "280",
+            "sourceId" : "126",
+            "tags" : "Relationship",
+            "technology" : "IPC: report:dashboard"
+          }, {
+            "description" : "IPC",
+            "destinationId" : "16",
+            "id" : "281",
+            "linkedRelationshipId" : "280",
+            "sourceId" : "126",
+            "technology" : "IPC: report:dashboard"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Query KPI cards"
+        }, {
+          "description" : "api/reports.ts",
+          "documentation" : { },
+          "group" : "Reports",
+          "id" : "127",
+          "name" : "loadChart",
+          "properties" : {
+            "structurizr.dsl.identifier" : "loadChart"
+          },
+          "relationships" : [ {
+            "description" : "IPC",
+            "destinationId" : "56",
+            "id" : "283",
+            "sourceId" : "127",
+            "tags" : "Relationship",
+            "technology" : "IPC: report:sales"
+          }, {
+            "description" : "IPC",
+            "destinationId" : "16",
+            "id" : "284",
+            "linkedRelationshipId" : "283",
+            "sourceId" : "127",
+            "technology" : "IPC: report:sales"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Query chart data"
+        }, {
+          "description" : "api/export.ts",
+          "documentation" : { },
+          "group" : "Reports",
+          "id" : "128",
+          "name" : "exportReport",
+          "properties" : {
+            "structurizr.dsl.identifier" : "exportReport"
+          },
+          "relationships" : [ {
+            "description" : "IPC",
+            "destinationId" : "59",
+            "id" : "292",
+            "sourceId" : "128",
+            "tags" : "Relationship",
+            "technology" : "IPC: report:export"
+          }, {
+            "description" : "IPC",
+            "destinationId" : "16",
+            "id" : "293",
+            "linkedRelationshipId" : "292",
+            "sourceId" : "128",
+            "technology" : "IPC: report:export"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Generate PDF/Excel"
+        }, {
+          "description" : "api/reports.ts",
+          "documentation" : { },
+          "group" : "Reports",
+          "id" : "129",
+          "name" : "loadStockReport",
+          "properties" : {
+            "structurizr.dsl.identifier" : "loadStockReport"
+          },
+          "relationships" : [ {
+            "description" : "IPC",
+            "destinationId" : "57",
+            "id" : "286",
+            "sourceId" : "129",
+            "tags" : "Relationship",
+            "technology" : "IPC: report:stock"
+          }, {
+            "description" : "IPC",
+            "destinationId" : "16",
+            "id" : "287",
+            "linkedRelationshipId" : "286",
+            "sourceId" : "129",
+            "technology" : "IPC: report:stock"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Query data laporan stok"
+        }, {
+          "description" : "api/reports.ts",
+          "documentation" : { },
+          "group" : "Reports",
+          "id" : "130",
+          "name" : "loadFinanceReport",
+          "properties" : {
+            "structurizr.dsl.identifier" : "loadFinanceReport"
+          },
+          "relationships" : [ {
+            "description" : "IPC",
+            "destinationId" : "58",
+            "id" : "289",
+            "sourceId" : "130",
+            "tags" : "Relationship",
+            "technology" : "IPC: report:finance"
+          }, {
+            "description" : "IPC",
+            "destinationId" : "16",
+            "id" : "290",
+            "linkedRelationshipId" : "289",
+            "sourceId" : "130",
+            "technology" : "IPC: report:finance"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Query data laporan keuangan"
+        }, {
+          "description" : "pages/ShiftPage.tsx",
+          "documentation" : { },
+          "group" : "[Page] Shift",
+          "id" : "131",
+          "name" : "ShiftPage",
+          "properties" : {
+            "structurizr.dsl.identifier" : "shiftPage"
+          },
+          "relationships" : [ {
+            "description" : "Buka shift",
+            "destinationId" : "132",
+            "id" : "298",
+            "sourceId" : "131",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Tutup shift",
+            "destinationId" : "133",
+            "id" : "299",
+            "sourceId" : "131",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Status shift",
+            "destinationId" : "134",
+            "id" : "300",
+            "sourceId" : "131",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Manajemen shift kasir"
+        }, {
+          "description" : "components/OpenShiftModal.tsx",
+          "documentation" : { },
+          "group" : "[Page] Shift",
+          "id" : "132",
+          "name" : "OpenShiftModal",
+          "properties" : {
+            "structurizr.dsl.identifier" : "openShiftModal"
+          },
+          "relationships" : [ {
+            "description" : "Buka shift",
+            "destinationId" : "135",
+            "id" : "301",
+            "sourceId" : "132",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Buka shift + input modal awal"
+        }, {
+          "description" : "components/CloseShiftModal.tsx",
+          "documentation" : { },
+          "group" : "[Page] Shift",
+          "id" : "133",
+          "name" : "CloseShiftModal",
+          "properties" : {
+            "structurizr.dsl.identifier" : "closeShiftModal"
+          },
+          "relationships" : [ {
+            "description" : "Tutup shift",
+            "destinationId" : "136",
+            "id" : "302",
+            "sourceId" : "133",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Tutup shift + rekap"
+        }, {
+          "description" : "components/ShiftSummary.tsx",
+          "documentation" : { },
+          "group" : "[Page] Shift",
+          "id" : "134",
+          "name" : "ShiftSummary",
+          "properties" : {
+            "structurizr.dsl.identifier" : "shiftSummary"
+          },
+          "relationships" : [ {
+            "description" : "Cek shift aktif",
+            "destinationId" : "138",
+            "id" : "303",
+            "sourceId" : "134",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Status shift saat ini di header"
+        }, {
+          "description" : "api/shift.ts",
+          "documentation" : { },
+          "group" : "[Page] Shift",
+          "id" : "135",
+          "name" : "openShift",
+          "properties" : {
+            "structurizr.dsl.identifier" : "openShift"
+          },
+          "relationships" : [ {
+            "description" : "IPC",
+            "destinationId" : "62",
+            "id" : "304",
+            "sourceId" : "135",
+            "tags" : "Relationship",
+            "technology" : "IPC: shift:open"
+          }, {
+            "description" : "IPC",
+            "destinationId" : "16",
+            "id" : "305",
+            "linkedRelationshipId" : "304",
+            "sourceId" : "135",
+            "technology" : "IPC: shift:open"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Buka shift + modal awal"
+        }, {
+          "description" : "api/shift.ts",
+          "documentation" : { },
+          "group" : "[Page] Shift",
+          "id" : "136",
+          "name" : "closeShift",
+          "properties" : {
+            "structurizr.dsl.identifier" : "closeShift"
+          },
+          "relationships" : [ {
+            "description" : "IPC",
+            "destinationId" : "63",
+            "id" : "307",
+            "sourceId" : "136",
+            "tags" : "Relationship",
+            "technology" : "IPC: shift:close"
+          }, {
+            "description" : "IPC",
+            "destinationId" : "16",
+            "id" : "308",
+            "linkedRelationshipId" : "307",
+            "sourceId" : "136",
+            "technology" : "IPC: shift:close"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Tutup shift + rekap"
+        }, {
+          "description" : "shift/calculator.ts",
+          "documentation" : { },
+          "group" : "[Page] Shift",
+          "id" : "137",
+          "name" : "calcDiscrepancy",
+          "properties" : {
+            "structurizr.dsl.identifier" : "calcDiscrepancy"
+          },
+          "relationships" : [ {
+            "description" : "IPC",
+            "destinationId" : "63",
+            "id" : "310",
+            "sourceId" : "137",
+            "tags" : "Relationship",
+            "technology" : "IPC: shift:close"
+          }, {
+            "description" : "IPC",
+            "destinationId" : "16",
+            "id" : "311",
+            "linkedRelationshipId" : "310",
+            "sourceId" : "137",
+            "technology" : "IPC: shift:close"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Hitung selisih kas"
+        }, {
+          "description" : "api/shift.ts",
+          "documentation" : { },
+          "group" : "[Page] Shift",
+          "id" : "138",
+          "name" : "loadCurrentShift",
+          "properties" : {
+            "structurizr.dsl.identifier" : "loadCurrentShift"
+          },
+          "relationships" : [ {
+            "description" : "IPC",
+            "destinationId" : "64",
+            "id" : "312",
+            "sourceId" : "138",
+            "tags" : "Relationship",
+            "technology" : "IPC: shift:current"
+          }, {
+            "description" : "IPC",
+            "destinationId" : "16",
+            "id" : "313",
+            "linkedRelationshipId" : "312",
+            "sourceId" : "138",
+            "technology" : "IPC: shift:current"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Query status shift saat ini"
+        } ],
+        "description" : "React 18, TypeScript",
+        "documentation" : { },
+        "id" : "71",
+        "name" : "React App",
+        "properties" : {
+          "structurizr.dsl.identifier" : "reactApp"
+        },
+        "relationships" : [ {
+          "description" : "Membaca/menulis state",
+          "destinationId" : "140",
+          "id" : "150",
+          "sourceId" : "71",
+          "tags" : "Relationship"
+        }, {
+          "description" : "IPC call",
+          "destinationId" : "16",
+          "id" : "151",
+          "sourceId" : "71",
+          "tags" : "Relationship",
+          "technology" : "contextBridge"
+        }, {
+          "description" : "IPC",
+          "destinationId" : "27",
+          "id" : "160",
+          "linkedRelationshipId" : "158",
+          "sourceId" : "71",
+          "technology" : "IPC: auth:login"
+        }, {
+          "description" : "IPC",
+          "destinationId" : "29",
+          "id" : "164",
+          "linkedRelationshipId" : "162",
+          "sourceId" : "71",
+          "technology" : "IPC: auth:check"
+        }, {
+          "description" : "IPC",
+          "destinationId" : "68",
+          "id" : "169",
+          "linkedRelationshipId" : "167",
+          "sourceId" : "71",
+          "technology" : "IPC: settings:*"
+        }, {
+          "description" : "IPC",
+          "destinationId" : "37",
+          "id" : "190",
+          "linkedRelationshipId" : "188",
+          "sourceId" : "71",
+          "technology" : "IPC: product:search"
+        }, {
+          "description" : "IPC",
+          "destinationId" : "50",
+          "id" : "195",
+          "linkedRelationshipId" : "193",
+          "sourceId" : "71",
+          "technology" : "IPC: customer:search"
+        }, {
+          "description" : "IPC",
+          "destinationId" : "33",
+          "id" : "198",
+          "linkedRelationshipId" : "196",
+          "sourceId" : "71",
+          "technology" : "IPC: pos:holdBill"
+        }, {
+          "description" : "IPC",
+          "destinationId" : "32",
+          "id" : "201",
+          "linkedRelationshipId" : "199",
+          "sourceId" : "71",
+          "technology" : "IPC: transaction:save"
+        }, {
+          "description" : "IPC",
+          "destinationId" : "69",
+          "id" : "203",
+          "linkedRelationshipId" : "202",
+          "sourceId" : "71",
+          "technology" : "IPC: printer:print"
+        }, {
+          "description" : "IPC",
+          "destinationId" : "39",
+          "id" : "216",
+          "linkedRelationshipId" : "214",
+          "sourceId" : "71",
+          "technology" : "IPC: product:create"
+        }, {
+          "description" : "IPC",
+          "destinationId" : "41",
+          "id" : "221",
+          "linkedRelationshipId" : "219",
+          "sourceId" : "71",
+          "technology" : "IPC: product:bulkImport"
+        }, {
+          "description" : "IPC",
+          "destinationId" : "44",
+          "id" : "237",
+          "linkedRelationshipId" : "235",
+          "sourceId" : "71",
+          "technology" : "IPC: inventory:stockIn"
+        }, {
+          "description" : "IPC",
+          "destinationId" : "45",
+          "id" : "240",
+          "linkedRelationshipId" : "238",
+          "sourceId" : "71",
+          "technology" : "IPC: inventory:stockOut"
+        }, {
+          "description" : "IPC",
+          "destinationId" : "46",
+          "id" : "243",
+          "linkedRelationshipId" : "241",
+          "sourceId" : "71",
+          "technology" : "IPC: inventory:adjust"
+        }, {
+          "description" : "IPC",
+          "destinationId" : "47",
+          "id" : "246",
+          "linkedRelationshipId" : "244",
+          "sourceId" : "71",
+          "technology" : "IPC: inventory:logs"
+        }, {
+          "description" : "IPC",
+          "destinationId" : "51",
+          "id" : "259",
+          "linkedRelationshipId" : "257",
+          "sourceId" : "71",
+          "technology" : "IPC: customer:*"
+        }, {
+          "description" : "IPC",
+          "destinationId" : "52",
+          "id" : "265",
+          "linkedRelationshipId" : "263",
+          "sourceId" : "71",
+          "technology" : "IPC: customer:points"
+        }, {
+          "description" : "IPC",
+          "destinationId" : "55",
+          "id" : "282",
+          "linkedRelationshipId" : "280",
+          "sourceId" : "71",
+          "technology" : "IPC: report:dashboard"
+        }, {
+          "description" : "IPC",
+          "destinationId" : "56",
+          "id" : "285",
+          "linkedRelationshipId" : "283",
+          "sourceId" : "71",
+          "technology" : "IPC: report:sales"
+        }, {
+          "description" : "IPC",
+          "destinationId" : "57",
+          "id" : "288",
+          "linkedRelationshipId" : "286",
+          "sourceId" : "71",
+          "technology" : "IPC: report:stock"
+        }, {
+          "description" : "IPC",
+          "destinationId" : "58",
+          "id" : "291",
+          "linkedRelationshipId" : "289",
+          "sourceId" : "71",
+          "technology" : "IPC: report:finance"
+        }, {
+          "description" : "IPC",
+          "destinationId" : "59",
+          "id" : "294",
+          "linkedRelationshipId" : "292",
+          "sourceId" : "71",
+          "technology" : "IPC: report:export"
+        }, {
+          "description" : "IPC",
+          "destinationId" : "62",
+          "id" : "306",
+          "linkedRelationshipId" : "304",
+          "sourceId" : "71",
+          "technology" : "IPC: shift:open"
+        }, {
+          "description" : "IPC",
+          "destinationId" : "63",
+          "id" : "309",
+          "linkedRelationshipId" : "307",
+          "sourceId" : "71",
+          "technology" : "IPC: shift:close"
+        }, {
+          "description" : "IPC",
+          "destinationId" : "64",
+          "id" : "314",
+          "linkedRelationshipId" : "312",
+          "sourceId" : "71",
+          "technology" : "IPC: shift:current"
+        } ],
+        "tags" : "Element,Container",
+        "technology" : "UI renderer - contextIsolation"
+      }, {
+        "description" : "better-sqlite3",
+        "documentation" : { },
+        "id" : "139",
+        "name" : "SQLite Database",
+        "properties" : {
+          "structurizr.dsl.identifier" : "sqlite"
+        },
+        "tags" : "Element,Container,Database",
+        "technology" : "Database lokal offline: users, products, transaksi, inventory, customers"
+      }, {
+        "description" : "Zustand, TypeScript",
+        "documentation" : { },
+        "id" : "140",
+        "name" : "Zustand Store",
+        "properties" : {
+          "structurizr.dsl.identifier" : "zustandStore"
+        },
+        "tags" : "Element,Container",
+        "technology" : "State management frontend"
+      } ],
+      "documentation" : { },
+      "id" : "7",
+      "name" : "POS Desktop",
+      "properties" : {
+        "structurizr.dsl.identifier" : "posApp"
+      },
+      "relationships" : [ {
+        "description" : "Mengirim perintah cetak",
+        "destinationId" : "4",
+        "id" : "144",
+        "sourceId" : "7",
+        "tags" : "Relationship",
+        "technology" : "ESC/POS"
+      }, {
+        "description" : "Membuka laci",
+        "destinationId" : "6",
+        "id" : "146",
+        "sourceId" : "7",
+        "tags" : "Relationship",
+        "technology" : "ESC/POS"
+      } ],
+      "tags" : "Element,Software System"
+    } ]
+  },
+  "name" : "POS Desktop",
+  "properties" : {
+    "structurizr.inspection.error" : "272",
+    "structurizr.inspection.info" : "0",
+    "structurizr.inspection.ignore" : "0",
+    "structurizr.inspection.warning" : "0"
+  },
+  "views" : {
+    "componentViews" : [ {
+      "automaticLayout" : {
+        "edgeSeparation" : 50,
+        "nodeSeparation" : 50,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 100,
+        "vertices" : true
+      },
+      "containerId" : "71",
+      "elements" : [ {
+        "id" : "27",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "72",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "73",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "74",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "77",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "externalContainerBoundariesVisible" : false,
+      "key" : "LoginPage",
+      "name" : "Component View: POS Desktop - React App",
+      "order" : 3,
+      "relationships" : [ {
+        "id" : "155"
+      }, {
+        "id" : "156"
+      }, {
+        "id" : "157"
+      }, {
+        "id" : "158"
+      }, {
+        "id" : "161"
+      }, {
+        "id" : "315"
+      }, {
+        "id" : "317"
+      } ],
+      "title" : "[C3] - LoginPage"
+    }, {
+      "automaticLayout" : {
+        "edgeSeparation" : 50,
+        "nodeSeparation" : 50,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 100,
+        "vertices" : true
+      },
+      "containerId" : "71",
+      "elements" : [ {
+        "id" : "67",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "68",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "75",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "76",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "externalContainerBoundariesVisible" : false,
+      "key" : "SettingPage",
+      "name" : "Component View: POS Desktop - React App",
+      "order" : 4,
+      "relationships" : [ {
+        "id" : "166"
+      }, {
+        "id" : "167"
+      } ],
+      "title" : "[C3] - SettingPage"
+    }, {
+      "automaticLayout" : {
+        "edgeSeparation" : 50,
+        "nodeSeparation" : 50,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 100,
+        "vertices" : true
+      },
+      "containerId" : "71",
+      "elements" : [ {
+        "id" : "32",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "37",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "39",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "41",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "50",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "51",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "78",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "79",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "80",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "81",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "82",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "84",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "85",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "86",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "87",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "114",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "externalContainerBoundariesVisible" : false,
+      "key" : "POSTerminalPage",
+      "name" : "Component View: POS Desktop - React App",
+      "order" : 5,
+      "relationships" : [ {
+        "id" : "172"
+      }, {
+        "id" : "173"
+      }, {
+        "id" : "175"
+      }, {
+        "id" : "176"
+      }, {
+        "id" : "177"
+      }, {
+        "id" : "179"
+      }, {
+        "id" : "181"
+      }, {
+        "id" : "187"
+      }, {
+        "id" : "188"
+      }, {
+        "id" : "193"
+      } ],
+      "title" : "[C3] - POSTerminalPage"
+    }, {
+      "automaticLayout" : {
+        "edgeSeparation" : 50,
+        "nodeSeparation" : 50,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 100,
+        "vertices" : true
+      },
+      "containerId" : "71",
+      "elements" : [ {
+        "id" : "32",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "69",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "88",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "89",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "90",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "91",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "92",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "externalContainerBoundariesVisible" : false,
+      "key" : "PaymentModal",
+      "name" : "Component View: POS Desktop - React App",
+      "order" : 6,
+      "relationships" : [ {
+        "id" : "182"
+      }, {
+        "id" : "183"
+      }, {
+        "id" : "184"
+      }, {
+        "id" : "185"
+      }, {
+        "id" : "186"
+      }, {
+        "id" : "199"
+      }, {
+        "id" : "202"
+      } ],
+      "title" : "[C3] - PaymentModal"
+    }, {
+      "automaticLayout" : {
+        "edgeSeparation" : 50,
+        "nodeSeparation" : 50,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 100,
+        "vertices" : true
+      },
+      "containerId" : "71",
+      "elements" : [ {
+        "id" : "37",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "39",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "41",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "93",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "94",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "95",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "96",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "97",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "98",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "99",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "100",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "101",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "externalContainerBoundariesVisible" : false,
+      "key" : "ProductsPage",
+      "name" : "Component View: POS Desktop - React App",
+      "order" : 7,
+      "relationships" : [ {
+        "id" : "191"
+      }, {
+        "id" : "208"
+      }, {
+        "id" : "209"
+      }, {
+        "id" : "210"
+      }, {
+        "id" : "211"
+      }, {
+        "id" : "212"
+      }, {
+        "id" : "213"
+      }, {
+        "id" : "214"
+      }, {
+        "id" : "217"
+      }, {
+        "id" : "219"
+      } ],
+      "title" : "[C3] - ProductsPage"
+    }, {
+      "automaticLayout" : {
+        "edgeSeparation" : 50,
+        "nodeSeparation" : 50,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 100,
+        "vertices" : true
+      },
+      "containerId" : "71",
+      "elements" : [ {
+        "id" : "44",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "45",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "46",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "47",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "102",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "103",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "104",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "105",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "106",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "107",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "108",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "109",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "110",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "111",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "externalContainerBoundariesVisible" : false,
+      "key" : "InventoryPage",
+      "name" : "Component View: POS Desktop - React App",
+      "order" : 8,
+      "relationships" : [ {
+        "id" : "227"
+      }, {
+        "id" : "228"
+      }, {
+        "id" : "229"
+      }, {
+        "id" : "230"
+      }, {
+        "id" : "231"
+      }, {
+        "id" : "232"
+      }, {
+        "id" : "233"
+      }, {
+        "id" : "234"
+      }, {
+        "id" : "235"
+      }, {
+        "id" : "238"
+      }, {
+        "id" : "241"
+      }, {
+        "id" : "244"
+      } ],
+      "title" : "[C3] - InventoryPage"
+    }, {
+      "automaticLayout" : {
+        "edgeSeparation" : 50,
+        "nodeSeparation" : 50,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 100,
+        "vertices" : true
+      },
+      "containerId" : "71",
+      "elements" : [ {
+        "id" : "50",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "51",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "112",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "113",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "114",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "115",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "116",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "117",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "118",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "119",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "externalContainerBoundariesVisible" : false,
+      "key" : "CustomersPage",
+      "name" : "Component View: POS Desktop - React App",
+      "order" : 9,
+      "relationships" : [ {
+        "id" : "251"
+      }, {
+        "id" : "252"
+      }, {
+        "id" : "253"
+      }, {
+        "id" : "254"
+      }, {
+        "id" : "255"
+      }, {
+        "id" : "256"
+      }, {
+        "id" : "257"
+      }, {
+        "id" : "260"
+      }, {
+        "id" : "262"
+      } ],
+      "title" : "[C3] - CustomersPage"
+    }, {
+      "automaticLayout" : {
+        "edgeSeparation" : 50,
+        "nodeSeparation" : 50,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 100,
+        "vertices" : true
+      },
+      "containerId" : "71",
+      "elements" : [ {
+        "id" : "55",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "120",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "124",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "125",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "126",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "127",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "externalContainerBoundariesVisible" : false,
+      "key" : "DashboardPage",
+      "name" : "Component View: POS Desktop - React App",
+      "order" : 10,
+      "relationships" : [ {
+        "id" : "270"
+      }, {
+        "id" : "271"
+      }, {
+        "id" : "280"
+      } ],
+      "title" : "[C3] - DashboardPage"
+    }, {
+      "automaticLayout" : {
+        "edgeSeparation" : 50,
+        "nodeSeparation" : 50,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 100,
+        "vertices" : true
+      },
+      "containerId" : "71",
+      "elements" : [ {
+        "id" : "56",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "59",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "121",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "124",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "125",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "127",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "externalContainerBoundariesVisible" : false,
+      "key" : "SalesReportPage",
+      "name" : "Component View: POS Desktop - React App",
+      "order" : 11,
+      "relationships" : [ {
+        "id" : "272"
+      }, {
+        "id" : "273"
+      }, {
+        "id" : "274"
+      }, {
+        "id" : "283"
+      } ],
+      "title" : "[C3] - SalesReportPage"
+    }, {
+      "automaticLayout" : {
+        "edgeSeparation" : 50,
+        "nodeSeparation" : 50,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 100,
+        "vertices" : true
+      },
+      "containerId" : "71",
+      "elements" : [ {
+        "id" : "57",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "59",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "122",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "124",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "129",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "externalContainerBoundariesVisible" : false,
+      "key" : "StockReportPage",
+      "name" : "Component View: POS Desktop - React App",
+      "order" : 12,
+      "relationships" : [ {
+        "id" : "275"
+      }, {
+        "id" : "276"
+      }, {
+        "id" : "286"
+      } ],
+      "title" : "[C3] - StockReportPage"
+    }, {
+      "automaticLayout" : {
+        "edgeSeparation" : 50,
+        "nodeSeparation" : 50,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 100,
+        "vertices" : true
+      },
+      "containerId" : "71",
+      "elements" : [ {
+        "id" : "58",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "59",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "123",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "124",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "130",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "externalContainerBoundariesVisible" : false,
+      "key" : "FinanceReportPage",
+      "name" : "Component View: POS Desktop - React App",
+      "order" : 13,
+      "relationships" : [ {
+        "id" : "277"
+      }, {
+        "id" : "278"
+      }, {
+        "id" : "289"
+      } ],
+      "title" : "[C3] - FinanceReportPage"
+    }, {
+      "automaticLayout" : {
+        "edgeSeparation" : 50,
+        "nodeSeparation" : 50,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 100,
+        "vertices" : true
+      },
+      "containerId" : "71",
+      "elements" : [ {
+        "id" : "62",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "63",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "64",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "131",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "132",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "133",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "134",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "135",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "136",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "137",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "138",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "externalContainerBoundariesVisible" : false,
+      "key" : "ShiftPage",
+      "name" : "Component View: POS Desktop - React App",
+      "order" : 14,
+      "relationships" : [ {
+        "id" : "298"
+      }, {
+        "id" : "299"
+      }, {
+        "id" : "300"
+      }, {
+        "id" : "301"
+      }, {
+        "id" : "302"
+      }, {
+        "id" : "303"
+      }, {
+        "id" : "304"
+      }, {
+        "id" : "307"
+      }, {
+        "id" : "310"
+      }, {
+        "id" : "312"
+      } ],
+      "title" : "[C3] - ShiftPage"
+    }, {
+      "automaticLayout" : {
+        "edgeSeparation" : 50,
+        "nodeSeparation" : 50,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 100,
+        "vertices" : true
+      },
+      "containerId" : "16",
+      "elements" : [ {
+        "id" : "9",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "27",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "30",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "31",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "77",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "externalContainerBoundariesVisible" : false,
+      "key" : "auth",
+      "name" : "Component View: POS Desktop - Electron Main Process",
+      "order" : 15,
+      "relationships" : [ {
+        "id" : "315"
+      }, {
+        "id" : "321"
+      }, {
+        "id" : "350"
+      }, {
+        "id" : "361"
+      }, {
+        "id" : "422"
+      } ],
+      "title" : "[C3] - IPC auth"
+    }, {
+      "automaticLayout" : {
+        "edgeSeparation" : 50,
+        "nodeSeparation" : 50,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 100,
+        "vertices" : true
+      },
+      "containerId" : "16",
+      "elements" : [ {
+        "id" : "11",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "32",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "35",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "36",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "43",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "externalContainerBoundariesVisible" : false,
+      "key" : "pos",
+      "name" : "Component View: POS Desktop - Electron Main Process",
+      "order" : 16,
+      "relationships" : [ {
+        "id" : "324"
+      }, {
+        "id" : "351"
+      }, {
+        "id" : "352"
+      }, {
+        "id" : "363"
+      }, {
+        "id" : "425"
+      } ],
+      "title" : "[C3] - IPC pos"
+    }, {
+      "automaticLayout" : {
+        "edgeSeparation" : 50,
+        "nodeSeparation" : 50,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 100,
+        "vertices" : true
+      },
+      "containerId" : "16",
+      "elements" : [ {
+        "id" : "10",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "37",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "39",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "41",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "42",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "43",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "externalContainerBoundariesVisible" : false,
+      "key" : "product",
+      "name" : "Component View: POS Desktop - Electron Main Process",
+      "order" : 17,
+      "relationships" : [ {
+        "id" : "327"
+      }, {
+        "id" : "329"
+      }, {
+        "id" : "331"
+      }, {
+        "id" : "353"
+      }, {
+        "id" : "364"
+      }, {
+        "id" : "365"
+      }, {
+        "id" : "366"
+      }, {
+        "id" : "428"
+      } ],
+      "title" : "[C3] - IPC product"
+    }, {
+      "automaticLayout" : {
+        "edgeSeparation" : 50,
+        "nodeSeparation" : 50,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 100,
+        "vertices" : true
+      },
+      "containerId" : "16",
+      "elements" : [ {
+        "id" : "13",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "43",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "44",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "45",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "46",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "47",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "48",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "49",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "externalContainerBoundariesVisible" : false,
+      "key" : "inventory",
+      "name" : "Component View: POS Desktop - Electron Main Process",
+      "order" : 18,
+      "relationships" : [ {
+        "id" : "332"
+      }, {
+        "id" : "333"
+      }, {
+        "id" : "334"
+      }, {
+        "id" : "335"
+      }, {
+        "id" : "354"
+      }, {
+        "id" : "355"
+      }, {
+        "id" : "367"
+      }, {
+        "id" : "368"
+      }, {
+        "id" : "369"
+      }, {
+        "id" : "431"
+      } ],
+      "title" : "[C3] - IPC inventory"
+    }, {
+      "automaticLayout" : {
+        "edgeSeparation" : 50,
+        "nodeSeparation" : 50,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 100,
+        "vertices" : true
+      },
+      "containerId" : "16",
+      "elements" : [ {
+        "id" : "14",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "50",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "51",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "53",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "54",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "externalContainerBoundariesVisible" : false,
+      "key" : "customer",
+      "name" : "Component View: POS Desktop - Electron Main Process",
+      "order" : 19,
+      "relationships" : [ {
+        "id" : "336"
+      }, {
+        "id" : "337"
+      }, {
+        "id" : "356"
+      }, {
+        "id" : "370"
+      }, {
+        "id" : "371"
+      }, {
+        "id" : "434"
+      } ],
+      "title" : "[C3] - IPC customer"
+    }, {
+      "automaticLayout" : {
+        "edgeSeparation" : 50,
+        "nodeSeparation" : 50,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 100,
+        "vertices" : true
+      },
+      "containerId" : "16",
+      "elements" : [ {
+        "id" : "11",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "36",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "55",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "56",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "59",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "60",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "61",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "externalContainerBoundariesVisible" : false,
+      "key" : "report",
+      "name" : "Component View: POS Desktop - Electron Main Process",
+      "order" : 20,
+      "relationships" : [ {
+        "id" : "339"
+      }, {
+        "id" : "340"
+      }, {
+        "id" : "343"
+      }, {
+        "id" : "357"
+      }, {
+        "id" : "359"
+      }, {
+        "id" : "376"
+      }, {
+        "id" : "377"
+      }, {
+        "id" : "378"
+      }, {
+        "id" : "425"
+      }, {
+        "id" : "437"
+      } ],
+      "title" : "[C3] - IPC report"
+    }, {
+      "automaticLayout" : {
+        "edgeSeparation" : 50,
+        "nodeSeparation" : 50,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 100,
+        "vertices" : true
+      },
+      "containerId" : "16",
+      "elements" : [ {
+        "id" : "15",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "62",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "63",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "64",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "65",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "66",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "externalContainerBoundariesVisible" : false,
+      "key" : "shift",
+      "name" : "Component View: POS Desktop - Electron Main Process",
+      "order" : 21,
+      "relationships" : [ {
+        "id" : "344"
+      }, {
+        "id" : "345"
+      }, {
+        "id" : "346"
+      }, {
+        "id" : "360"
+      }, {
+        "id" : "373"
+      }, {
+        "id" : "374"
+      }, {
+        "id" : "375"
+      }, {
+        "id" : "443"
+      } ],
+      "title" : "[C3] - IPC shift"
+    }, {
+      "automaticLayout" : {
+        "edgeSeparation" : 50,
+        "nodeSeparation" : 50,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 100,
+        "vertices" : true
+      },
+      "containerId" : "16",
+      "elements" : [ {
+        "id" : "22",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "67",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "68",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "externalContainerBoundariesVisible" : false,
+      "key" : "settings",
+      "name" : "Component View: POS Desktop - Electron Main Process",
+      "order" : 22,
+      "relationships" : [ {
+        "id" : "347"
+      }, {
+        "id" : "348"
+      } ],
+      "title" : "[C3] - IPC settings"
+    }, {
+      "automaticLayout" : {
+        "edgeSeparation" : 50,
+        "nodeSeparation" : 50,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 100,
+        "vertices" : true
+      },
+      "containerId" : "16",
+      "elements" : [ {
+        "id" : "4",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "20",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "69",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "externalContainerBoundariesVisible" : false,
+      "key" : "printer",
+      "name" : "Component View: POS Desktop - Electron Main Process",
+      "order" : 23,
+      "relationships" : [ {
+        "id" : "349"
+      }, {
+        "id" : "398"
+      } ],
+      "title" : "[C3] - IPC printer"
+    } ],
+    "configuration" : {
+      "styles" : {
+        "elements" : [ {
+          "background" : "#85bbf0",
+          "color" : "#000000",
+          "tag" : "Component"
+        }, {
+          "background" : "#438dd5",
+          "color" : "#ffffff",
+          "tag" : "Container"
+        }, {
+          "background" : "#438dd5",
+          "color" : "#ffffff",
+          "shape" : "Cylinder",
+          "tag" : "Database"
+        }, {
+          "background" : "#999999",
+          "color" : "#ffffff",
+          "tag" : "External"
+        }, {
+          "background" : "#08427b",
+          "color" : "#ffffff",
+          "shape" : "Person",
+          "tag" : "Person"
+        } ]
+      },
+      "terminology" : { }
+    },
+    "containerViews" : [ {
+      "automaticLayout" : {
+        "edgeSeparation" : 50,
+        "nodeSeparation" : 50,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 100,
+        "vertices" : true
+      },
+      "elements" : [ {
+        "id" : "1",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "2",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "3",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "4",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "6",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "8",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "16",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "71",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "139",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "140",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "externalSoftwareSystemBoundariesVisible" : false,
+      "key" : "ContainerDiagram",
+      "name" : "Container View: POS Desktop",
+      "order" : 2,
+      "relationships" : [ {
+        "id" : "147"
+      }, {
+        "id" : "148"
+      }, {
+        "id" : "149"
+      }, {
+        "id" : "150"
+      }, {
+        "id" : "151"
+      }, {
+        "id" : "152"
+      }, {
+        "id" : "320"
+      }, {
+        "id" : "399"
+      }, {
+        "id" : "401"
+      }, {
+        "id" : "409"
+      }, {
+        "id" : "410"
+      } ],
+      "softwareSystemId" : "7",
+      "title" : "[C2] - Container Diagram"
+    } ],
+    "deploymentViews" : [ {
+      "automaticLayout" : {
+        "edgeSeparation" : 50,
+        "nodeSeparation" : 50,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 100,
+        "vertices" : true
+      },
+      "elements" : [ {
+        "id" : "476",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "477",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "478",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "479",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "480",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "environment" : "Production",
+      "key" : "DeploymentDiagram",
+      "name" : "Deployment View: Production",
+      "order" : 31,
+      "relationships" : [ {
+        "id" : "481"
+      }, {
+        "id" : "482"
+      } ],
+      "title" : "[D] - Deployment Diagram"
+    } ],
+    "dynamicViews" : [ {
+      "automaticLayout" : {
+        "edgeSeparation" : 50,
+        "nodeSeparation" : 50,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 100,
+        "vertices" : true
+      },
+      "elementId" : "71",
+      "elements" : [ {
+        "id" : "1",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "4",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "20",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "32",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "35",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "36",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "37",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "42",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "43",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "69",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "78",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "79",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "80",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "84",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "85",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "88",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "89",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "90",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "externalBoundariesVisible" : false,
+      "key" : "TransaksiPenjualan",
+      "name" : "Dynamic View: POS Desktop - React App",
+      "order" : 24,
+      "relationships" : [ {
+        "description" : "1. Scan / pilih produk",
+        "id" : "170",
+        "order" : "1",
+        "response" : false
+      }, {
+        "description" : "2. Cari produk",
+        "id" : "172",
+        "order" : "2",
+        "response" : false
+      }, {
+        "description" : "3. Cari via barcode",
+        "id" : "179",
+        "order" : "3",
+        "response" : false
+      }, {
+        "description" : "4. IPC: product:search",
+        "id" : "188",
+        "order" : "4",
+        "response" : false
+      }, {
+        "description" : "5. Query products",
+        "id" : "327",
+        "order" : "5",
+        "response" : false
+      }, {
+        "description" : "6. Query DB",
+        "id" : "353",
+        "order" : "6",
+        "response" : false
+      }, {
+        "description" : "7. Pilih quantity",
+        "id" : "170",
+        "order" : "7",
+        "response" : false
+      }, {
+        "description" : "8. Tambah ke keranjang",
+        "id" : "173",
+        "order" : "8",
+        "response" : false
+      }, {
+        "description" : "9. Update subtotal",
+        "id" : "181",
+        "order" : "9",
+        "response" : false
+      }, {
+        "description" : "10. Bayar (Ctrl+Enter)",
+        "id" : "170",
+        "order" : "10",
+        "response" : false
+      }, {
+        "description" : "11. Buka modal bayar",
+        "id" : "174",
+        "order" : "11",
+        "response" : false
+      }, {
+        "description" : "12. Input jumlah bayar",
+        "id" : "171",
+        "order" : "12",
+        "response" : false
+      }, {
+        "description" : "13. Proses bayar",
+        "id" : "182",
+        "order" : "13",
+        "response" : false
+      }, {
+        "description" : "14. IPC: transaction:save",
+        "id" : "199",
+        "order" : "14",
+        "response" : false
+      }, {
+        "description" : "15. Insert transaksi",
+        "id" : "324",
+        "order" : "15",
+        "response" : false
+      }, {
+        "description" : "16. Query insert",
+        "id" : "351",
+        "order" : "16",
+        "response" : false
+      }, {
+        "description" : "17. Tampilkan struk",
+        "id" : "184",
+        "order" : "17",
+        "response" : false
+      }, {
+        "description" : "18. IPC: printer:print",
+        "id" : "202",
+        "order" : "18",
+        "response" : false
+      }, {
+        "description" : "19. Cetak struk",
+        "id" : "349",
+        "order" : "19",
+        "response" : false
+      }, {
+        "description" : "20. USB RAW",
+        "id" : "398",
+        "order" : "20",
+        "response" : false
+      } ],
+      "title" : "[Flow] - Transaksi Penjualan"
+    }, {
+      "automaticLayout" : {
+        "edgeSeparation" : 50,
+        "nodeSeparation" : 50,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 100,
+        "vertices" : true
+      },
+      "elementId" : "71",
+      "elements" : [ {
+        "id" : "3",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "39",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "41",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "42",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "43",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "93",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "94",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "95",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "96",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "99",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "100",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "101",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "externalBoundariesVisible" : false,
+      "key" : "ManajemenProduk",
+      "name" : "Dynamic View: POS Desktop - React App",
+      "order" : 25,
+      "relationships" : [ {
+        "description" : "1. Buka halaman produk",
+        "id" : "204",
+        "order" : "1",
+        "response" : false
+      }, {
+        "description" : "2. Tambah produk baru",
+        "id" : "205",
+        "order" : "2",
+        "response" : false
+      }, {
+        "description" : "3. Simpan produk",
+        "id" : "211",
+        "order" : "3",
+        "response" : false
+      }, {
+        "description" : "4. IPC: product:create",
+        "id" : "214",
+        "order" : "4",
+        "response" : false
+      }, {
+        "description" : "5. Insert/update product",
+        "id" : "329",
+        "order" : "5",
+        "response" : false
+      }, {
+        "description" : "6. Query insert",
+        "id" : "353",
+        "order" : "6",
+        "response" : false
+      }, {
+        "description" : "7. Atur kategori",
+        "id" : "206",
+        "order" : "7",
+        "response" : false
+      }, {
+        "description" : "8. CRUD kategori",
+        "id" : "212",
+        "order" : "8",
+        "response" : false
+      }, {
+        "description" : "9. Import massal CSV",
+        "id" : "207",
+        "order" : "9",
+        "response" : false
+      }, {
+        "description" : "10. Parse & import",
+        "id" : "213",
+        "order" : "10",
+        "response" : false
+      }, {
+        "description" : "11. IPC: product:bulkImport",
+        "id" : "219",
+        "order" : "11",
+        "response" : false
+      }, {
+        "description" : "12. Bulk insert",
+        "id" : "331",
+        "order" : "12",
+        "response" : false
+      }, {
+        "description" : "13. Query batch insert",
+        "id" : "353",
+        "order" : "13",
+        "response" : false
+      } ],
+      "title" : "[Flow] - Manajemen Produk"
+    }, {
+      "automaticLayout" : {
+        "edgeSeparation" : 50,
+        "nodeSeparation" : 50,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 100,
+        "vertices" : true
+      },
+      "elementId" : "71",
+      "elements" : [ {
+        "id" : "3",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "43",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "44",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "46",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "47",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "48",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "49",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "102",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "103",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "105",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "106",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "108",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "110",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "111",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "externalBoundariesVisible" : false,
+      "key" : "ManajemenStok",
+      "name" : "Dynamic View: POS Desktop - React App",
+      "order" : 26,
+      "relationships" : [ {
+        "description" : "1. Buka halaman inventory",
+        "id" : "222",
+        "order" : "1",
+        "response" : false
+      }, {
+        "description" : "2. Stok masuk (pembelian)",
+        "id" : "223",
+        "order" : "2",
+        "response" : false
+      }, {
+        "description" : "3. Proses stok masuk",
+        "id" : "231",
+        "order" : "3",
+        "response" : false
+      }, {
+        "description" : "4. IPC: inventory:stockIn",
+        "id" : "235",
+        "order" : "4",
+        "response" : false
+      }, {
+        "description" : "5. Insert stock log",
+        "id" : "332",
+        "order" : "5",
+        "response" : false
+      }, {
+        "description" : "6. Query insert log",
+        "id" : "354",
+        "order" : "6",
+        "response" : false
+      }, {
+        "description" : "7. Update stok produk",
+        "id" : "355",
+        "order" : "7",
+        "response" : false
+      }, {
+        "description" : "8. Adjustment/koreksi stok",
+        "id" : "225",
+        "order" : "8",
+        "response" : false
+      }, {
+        "description" : "9. Proses koreksi",
+        "id" : "233",
+        "order" : "9",
+        "response" : false
+      }, {
+        "description" : "10. IPC: inventory:adjust",
+        "id" : "241",
+        "order" : "10",
+        "response" : false
+      }, {
+        "description" : "11. Lihat audit trail",
+        "id" : "226",
+        "order" : "11",
+        "response" : false
+      }, {
+        "description" : "12. Query log",
+        "id" : "234",
+        "order" : "12",
+        "response" : false
+      }, {
+        "description" : "13. IPC: inventory:logs",
+        "id" : "244",
+        "order" : "13",
+        "response" : false
+      } ],
+      "title" : "[Flow] - Manajemen Stok"
+    }, {
+      "automaticLayout" : {
+        "edgeSeparation" : 50,
+        "nodeSeparation" : 50,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 100,
+        "vertices" : true
+      },
+      "elementId" : "71",
+      "elements" : [ {
+        "id" : "1",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "2",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "3",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "50",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "51",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "53",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "54",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "78",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "88",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "90",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "112",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "113",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "114",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "116",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "117",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "118",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "externalBoundariesVisible" : false,
+      "key" : "CustomerCRM",
+      "name" : "Dynamic View: POS Desktop - React App",
+      "order" : 27,
+      "relationships" : [ {
+        "description" : "1. Buka halaman customer",
+        "id" : "247",
+        "order" : "1",
+        "response" : false
+      }, {
+        "description" : "2. Tambah customer baru",
+        "id" : "249",
+        "order" : "2",
+        "response" : false
+      }, {
+        "description" : "3. Simpan customer",
+        "id" : "255",
+        "order" : "3",
+        "response" : false
+      }, {
+        "description" : "4. IPC: customer:create",
+        "id" : "257",
+        "order" : "4",
+        "response" : false
+      }, {
+        "description" : "5. Insert/update customer",
+        "id" : "337",
+        "order" : "5",
+        "response" : false
+      }, {
+        "description" : "6. Query insert",
+        "id" : "356",
+        "order" : "6",
+        "response" : false
+      }, {
+        "description" : "7. Transaksi POS",
+        "id" : "170",
+        "order" : "7",
+        "response" : false
+      }, {
+        "description" : "8. Pilih customer",
+        "id" : "176",
+        "order" : "8",
+        "response" : false
+      }, {
+        "description" : "9. Cari customer",
+        "id" : "256",
+        "order" : "9",
+        "response" : false
+      }, {
+        "description" : "10. IPC: customer:search",
+        "id" : "260",
+        "order" : "10",
+        "response" : false
+      }, {
+        "description" : "11. Query customers",
+        "id" : "336",
+        "order" : "11",
+        "response" : false
+      }, {
+        "description" : "12. Proses bayar",
+        "id" : "174",
+        "order" : "12",
+        "response" : false
+      }, {
+        "description" : "13. Bayar + poin",
+        "id" : "182",
+        "order" : "13",
+        "response" : false
+      }, {
+        "description" : "14. Lihat data customer",
+        "id" : "248",
+        "order" : "14",
+        "response" : false
+      }, {
+        "description" : "15. Riwayat transaksi",
+        "id" : "252",
+        "order" : "15",
+        "response" : false
+      } ],
+      "title" : "[Flow] - Customer & CRM"
+    }, {
+      "automaticLayout" : {
+        "edgeSeparation" : 50,
+        "nodeSeparation" : 50,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 100,
+        "vertices" : true
+      },
+      "elementId" : "71",
+      "elements" : [ {
+        "id" : "1",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "62",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "63",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "64",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "65",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "66",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "131",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "132",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "133",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "134",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "135",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "136",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "138",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "externalBoundariesVisible" : false,
+      "key" : "ManajemenShift",
+      "name" : "Dynamic View: POS Desktop - React App",
+      "order" : 28,
+      "relationships" : [ {
+        "description" : "1. Buka halaman shift",
+        "id" : "295",
+        "order" : "1",
+        "response" : false
+      }, {
+        "description" : "2. Buka shift baru",
+        "id" : "296",
+        "order" : "2",
+        "response" : false
+      }, {
+        "description" : "3. Input modal awal",
+        "id" : "301",
+        "order" : "3",
+        "response" : false
+      }, {
+        "description" : "4. IPC: shift:open",
+        "id" : "304",
+        "order" : "4",
+        "response" : false
+      }, {
+        "description" : "5. Insert shift",
+        "id" : "344",
+        "order" : "5",
+        "response" : false
+      }, {
+        "description" : "6. Query insert",
+        "id" : "360",
+        "order" : "6",
+        "response" : false
+      }, {
+        "description" : "7. Cek status shift",
+        "id" : "295",
+        "order" : "7",
+        "response" : false
+      }, {
+        "description" : "8. Status shift aktif",
+        "id" : "300",
+        "order" : "8",
+        "response" : false
+      }, {
+        "description" : "9. Cek shift aktif",
+        "id" : "303",
+        "order" : "9",
+        "response" : false
+      }, {
+        "description" : "10. IPC: shift:current",
+        "id" : "312",
+        "order" : "10",
+        "response" : false
+      }, {
+        "description" : "11. Tutup shift",
+        "id" : "297",
+        "order" : "11",
+        "response" : false
+      }, {
+        "description" : "12. Hitung & tutup",
+        "id" : "302",
+        "order" : "12",
+        "response" : false
+      }, {
+        "description" : "13. IPC: shift:close",
+        "id" : "307",
+        "order" : "13",
+        "response" : false
+      }, {
+        "description" : "14. Update shift",
+        "id" : "345",
+        "order" : "14",
+        "response" : false
+      }, {
+        "description" : "15. Query update",
+        "id" : "360",
+        "order" : "15",
+        "response" : false
+      } ],
+      "title" : "[Flow] - Manajemen Shift"
+    }, {
+      "automaticLayout" : {
+        "edgeSeparation" : 50,
+        "nodeSeparation" : 50,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 100,
+        "vertices" : true
+      },
+      "elementId" : "71",
+      "elements" : [ {
+        "id" : "2",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "55",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "56",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "59",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "60",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "61",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "120",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "121",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "124",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "126",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "127",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "128",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "externalBoundariesVisible" : false,
+      "key" : "LaporanAnalitik",
+      "name" : "Dynamic View: POS Desktop - React App",
+      "order" : 29,
+      "relationships" : [ {
+        "description" : "1. Buka dashboard",
+        "id" : "266",
+        "order" : "1",
+        "response" : false
+      }, {
+        "description" : "2. Load KPI",
+        "id" : "270",
+        "order" : "2",
+        "response" : false
+      }, {
+        "description" : "3. IPC: report:dashboard",
+        "id" : "280",
+        "order" : "3",
+        "response" : false
+      }, {
+        "description" : "4. Aggregate queries",
+        "id" : "339",
+        "order" : "4",
+        "response" : false
+      }, {
+        "description" : "5. Query aggregate",
+        "id" : "357",
+        "order" : "5",
+        "response" : false
+      }, {
+        "description" : "6. Laporan penjualan",
+        "id" : "267",
+        "order" : "6",
+        "response" : false
+      }, {
+        "description" : "7. Load chart",
+        "id" : "272",
+        "order" : "7",
+        "response" : false
+      }, {
+        "description" : "8. IPC: report:sales",
+        "id" : "283",
+        "order" : "8",
+        "response" : false
+      }, {
+        "description" : "9. Export PDF",
+        "id" : "274",
+        "order" : "9",
+        "response" : false
+      }, {
+        "description" : "10. Generate",
+        "id" : "279",
+        "order" : "10",
+        "response" : false
+      }, {
+        "description" : "11. IPC: report:export",
+        "id" : "292",
+        "order" : "11",
+        "response" : false
+      } ],
+      "title" : "[Flow] - Laporan & Analitik"
+    }, {
+      "automaticLayout" : {
+        "edgeSeparation" : 50,
+        "nodeSeparation" : 50,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 100,
+        "vertices" : true
+      },
+      "elementId" : "71",
+      "elements" : [ {
+        "id" : "1",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "3",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "27",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "30",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "31",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "68",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "72",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "73",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "75",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "76",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "77",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "78",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "externalBoundariesVisible" : false,
+      "key" : "AutentikasiPengaturan",
+      "name" : "Dynamic View: POS Desktop - React App",
+      "order" : 30,
+      "relationships" : [ {
+        "description" : "1. Buka aplikasi",
+        "id" : "153",
+        "order" : "1",
+        "response" : false
+      }, {
+        "description" : "2. Input PIN 6 digit",
+        "id" : "155",
+        "order" : "2",
+        "response" : false
+      }, {
+        "description" : "3. Validasi PIN",
+        "id" : "157",
+        "order" : "3",
+        "response" : false
+      }, {
+        "description" : "4. IPC: auth:login",
+        "id" : "158",
+        "order" : "4",
+        "response" : false
+      }, {
+        "description" : "5. verifyPin",
+        "id" : "321",
+        "order" : "5",
+        "response" : false
+      }, {
+        "description" : "6. Query user by PIN",
+        "id" : "350",
+        "order" : "6",
+        "response" : false
+      }, {
+        "description" : "7. Return user",
+        "id" : "361",
+        "order" : "7",
+        "response" : false
+      }, {
+        "description" : "8. Redirect ke POS",
+        "id" : "397",
+        "order" : "8",
+        "response" : false
+      }, {
+        "description" : "9. Konfigurasi aplikasi",
+        "id" : "165",
+        "order" : "9",
+        "response" : false
+      }, {
+        "description" : "10. Baca/tulis setting",
+        "id" : "166",
+        "order" : "10",
+        "response" : false
+      }, {
+        "description" : "11. IPC: settings:*",
+        "id" : "167",
+        "order" : "11",
+        "response" : false
+      } ],
+      "title" : "[Flow] - Autentikasi & Pengaturan"
+    } ],
+    "systemContextViews" : [ {
+      "automaticLayout" : {
+        "edgeSeparation" : 50,
+        "nodeSeparation" : 50,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 100,
+        "vertices" : true
+      },
+      "elements" : [ {
+        "id" : "1",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "2",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "3",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "4",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "5",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "6",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "7",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "enterpriseBoundaryVisible" : true,
+      "key" : "SystemContext",
+      "name" : "System Context View: POS Desktop",
+      "order" : 1,
+      "relationships" : [ {
+        "id" : "141"
+      }, {
+        "id" : "142"
+      }, {
+        "id" : "143"
+      }, {
+        "id" : "144"
+      }, {
+        "id" : "145"
+      }, {
+        "id" : "146"
+      } ],
+      "softwareSystemId" : "7",
+      "title" : "[C1] - System Context"
+    } ]
+  }
+}

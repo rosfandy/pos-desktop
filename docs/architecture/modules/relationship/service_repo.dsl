@@ -1,0 +1,12 @@
+// ── Service → Repo ──
+authService -> authRepo "Query user/manage session"
+posService -> salesRepo "Insert transaction/hold bill"
+posService -> productRepo "Update stock"
+productService -> productRepo "CRUD products"
+inventoryService -> inventoryRepo "Log/adjust stock"
+inventoryService -> productRepo "Update stock"
+customerService -> customerRepo "CRUD customers"
+reportService -> reportRepo "Aggregate/finance/export"
+reportService -> productRepo "Stock query"
+reportService -> salesRepo "Sales query"
+shiftService -> shiftRepo "Shift CRUD"

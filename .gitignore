@@ -29,6 +29,7 @@ release
 data/pos.db
 .structurizr
 C
+*.old
 
 # Database
 database/*.db
