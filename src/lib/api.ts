@@ -598,6 +598,7 @@ export interface API {
 
   // App
   getDbPath: () => Promise<string>;
+  openExternal: (url: string) => Promise<void>;
 }
 
 declare global {

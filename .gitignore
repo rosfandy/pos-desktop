@@ -27,6 +27,8 @@ release
 *.xlsx
 *.csv
 data/pos.db
+.structurizr
+C
 
 # Database
 database/*.db
@@ -36,3 +38,6 @@ database/*.db-shm
 
 # Obsidian
 .obsidian/
+
+# Structurizr runtime data
+docs/architecture/.structurizr/

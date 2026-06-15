@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import type { ReceiptData } from 'electron/services/printer/service';
+import type { ReceiptData } from 'electron/ipc/printer/service';
 
 // Re-export ReceiptData type for convenience
 export type { ReceiptData };
