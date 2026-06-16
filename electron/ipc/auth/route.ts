@@ -1,5 +1,5 @@
 import { ipcMain } from 'electron';
-import { loginPin, loginPassword, validateToken, verifyAdminPin } from './service.ts';
+import { loginPin, loginPassword, validateToken, verifyAdminPin, resetAdminPin } from './service.ts';
 
 // ─── Error helpers ───────────────────────────────────────────────────────────
 
@@ -19,22 +19,6 @@ export function registerAuthHandlers(): void {
   ipcMain.handle('auth:login', async (_event, credentials) => {
     try {
       const { pin, email, password } = credentials;
-
-      if (pin === '0000' || pin === 'admin123') {
-        return {
-          ok: true,
-          data: {
-            user: {
-              id: 'dev-bypass',
-              name: 'Developer',
-              email: 'dev@local',
-              role: 'admin',
-              isActive: true,
-            },
-            token: 'dev-bypass-token',
-          },
-        };
-      }
 
       if (pin) {
         const result = await loginPin(pin);
@@ -78,6 +62,15 @@ export function registerAuthHandlers(): void {
       return { ok: true, data: result };
     } catch (err: any) {
       return { ok: false, error: { code: 'AUTH_UNKNOWN', message: err.message } };
+    }
+  });
+
+  ipcMain.handle('auth:resetAdminPin', async () => {
+    try {
+      const result = await resetAdminPin();
+      return { ok: true, data: result };
+    } catch (err: any) {
+      return { ok: false, error: { code: 'AUTH_RESET', message: err.message || 'Gagal reset PIN' } };
     }
   });
 }

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/authStore';
 import LoginForm from '@/features/auth/components/LoginForm';
-import { Storefront } from 'phosphor-react';
+import { Storefront, ArrowsClockwise } from 'phosphor-react';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -10,6 +10,7 @@ export default function LoginPage() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [resetMsg, setResetMsg] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
@@ -63,7 +64,29 @@ export default function LoginPage() {
 
         {/* Footer */}
         <div className="px-5 py-2.5 border-t border-neutral-100 bg-neutral-50">
-          <p className="text-[10px] text-neutral-400 text-center">
+          {resetMsg && (
+            <p className="text-[10px] text-emerald-600 text-center mb-1">{resetMsg}</p>
+          )}
+          <button
+            onClick={async () => {
+              setResetMsg(null);
+              try {
+                const res: any = await (window as unknown as { api: { authResetAdminPin: () => Promise<any> } }).api.authResetAdminPin();
+                if (res.ok) {
+                  setResetMsg(res.data?.message || 'PIN admin berhasil direset ke 123456');
+                } else {
+                  setResetMsg(res.error?.message || 'Gagal reset PIN');
+                }
+              } catch {
+                setResetMsg('Gagal reset PIN');
+              }
+            }}
+            className="flex items-center justify-center gap-1.5 w-full text-[10px] text-neutral-400 hover:text-indigo-600 transition-colors"
+          >
+            <ArrowsClockwise className="w-3 h-3" />
+            Reset Akun Admin
+          </button>
+          <p className="text-[10px] text-neutral-400 text-center mt-1">
             v0.1.0 · POS Desktop
           </p>
         </div>

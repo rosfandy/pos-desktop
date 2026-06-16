@@ -46,6 +46,13 @@ export async function validateToken(token: string): Promise<User | null> {
   } catch { return null; }
 }
 
+export async function resetAdminPin(): Promise<{ ok: boolean; message?: string }> {
+  const db = await getDb();
+  const newPinHash = await bcrypt.hash('123456', 10);
+  db.run(`UPDATE users SET pin = '${newPinHash.replace(/'/g, "''")}' WHERE role IN ('admin','manager') AND is_active = 1`);
+  return { ok: true, message: 'PIN admin berhasil direset ke 123456' };
+}
+
 export async function verifyAdminPin(pin: string): Promise<{ ok: boolean; userId?: string; role?: string }> {
   const db = await getDb();
   const rows = db.exec(`SELECT id, name, pin, role, is_active FROM users WHERE role IN ('admin','manager') AND is_active = 1`);

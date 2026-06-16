@@ -499,6 +499,7 @@ export interface API {
   authLogout: () => Promise<ApiOk<void>>;
   authMe: (token?: string) => Promise<ApiResponse<User | null>>;
   authVerifyPin: (pin: string) => Promise<ApiResponse<{ ok: boolean; userId?: string; role?: string }>>;
+  authResetAdminPin: () => Promise<ApiResponse<{ ok: boolean; message?: string }>>;
 
   // Settings
   settingsGet: (key: string) => Promise<ApiResponse<string | null>>;

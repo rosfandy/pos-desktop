@@ -8,6 +8,7 @@ const api = {
   authLogout: () => ipcRenderer.invoke('auth:logout'),
   authMe: (token?: string) => ipcRenderer.invoke('auth:me', token),
   authVerifyPin: (pin: string) => ipcRenderer.invoke('auth:verifyPin', pin),
+  authResetAdminPin: () => ipcRenderer.invoke('auth:resetAdminPin'),
 
   // Settings channels (CORE-008)
   settingsGet: (key: string) => ipcRenderer.invoke('settings:get', key),
