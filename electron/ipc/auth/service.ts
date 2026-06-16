@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
-import { findUserByPin, findUserByEmail, findUserById, resetAdminPin as doResetAdminPin, hashPin, type User, type AuthResult } from './repo.ts';
+import { findUserByPin, findUserByEmail, findUserById, findAdminByPin, resetAdminPin as doResetAdminPin, hashPin, type User, type AuthResult } from './repo.ts';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'pos-desktop-dev-secret-change-in-production';
 const JWT_EXPIRY = '24h';
