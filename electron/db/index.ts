@@ -1,5 +1,5 @@
 import initSqlJs, { Database as SqlJsDatabase } from 'sql.js';
-import { readdirSync, readFileSync, existsSync, mkdirSync, writeFileSync, copyFileSync, statSync } from 'node:fs';
+import { readdirSync, readFileSync, existsSync, mkdirSync, writeFileSync, copyFileSync, statSync, renameSync, openSync, fsyncSync, closeSync, unlinkSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { createHash } from 'node:crypto';
 import bcrypt from 'bcryptjs';
@@ -25,6 +25,15 @@ let _db: SqlJsDatabase | null = null;
 let _dbPath: string | null = null;
 let _dbMtime: number = 0;
 
+const BAK_SUFFIX = '.bak';
+
+// ponytail: sql.js menulis seluruh DB sebagai satu blob → korupsi saat mati listrik.
+// recover status untuk notifikasi startup: 'none' | 'restored-bak' | 'fresh'
+let _recovery: 'none' | 'restored-bak' | 'fresh' = 'none';
+export function getLastRecovery(): typeof _recovery {
+  return _recovery;
+}
+
 /** Returns the database file path on disk */
 export function getDbPath(): string {
   return join(app.getPath('userData'), 'pos.db');
@@ -48,7 +57,8 @@ export async function getDb(): Promise<SqlJsDatabase> {
         // DB file changed on disk — reload
         _dbMtime = currentMtime;
         const buffer = readFileSync(dbPath);
-        _db = new SQL.Database(buffer);
+        try { _db = new SQL.Database(buffer); }
+        catch { _db = null; _dbMtime = 0; }
       }
     } catch {
       // If we can't stat the file (e.g. doesn't exist yet), fall through to fresh load
@@ -59,14 +69,42 @@ export async function getDb(): Promise<SqlJsDatabase> {
 
   if (_db) return _db;
 
-  if (existsSync(dbPath)) {
-    const buffer = readFileSync(dbPath);
-    _db = new SQL.Database(buffer);
-    try { _dbMtime = statSync(dbPath).mtimeMs; } catch { /* ignore */ }
-  } else {
-    _db = new SQL.Database();
-  }
   _dbPath = dbPath;
+  _recovery = 'none';
+
+  // corrupt → new SQL.Database(buffer) throws. Recover berjenjang:
+  // pos.db → pos.db.bak (last-good) → fresh (data hilang).
+  const tryLoad = (path: string, restoreTo?: string): SqlJsDatabase | null => {
+    try {
+      const buf = readFileSync(path);
+      const db = new SQL.Database(buf);
+      if (restoreTo && restoreTo !== path) copyFileSync(path, restoreTo);
+      return db;
+    } catch {
+      return null;
+    }
+  };
+
+  // Bedakan first-run (belum ada file) vs korupsi (file ada tapi gagal load)
+  const hadDb = existsSync(dbPath);
+  const hadBak = existsSync(dbPath + BAK_SUFFIX);
+
+  if (hadDb) {
+    _db = tryLoad(dbPath);
+  }
+  if (!_db && hadBak) {
+    _db = tryLoad(dbPath + BAK_SUFFIX, dbPath); // pulihkan last-good ke pos.db
+    if (_db) _recovery = 'restored-bak';
+  }
+  if (!_db) {
+    _db = new SQL.Database(); // fresh: first-run ATAU keduanya rusak
+    _recovery = hadDb || hadBak ? 'fresh' : 'none';
+    if (!hadDb && hadBak) {
+      try { unlinkSync(dbPath + BAK_SUFFIX); } catch { /* ignore */ }
+    }
+  }
+
+  try { _dbMtime = statSync(dbPath).mtimeMs; } catch { /* ignore */ }
 
   // Auto-save to disk after every write operation (transaction-aware)
   const origRun = _db!.run.bind(_db);
@@ -106,11 +144,30 @@ export async function getDb(): Promise<SqlJsDatabase> {
   return _db!;
 }
 
-/** Persist the in-memory DB to disk. Call after every write. */
+/**
+ * Persist the in-memory DB to disk safely.
+ * sql.js exports the WHOLE db as one blob; a non-atomic write mid-power-loss
+ * corrupts everything. So: keep previous good as .bak, write to temp, fsync,
+ * then atomic rename → pos.db is never half-written.
+ */
 function saveDb(db: SqlJsDatabase): void {
   const dbPath = join(app.getPath('userData'), 'pos.db');
-  const data = db.export();
-  writeFileSync(dbPath, Buffer.from(data));
+  const tmpPath = dbPath + '.tmp';
+  const data = Buffer.from(db.export());
+
+  if (existsSync(dbPath)) {
+    try { renameSync(dbPath, dbPath + BAK_SUFFIX); } catch { /* ignore */ }
+  }
+
+  const fd = openSync(tmpPath, 'w');
+  try {
+    writeFileSync(fd, data);
+    fsyncSync(fd);
+    renameSync(tmpPath, dbPath);
+  } finally {
+    try { closeSync(fd); } catch { /* ignore */ }
+  }
+
   try { _dbMtime = statSync(dbPath).mtimeMs; _dbPath = dbPath; } catch { /* ignore */ }
 }
 

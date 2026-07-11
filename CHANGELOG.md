@@ -14,6 +14,18 @@ dan proyek ini mengikuti [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.5.15] — 2026-07-11
+
+### Fixed
+- **Korupsi database akibat mati listrik** — `saveDb` kini menulis secara atomik (temp + `fsync` + `rename`) dan menyimpan salinan terakhir sebagai `pos.db.bak`, sehingga `pos.db` tidak pernah setengah tertulis.
+- **Backup manual** (`backup:create`) kini atomik; tidak lagi menulis langsung ke `pos.db` saat app berjalan.
+
+### Changed
+- **Recovery otomatis saat startup** — jika `pos.db` rusak, app memulihkan dari `pos.db.bak` lalu menampilkan notifikasi ke kasir. Pembuatan database pertama kali tidak lagi memicu dialog "database rusak".
+- Hapus `electron/ipc/backup/repo.ts` (duplikat mati dari `service.ts`).
+
+---
+
 ## [1.5.7] — 2026-06-03
 
 ### Changed

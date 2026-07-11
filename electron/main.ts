@@ -1,4 +1,4 @@
-import { app, BrowserWindow, nativeImage, ipcMain } from 'electron';
+import { app, BrowserWindow, nativeImage, ipcMain, dialog } from 'electron';
 import { join } from 'path';
 import { registerAuthHandlers } from './ipc/auth/route.ts';
 import { registerSettingsHandlers } from './ipc/settings/route.ts';
@@ -13,7 +13,7 @@ import { registerReportHandlers } from './ipc/report/route.ts';
 import { registerShiftHandlers } from './ipc/shift/route.ts';
 import { registerCashFlowHandlers } from './ipc/cashFlow/route.ts';
 import { registerUpdaterHandlers } from './ipc/updater/route.ts';
-import { migrate, getDb, seedAdmin, getDbPath } from './db/index.ts';
+import { migrate, getDb, seedAdmin, getDbPath, getLastRecovery } from './db/index.ts';
 
 const APP_NAME = 'POS Desktop';
 const __dirname = join(__filename, '..');
@@ -80,6 +80,20 @@ app.whenReady().then(async () => {
   try {
     await getDb();
     console.log('[APP] DB initialized');
+
+    const rec = getLastRecovery();
+    if (rec === 'restored-bak') {
+      dialog.showErrorBox(
+        'Database dipulihkan',
+        'File database rusak dan dipulihkan dari backup otomatis (.bak). Beberapa transaksi terakhir mungkin hilang.'
+      );
+    } else if (rec === 'fresh') {
+      dialog.showErrorBox(
+        'Database rusak',
+        'Database tidak dapat dipulihkan dan data dimulai kosong. Restore dari backup manual (backup:restore) jika ada.'
+      );
+    }
+
     await migrate();
     console.log('[APP] Migrations applied');
     await seedAdmin();

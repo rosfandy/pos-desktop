@@ -1,7 +1,7 @@
 import { getDb, closeDb } from '../../db/index.ts';
 import { app } from 'electron';
 import { join, dirname } from 'path';
-import { existsSync, mkdirSync, copyFileSync, readFileSync, writeFileSync, statSync } from 'node:fs';
+import { existsSync, mkdirSync, copyFileSync, readFileSync, writeFileSync, statSync, renameSync } from 'node:fs';
 
 const DB_FILENAME = 'pos.db';
 
@@ -23,18 +23,17 @@ function validateSqliteHeader(buffer: Buffer): boolean {
 // ── Public API ────────────────────────────────────────────────────────────────
 
 export async function backupToFile(targetPath: string): Promise<void> {
-  // Get DB and persist to disk
+  // Export langsung dari memory → tulis ke target secara atomik (rename).
+  // Jangan writeFileSync ke pos.db (non-atomic, berisiko korupsi saat mati listrik).
   const db = await getDb();
-  const dbPath = getDbPath();
-  const data = db.export();
-  writeFileSync(dbPath, Buffer.from(data));
-
-  // Copy to target
+  const data = Buffer.from(db.export());
   const targetDir = dirname(targetPath);
   if (!existsSync(targetDir)) {
     mkdirSync(targetDir, { recursive: true });
   }
-  copyFileSync(dbPath, targetPath);
+  const tmp = targetPath + '.tmp';
+  writeFileSync(tmp, data);
+  renameSync(tmp, targetPath);
 
   // Verify
   if (!existsSync(targetPath) || (statSync(targetPath).size === 0)) {
