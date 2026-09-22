@@ -1091,6 +1091,8 @@ export interface PreviewResult {
   rows: ImportRow[];
   totalRows: number;
   errors: Array<{ row: number; message: string }>;
+  /** Kategori dari file yang belum ada di DB — akan dibuat otomatis saat commit */
+  newCategories: string[];
 }
 
 // ─── Column mapping ────────────────────────────────────────────────────────────
@@ -1171,9 +1173,10 @@ function parseWorkbook(buffer: Buffer): ImportRow[] {
 
 // ─── Preview (parse + validate, no DB write) ──────────────────────────────────
 
-async function validateRows(rows: ImportRow[]): Promise<PreviewResult['errors']> {
+async function validateRows(rows: ImportRow[]): Promise<{ errors: PreviewResult['errors']; newCategories: string[] }> {
   const db = await getDb();
   const errors: PreviewResult['errors'] = [];
+  const newCategories = new Set<string>();
 
   const existingSkus = new Set<string>();
   const existingBarcodes = new Set<string>();
@@ -1203,10 +1206,13 @@ async function validateRows(rows: ImportRow[]): Promise<PreviewResult['errors']>
     if (row.stock < 0) errors.push({ row: row.rowIndex, message: 'Stok tidak boleh negatif' });
     if (row.sku && existingSkus.has(row.sku)) errors.push({ row: row.rowIndex, message: `SKU '${row.sku}' sudah ada` });
     if (row.barcode && existingBarcodes.has(row.barcode)) errors.push({ row: row.rowIndex, message: `Barcode '${row.barcode}' sudah ada` });
-    if (row.categoryId && !validCategoryIds.has(row.categoryId) && !validCategoryNames.has(row.categoryId)) errors.push({ row: row.rowIndex, message: `Kategori '${row.categoryId}' tidak ditemukan` });
+    // Kategori belum ada → tidak error, akan dibuat otomatis saat commit
+    if (row.categoryId && !validCategoryIds.has(row.categoryId) && !validCategoryNames.has(row.categoryId)) {
+      newCategories.add(row.categoryId);
+    }
   }
 
-  return errors;
+  return { errors, newCategories: [...newCategories] };
 }
 
 export async function previewImportFromBuffer(buffer: Buffer): Promise<PreviewResult> {
@@ -1214,13 +1220,13 @@ export async function previewImportFromBuffer(buffer: Buffer): Promise<PreviewRe
     const rows = parseWorkbook(buffer);
 
     if (rows.length === 0) {
-      return { rows: [], totalRows: 0, errors: [{ row: 0, message: 'File kosong atau tidak bisa dibaca' }] };
+      return { rows: [], totalRows: 0, errors: [{ row: 0, message: 'File kosong atau tidak bisa dibaca' }], newCategories: [] };
     }
 
-    const errors = await validateRows(rows);
-    return { rows, totalRows: rows.length, errors };
+    const { errors, newCategories } = await validateRows(rows);
+    return { rows, totalRows: rows.length, errors, newCategories };
   } catch (err) {
-    return { rows: [], totalRows: 0, errors: [{ row: 0, message: (err as Error)?.message || 'Gagal membaca file' }] };
+    return { rows: [], totalRows: 0, errors: [{ row: 0, message: (err as Error)?.message || 'Gagal membaca file' }], newCategories: [] };
   }
 }
 
@@ -1239,24 +1245,37 @@ export async function previewImport(filePath: string): Promise<PreviewResult> {
 
 // ─── Resolve category name/ID to UUID (creates category if not exists) ────────
 
-function resolveCategoryId(db: any, categoryId: string): string | null {
+function resolveCategoryId(db: any, categoryId: string, createdCache?: Map<string, string>): string | null {
   if (!categoryId) return null;
-  // Try as UUID first
+
+  // 1. Check cache first (categories created during this commit)
+  if (createdCache?.has(categoryId)) return createdCache.get(categoryId)!;
+
+  // 2. Try as UUID
   try {
-    const direct = db.exec(`SELECT id FROM categories WHERE id = '${esc(categoryId)}'`);
-    if (direct && direct[0]?.values?.length > 0) return String(direct[0].values[0][0]);
+    const direct = db.exec(`SELECT id FROM categories WHERE id = '${esc(categoryId)}' LIMIT 1`);
+    if (direct && direct[0]?.values?.length > 0) {
+      const id = String(direct[0].values[0][0]);
+      createdCache?.set(categoryId, id);
+      return id;
+    }
   } catch { /* ignore */ }
-  // Try as category name
+  // 3. Try as category name
   try {
-    const byName = db.exec(`SELECT id FROM categories WHERE name = '${esc(categoryId)}'`);
-    if (byName && byName[0]?.values?.length > 0) return String(byName[0].values[0][0]);
+    const byName = db.exec(`SELECT id FROM categories WHERE name = '${esc(categoryId)}' LIMIT 1`);
+    if (byName && byName[0]?.values?.length > 0) {
+      const id = String(byName[0].values[0][0]);
+      createdCache?.set(categoryId, id);
+      return id;
+    }
   } catch { /* ignore */ }
-  // Category not found — create it
+  // 4. Category not found — create it
   const catId = `cat_import_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
   try {
     db.run(
-      `INSERT OR IGNORE INTO categories (id, name, is_active, created_at) VALUES ('${catId}', '${esc(categoryId)}', 1, ${Date.now()})`
+      `INSERT INTO categories (id, name, parent_id, is_active, created_at) VALUES ('${catId}', '${esc(categoryId)}', NULL, 1, ${Date.now()})`
     );
+    createdCache?.set(categoryId, catId);
     return catId;
   } catch {
     return null;
@@ -1276,13 +1295,14 @@ export async function commitImport(rows: ImportRow[]): Promise<ImportResult> {
   try {
     let imported = 0;
     const errors: ImportResult['errors'] = [];
+    const catCache = new Map<string, string>(); // cache name/ID → category ID (hindari duplikat kategori)
 
     for (const row of rows) {
       try {
         const id = `prod_import_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
         const priceBuyCents = Math.round(row.priceBuy * 100);
         const priceSellCents = Math.round(row.priceSell * 100);
-        const resolvedCatId = resolveCategoryId(db, row.categoryId || '');
+        const resolvedCatId = resolveCategoryId(db, row.categoryId || '', catCache);
 
         db.run(
           `INSERT INTO products (id, name, sku, barcode, category_id, price_buy, price_sell, stock, base_unit, min_stock, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,

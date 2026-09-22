@@ -20,6 +20,7 @@ import {
   FloppyDisk,
   X,
   Spinner,
+  Tag,
 } from 'phosphor-react';
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
@@ -49,6 +50,7 @@ export default function BulkImportDialog({ open, onOpenChange }: BulkImportDialo
   const [fileName, setFileName] = useState('');
   const [preview, setPreview] = useState<PreviewRow[]>([]);
   const [totalRows, setTotalRows] = useState(0);
+  const [newCategories, setNewCategories] = useState<string[]>([]);
   const [importResult, setImportResult] = useState<{ success: boolean; imported: number; errors: Array<{ row: number; message: string }> } | null>(null);
   const [previewRows, setPreviewRows] = useState<any[]>([]); // holds ImportRow[] for commit
 
@@ -57,6 +59,7 @@ export default function BulkImportDialog({ open, onOpenChange }: BulkImportDialo
     setFileName('');
     setPreview([]);
     setTotalRows(0);
+    setNewCategories([]);
     setImportResult(null);
     setPreviewRows([]);
     setLoading(false);
@@ -89,6 +92,7 @@ export default function BulkImportDialog({ open, onOpenChange }: BulkImportDialo
         const data = result.data;
         setTotalRows(data.totalRows);
         setPreviewRows(data.rows || []);
+        setNewCategories(data.newCategories ?? []);
         setPreview(
           (data.rows || []).slice(0, 10).map((r: any) => ({
             rowIndex: r.rowIndex,
@@ -204,6 +208,16 @@ export default function BulkImportDialog({ open, onOpenChange }: BulkImportDialo
                   Pilih file lain
                 </Button>
               </div>
+
+              {newCategories.length > 0 && (
+                <div className="flex items-start gap-2 bg-amber-50 text-amber-700 text-[11px] px-3 py-2 rounded-md border border-amber-200">
+                  <Tag className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-semibold">{newCategories.length} kategori baru akan dibuat otomatis:</p>
+                    <p className="mt-0.5">{newCategories.join(', ')}</p>
+                  </div>
+                </div>
+              )}
 
               <div className="border border-neutral-200 rounded-md overflow-hidden">
                 <table className="w-full text-left">
