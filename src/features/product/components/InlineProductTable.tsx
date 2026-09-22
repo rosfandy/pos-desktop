@@ -14,6 +14,8 @@ import {
   Trash,
   WarningCircle,
   Funnel,
+  CheckCursor,
+  Cube,
 } from 'phosphor-react';
 import { PosTable, PosTableHead } from '@/components/ui/table';
 
@@ -68,69 +70,129 @@ export default function InlineProductTable({ refreshKey }: { refreshKey?: number
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [editingRows, setEditingRows] = useState<Map<string, EditingRow>>(new Map());
   const [savingIds, setSavingIds] = useState<Set<string>>(new Set());
+  const [selectedProductIds, setSelectedProductIds] = useState<Set<string>>(new Set());
+  // State untuk UI display + refs untuk logic agar tidak trigger re-render loop
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(false);
   const loadMoreTriggerRef = useRef<HTMLDivElement>(null);
+  const debounceTimerRef = useRef<number | null>(null);
 
-  // Debounce search — 300ms
+  // Stable refs untuk logic
+  const cursorRef = useRef<string | null>(null);
+  const hasMoreRef = useRef(false);
+  const searchRef = useRef('');
+  const catFilterRef = useRef('all');
+  const loadingMoreRef = useRef(false);
+  let fetchGen = 0; // generation counter untuk cancel stale response
+
+  // Helpers: setters yang sinkronkan state ↔ ref
+  const setNextCursorInner = useCallback((v: string | null) => {
+    setNextCursor(v);
+    cursorRef.current = v;
+  }, []);
+
+  const setHasMoreInner = useCallback((v: boolean) => {
+    setHasMore(v);
+    hasMoreRef.current = v;
+  }, []);
+
+  // Sync refs ke state
+  useEffect(() => { searchRef.current = search; }, [search]);
+  useEffect(() => { catFilterRef.current = categoryFilter; }, [categoryFilter]);
+
+  // ── Debounce search — 300ms ────────────────────────────────────────────────
   useEffect(() => {
-    const timer = setTimeout(() => setDebouncedSearch(search), 300);
-    return () => clearTimeout(timer);
+    if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+    debounceTimerRef.current = window.setTimeout(() => setDebouncedSearch(search), 300);
+    return () => { if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current); };
   }, [search]);
 
-  // ── Load products from DB (pass search & categoryId to server) ──────────────
-  const loadProducts = useCallback(async (searchTerm?: string, catFilter?: string) => {
+  // ── Fetch products (page reset) ────────────────────────────────────────────
+  const fetchPage = useCallback(async () => {
+    fetchGen++;
+    const gen = fetchGen; // snapshot
+
     setLoading(true);
-    setNextCursor(null);
-    setHasMore(false);
+    setProducts([]);
+    setNextCursorInner(null);
+    setHasMoreInner(false);
+    cursorRef.current = null;
+    hasMoreRef.current = false;
+
     try {
       const res = await window.api.productList({
         cursor: undefined,
-        limit: 10,
-        search: searchTerm || undefined,
-        categoryId: catFilter && catFilter !== 'all' ? catFilter : undefined,
+        limit: 20,
+        search: searchRef.current || undefined,
+        categoryId: catFilterRef.current !== 'all' ? catFilterRef.current : undefined,
       });
+
+      if (fetchGen !== gen) return; // stale — ignore
+
       const page = unwrap<ProductPageResult>(res, { data: [], nextCursor: null, hasMore: false });
-      if (page) {
-        setProducts(page.data ?? []);
-        setNextCursor(page.nextCursor ?? null);
-        setHasMore(page.hasMore);
+      if (page && page.data) {
+        setProducts(page.data);
+        setNextCursorInner(page.nextCursor ?? null);
+        setHasMoreInner(page.hasMore);
+        cursorRef.current = page.nextCursor ?? null;
+        hasMoreRef.current = !!page.hasMore;
       } else {
         setProducts([]);
-        setNextCursor(null);
-        setHasMore(false);
+        setNextCursorInner(null);
+        setHasMoreInner(false);
       }
     } catch {
       setProducts([]);
-      setNextCursor(null);
-      setHasMore(false);
+      setNextCursorInner(null);
+      setHasMoreInner(false);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // ── Load more (cursor-based pagination) ──────────────────────────────────────
+  // ── Load more (cursor-based, STABLE — uses refs) ──────────────────────────
   const loadMore = useCallback(async () => {
-    if (!nextCursor || loadingMore) return;
+    // Guard against concurrent calls
+    if (!hasMoreRef.current || loadingMoreRef.current) return;
+    if (!cursorRef.current) return;
+
+    const originalCursor = cursorRef.current;
+    fetchGen++;
+    const gen = fetchGen; // snapshot
+
+    loadingMoreRef.current = true;
     setLoadingMore(true);
+
     try {
-      const res = await window.api.productList(
-        { cursor: nextCursor, limit: 10, search: debouncedSearch || undefined, categoryId: categoryFilter !== 'all' ? categoryFilter : undefined }
-      );
+      const res = await window.api.productList({
+        cursor: cursorRef.current,
+        limit: 20,
+        search: searchRef.current || undefined,
+        categoryId: catFilterRef.current !== 'all' ? catFilterRef.current : undefined,
+      });
+
+      // Stale check: if a new fetchPage started OR cursor changed, ignore result
+      if (fetchGen !== gen || cursorRef.current !== originalCursor) return;
+
       const page = unwrap<ProductPageResult>(res, { data: [], nextCursor: null, hasMore: false });
-      if (page && page.data) {
+      if (page && page.data && page.data.length > 0) {
         setProducts((prev) => [...prev, ...page.data!]);
-        setNextCursor(page.nextCursor ?? null);
-        setHasMore(page.hasMore);
+        setNextCursorInner(page.nextCursor ?? null);
+        setHasMoreInner(page.hasMore);
+        cursorRef.current = page.nextCursor ?? null;
+        hasMoreRef.current = !!page.hasMore;
+      } else {
+        // No more data
+        hasMoreRef.current = false;
+        cursorRef.current = null;
       }
-    } catch {
-      // ignore load-more errors
-    } finally {
+    } catch { /* ignore */ } finally {
+      loadingMoreRef.current = false;
       setLoadingMore(false);
     }
-  }, [nextCursor, loadingMore, debouncedSearch, categoryFilter]);
+  }, []); // ← STABLE: no state deps!
 
-  // ── Load categories (direct API, no store) ───────────────────────────────────
+  // ── Load categories (direct API, no store) ─────────────────────────────────
   const loadCategories = useCallback(async () => {
     try {
       const res = await window.api.categoryList();
@@ -141,10 +203,13 @@ export default function InlineProductTable({ refreshKey }: { refreshKey?: number
     }
   }, []);
 
+  // ── Effect: load products on filter/refresh change ─────────────────────────
   useEffect(() => {
-    loadProducts(debouncedSearch, categoryFilter);
-  }, [loadProducts, refreshKey, debouncedSearch, categoryFilter]);
+    fetchPage();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [refreshKey, debouncedSearch, categoryFilter, fetchPage]);
 
+  // ── Effect: load categories once ───────────────────────────────────────────
   useEffect(() => {
     loadCategories();
   }, [loadCategories]);
@@ -154,10 +219,17 @@ export default function InlineProductTable({ refreshKey }: { refreshKey?: number
     const sentinel = loadMoreTriggerRef.current;
     if (!sentinel) return;
 
+    // Use refs in the callback to avoid stale closure issues
+    const handleIntersect = () => {
+      if (hasMoreRef.current && !loadingMoreRef.current) {
+        loadMore();
+      }
+    };
+
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0]?.isIntersecting && hasMore && !loadingMore) {
-          loadMore();
+        if (entries[0]?.isIntersecting) {
+          handleIntersect();
         }
       },
       { rootMargin: '0px', threshold: 0 }
@@ -165,7 +237,8 @@ export default function InlineProductTable({ refreshKey }: { refreshKey?: number
 
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [hasMore, loadingMore, loadMore]);
+    // Re-run when loading changes (sentinel only exists after first load)
+  }, [loadMore, loading]);
 
   const activeCategories = useMemo(() => categories, [categories]);
   const lowStockCount = useMemo(
@@ -235,7 +308,7 @@ export default function InlineProductTable({ refreshKey }: { refreshKey?: number
       const { success, errors } = result.data;
       if (success > 0) {
         setEditingRows(new Map()); // clear all editing rows
-        await loadProducts(); // refresh from DB
+        await fetchPage(); // refresh from DB
         if (errors.length > 0) {
           alert(`${success} produk disimpan. ${errors.length} gagal:\n${errors.map((e: { row: number; message: string }) => `Baris ${e.row}: ${e.message}`).join('\n')}`);
         }
@@ -245,7 +318,7 @@ export default function InlineProductTable({ refreshKey }: { refreshKey?: number
      } else {
        alert((result as any).error?.message || 'Gagal menyimpan produk');
      }
-  }, [editingRows, loadProducts]);
+  }, [editingRows, fetchPage]);
 
   const cancelEdit = useCallback((id: string) => {
     setEditingRows((prev) => {
@@ -318,7 +391,7 @@ export default function InlineProductTable({ refreshKey }: { refreshKey?: number
           }
         }
         cancelEdit(id);
-        await loadProducts(); // refresh from DB
+        await fetchPage(); // refresh from DB
       } catch {
         alert('Gagal menyimpan produk');
       } finally {
@@ -329,7 +402,7 @@ export default function InlineProductTable({ refreshKey }: { refreshKey?: number
         });
       }
     },
-    [editingRows, cancelEdit, loadProducts]
+    [editingRows, cancelEdit, fetchPage]
   );
 
   const handleDelete = useCallback(
@@ -337,13 +410,53 @@ export default function InlineProductTable({ refreshKey }: { refreshKey?: number
       if (!confirm('Hapus produk ini?')) return;
       const res = await window.api.productDelete(productId);
       if (res && typeof res === 'object' && 'ok' in res && res.ok) {
-        await loadProducts();
+        await fetchPage();
       } else {
         alert((res as any)?.error?.message || 'Gagal menghapus produk');
       }
     },
-    [loadProducts]
+    [fetchPage]
   );
+
+  const toggleSelectProduct = useCallback((id: string) => {
+    setSelectedProductIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
+
+  const toggleSelectAll = useCallback(() => {
+    setSelectedProductIds((prev) => {
+      if (prev.size === products.length) return new Set();
+      return new Set(products.map((p) => p.id));
+    });
+  }, [products.length]);
+
+  const handleBulkDelete = useCallback(async () => {
+    if (selectedProductIds.size === 0) return;
+    if (!confirm(`Hapus ${selectedProductIds.size} produk terpilih?`)) return;
+
+    let deleted = 0;
+    let failed = 0;
+    for (const id of selectedProductIds) {
+      const res = await window.api.productDelete(id);
+      if (res && typeof res === 'object' && 'ok' in res && res.ok) {
+        deleted++;
+      } else {
+        failed++;
+      }
+    }
+    await fetchPage();
+    setSelectedProductIds(new Set());
+
+    if (failed > 0) {
+      alert(`${deleted} berhasil dihapus. ${failed} gagal.`);
+    } else {
+      alert(`${deleted} produk berhasil dihapus.`);
+    }
+  }, [selectedProductIds, fetchPage]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent, id: string) => {
@@ -452,6 +565,16 @@ export default function InlineProductTable({ refreshKey }: { refreshKey?: number
               {lowStockCount} stok rendah
             </span>
           )}
+
+          {selectedProductIds.size > 0 && (
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] text-indigo-600 font-semibold tabular-nums">{selectedProductIds.size} dipilih</span>
+              <Button variant="destructive" size="sm" onClick={handleBulkDelete} className="flex items-center gap-1 text-[11px] bg-red-500 hover:bg-red-600 text-white">
+                <Trash className="w-3.5 h-3.5" />
+                Hapus Terpilih
+              </Button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -460,6 +583,16 @@ export default function InlineProductTable({ refreshKey }: { refreshKey?: number
         <PosTable className="min-w-[1100px] [&_td]:border-r [&_th]:border-r [&_td]:border-neutral-200 [&_th]:border-neutral-200">
           <PosTableHead>
             <tr className="bg-neutral-50 border-b-2 border-neutral-300">
+              <th className="px-2 py-1.5 text-[10px] font-semibold text-neutral-500 uppercase w-8 text-center">
+                <input
+                  type="checkbox"
+                  checked={products.length > 0 && selectedProductIds.size === products.length}
+                  ref={(el) => { if (el) el.indeterminate = selectedProductIds.size > 0 && selectedProductIds.size < products.length; }}
+                  onChange={toggleSelectAll}
+                  className="w-3.5 h-3.5 accent-indigo-600 cursor-pointer"
+                  title="Pilih semua"
+                />
+              </th>
               <th className="px-2 py-1.5 text-[10px] font-semibold text-neutral-500 uppercase w-8">No</th>
               <th className="px-2 py-1.5 text-[10px] font-semibold text-neutral-500 uppercase w-[100px]">SKU</th>
               <th className="px-2 py-1.5 text-[10px] font-semibold text-neutral-500 uppercase w-[120px]">Barcode</th>
@@ -526,7 +659,7 @@ export default function InlineProductTable({ refreshKey }: { refreshKey?: number
               ))}
 
             {/* ── Existing rows ──── */}
-            {products.map((product, idx) => {
+            {products.filter((p) => !editingRows.has(p.id)).map((product, idx) => {
               const editing = editingRows.get(product.id);
               const isEditing = !!editing;
               const isSaving = savingIds.has(product.id);
@@ -587,6 +720,14 @@ export default function InlineProductTable({ refreshKey }: { refreshKey?: number
                   key={product.id}
                   className="border-b border-neutral-100 transition-colors hover:bg-neutral-50"
                 >
+                  <td className="px-2 py-1.5 text-center">
+                    <input
+                      type="checkbox"
+                      checked={selectedProductIds.has(product.id)}
+                      onChange={() => toggleSelectProduct(product.id)}
+                      className="w-3.5 h-3.5 accent-indigo-600 cursor-pointer"
+                    />
+                  </td>
                   <td className="px-2 py-1.5 text-[11px] text-neutral-400 tabular-nums">{idx + 1}</td>
                   <td className="px-2 py-1.5 text-[11px] text-neutral-500 font-mono">{product.sku || '—'}</td>
                   <td className="px-2 py-1.5 text-[11px] text-neutral-500 font-mono">{product.barcode || '—'}</td>
@@ -637,7 +778,7 @@ export default function InlineProductTable({ refreshKey }: { refreshKey?: number
 
             {products.length === 0 && editingRows.size === 0 && (
               <tr>
-                <td colSpan={11} className="py-12 text-center">
+                <td colSpan={12} className="py-12 text-center">
                   <div className="flex flex-col items-center text-neutral-400">
                     <MagnifyingGlass className="w-8 h-8 mb-2 opacity-30" />
                     <p className="text-[13px] font-medium">Tidak ada produk</p>

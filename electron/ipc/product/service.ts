@@ -169,18 +169,22 @@ export async function listProducts(filter?: ProductFilter): Promise<ProductPageR
     const hasNewSchema = info.length > 0 && info[0]!.values.some((r: any[]) => ['sku', 'min_stock', 'category_id'].includes(String(r[1])));
 
     const whereClause = buildWhere(filter);
-    const whereSql = whereClause ? `WHERE ${whereClause}` : '';
     const limit = filter?.limit ?? 50; // default 50, unlimited jika tidak ada limit
     const cursor = decodeCursor(filter?.cursor);
     const unlimited = limit <= 0;
 
-    // Build ORDER BY + cursor WHERE
+    // Build WHERE + ORDER BY + cursor
     const orderBy = hasNewSchema ? 'p.created_at DESC, p.id DESC' : 'created_at DESC, id DESC';
-    const cursorClause = cursor ? `AND (${hasNewSchema ? 'p' : ''}.created_at, ${hasNewSchema ? 'p' : ''}.id) < (${cursor.createdAt}, '${esc(cursor.id)}')` : '';
+    // Cursor condition TANPA "AND" — digabung lewat conditions agar selalu ada WHERE
+    const cursorCondition = cursor
+      ? `(${hasNewSchema ? 'p.' : ''}created_at, ${hasNewSchema ? 'p.' : ''}id) < (${cursor.createdAt}, '${esc(cursor.id)}')`
+      : '';
+    const conditions = [whereClause, cursorCondition].filter(Boolean);
+    const whereSql = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
 
     const baseSql = hasNewSchema ? BASE_SQL : LEGACY_BASE_SQL;
     const limitClause = unlimited ? '' : ` LIMIT ${limit}`;
-    const sql = `${baseSql} ${whereSql} ${cursorClause} ORDER BY ${orderBy}${limitClause}`;
+    const sql = `${baseSql} ${whereSql} ORDER BY ${orderBy}${limitClause}`;
 
     const result = db.exec(sql);
     const rows = result.length > 0 && result[0]!.values.length > 0
@@ -193,7 +197,7 @@ export async function listProducts(filter?: ProductFilter): Promise<ProductPageR
     if (!unlimited && rows.length === limit) {
       // Fetch created_at of the last row to build a proper cursor
       const lastRaw = result[0]!.values[rows.length - 1] as any[];
-      const createdAtIdx = hasNewSchema ? 13 : 11; // created_at index: new schema=13, legacy=10
+      const createdAtIdx = hasNewSchema ? 12 : 10; // created_at index: new schema=12, legacy=9
       const lastCreatedAt = Number(lastRaw[createdAtIdx]);
       nextCursor = makeCursor(lastCreatedAt, rows[rows.length - 1].id);
       hasMore = true;
@@ -1181,9 +1185,13 @@ async function validateRows(rows: ImportRow[]): Promise<PreviewResult['errors']>
   } catch { /* ignore */ }
 
   const validCategoryIds = new Set<string>();
+  const validCategoryNames = new Set<string>();
   try {
-    const catRows = db.exec('SELECT id FROM categories');
-    catRows[0]?.values?.forEach((r) => validCategoryIds.add(String(r[0])));
+    const catRows = db.exec('SELECT id, name FROM categories');
+    catRows[0]?.values?.forEach((r) => {
+      validCategoryIds.add(String(r[0]));
+      validCategoryNames.add(String(r[1]));
+    });
   } catch { /* ignore */ }
 
   for (const row of rows) {
@@ -1191,11 +1199,11 @@ async function validateRows(rows: ImportRow[]): Promise<PreviewResult['errors']>
       errors.push({ row: row.rowIndex, message: 'Nama produk wajib diisi' });
       continue;
     }
-    if (row.priceSell <= 0) errors.push({ row: row.rowIndex, message: 'Harga jual harus > 0' });
+    if (row.priceSell < 0) errors.push({ row: row.rowIndex, message: 'Harga jual tidak boleh negatif' });
     if (row.stock < 0) errors.push({ row: row.rowIndex, message: 'Stok tidak boleh negatif' });
     if (row.sku && existingSkus.has(row.sku)) errors.push({ row: row.rowIndex, message: `SKU '${row.sku}' sudah ada` });
     if (row.barcode && existingBarcodes.has(row.barcode)) errors.push({ row: row.rowIndex, message: `Barcode '${row.barcode}' sudah ada` });
-    if (row.categoryId && !validCategoryIds.has(row.categoryId)) errors.push({ row: row.rowIndex, message: `Kategori '${row.categoryId}' tidak ditemukan` });
+    if (row.categoryId && !validCategoryIds.has(row.categoryId) && !validCategoryNames.has(row.categoryId)) errors.push({ row: row.rowIndex, message: `Kategori '${row.categoryId}' tidak ditemukan` });
   }
 
   return errors;
@@ -1229,6 +1237,32 @@ export async function previewImport(filePath: string): Promise<PreviewResult> {
   }
 }
 
+// ─── Resolve category name/ID to UUID (creates category if not exists) ────────
+
+function resolveCategoryId(db: any, categoryId: string): string | null {
+  if (!categoryId) return null;
+  // Try as UUID first
+  try {
+    const direct = db.exec(`SELECT id FROM categories WHERE id = '${esc(categoryId)}'`);
+    if (direct && direct[0]?.values?.length > 0) return String(direct[0].values[0][0]);
+  } catch { /* ignore */ }
+  // Try as category name
+  try {
+    const byName = db.exec(`SELECT id FROM categories WHERE name = '${esc(categoryId)}'`);
+    if (byName && byName[0]?.values?.length > 0) return String(byName[0].values[0][0]);
+  } catch { /* ignore */ }
+  // Category not found — create it
+  const catId = `cat_import_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  try {
+    db.run(
+      `INSERT OR IGNORE INTO categories (id, name, is_active, created_at) VALUES ('${catId}', '${esc(categoryId)}', 1, ${Date.now()})`
+    );
+    return catId;
+  } catch {
+    return null;
+  }
+}
+
 // ─── Commit (atomic DB write) ─────────────────────────────────────────────────
 
 export async function commitImport(rows: ImportRow[]): Promise<ImportResult> {
@@ -1248,10 +1282,11 @@ export async function commitImport(rows: ImportRow[]): Promise<ImportResult> {
         const id = `prod_import_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
         const priceBuyCents = Math.round(row.priceBuy * 100);
         const priceSellCents = Math.round(row.priceSell * 100);
+        const resolvedCatId = resolveCategoryId(db, row.categoryId || '');
 
         db.run(
           `INSERT INTO products (id, name, sku, barcode, category_id, price_buy, price_sell, stock, base_unit, min_stock, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-          [id, row.name, row.sku || null, row.barcode || null, row.categoryId || null,
+          [id, row.name, row.sku || null, row.barcode || null, resolvedCatId,
            priceBuyCents, priceSellCents, row.stock, row.baseUnit || 'pcs',
            row.minStock, Date.now(), Date.now()]
         );

@@ -189,7 +189,7 @@ export default function ProductForm({ open, onOpenChange, productId }: ProductFo
     if (form.sku && !/^[A-Za-z0-9\-]+$/.test(form.sku)) e.sku = 'SKU hanya boleh huruf, angka, dan dash';
     if (form.barcode && !/^[A-Za-z0-9]+$/.test(form.barcode)) e.barcode = 'Barcode hanya boleh huruf dan angka';
     if (!form.priceBuy || Number(form.priceBuy) <= 0) e.priceBuy = 'Harga beli harus > 0';
-    if (!form.priceSell || Number(form.priceSell) <= 0) e.priceSell = 'Harga jual harus > 0';
+    if (form.priceSell !== '' && Number(form.priceSell) < 0) e.priceSell = 'Harga jual tidak boleh negatif';
     if (form.stock === '' || Number(form.stock) < 0) e.stock = 'Stok tidak boleh negatif';
     if (form.minStock === '' || Number(form.minStock) < 0) e.minStock = 'Min. stok tidak boleh negatif';
 
