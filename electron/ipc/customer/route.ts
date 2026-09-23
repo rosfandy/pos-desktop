@@ -13,7 +13,7 @@ import {
 } from './service.ts';
 import { calculatePoints, calculateTier } from './service.ts';
 import { getTransactionsByCustomerId } from '../transaction/service.ts';
-import type { CustomerTransactionRow } from '../transaction/service.ts';
+import type { CustomerTransactionRow } from '../transaction/repo.ts';
 import { exportCustomers } from './service.ts';
 import type { CustomerExportParams } from './service.ts';
 import { previewImportFromBuffer, commitImport } from './service.ts';

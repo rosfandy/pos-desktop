@@ -74,7 +74,7 @@ export async function findUserByEmail(email: string): Promise<User | null> {
     console.log(`[AUTH][repo] findUserByEmail: user not found for email="${email}"`);
     return null;
   }
-  console.log(`[AUTH][repo] findUserByEmail: found user id=${rows[0].values[0][cols.indexOf('id')]} email="${email}"`);
+  console.log(`[AUTH][repo] findUserByEmail: found user id=${rows[0].values[0][0]} email="${email}"`);
   return rowToUser(rows[0].columns, rows[0].values[0] as unknown[]);
 }
 

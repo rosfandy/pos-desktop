@@ -1,6 +1,9 @@
-import { getDb } from '../../db/index.ts';
+﻿import { getDb } from '../../db/index.ts';
+import * as XLSX from 'xlsx';
+import * as path from 'node:path';
+import * as fs from 'node:fs';
 
-// ─── Types ─────────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 interface ProductRow {
   id: string;
@@ -92,7 +95,7 @@ interface StockCheckResult {
   isLow: boolean;
 }
 
-// ─── SQL Builder ───────────────────────────────────────────────────────────────
+// â”€â”€â”€ SQL Builder â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /** Escape single quotes for SQL */
 function esc(s: string): string {
@@ -139,7 +142,7 @@ const LEGACY_BASE_SQL = `
   FROM products
 `;
 
-// ─── Cursor helpers ────────────────────────────────────────────────────────────
+// â”€â”€â”€ Cursor helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /** Encode last row's (created_at, id) into an opaque cursor string */
 function makeCursor(createdAt: number, id: string): string {
@@ -158,7 +161,7 @@ function decodeCursor(cursor?: string): { createdAt: number; id: string } | null
   }
 }
 
-// ─── Service ───────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Service â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function listProducts(filter?: ProductFilter): Promise<ProductPageResult> {
   try {
@@ -175,7 +178,7 @@ export async function listProducts(filter?: ProductFilter): Promise<ProductPageR
 
     // Build WHERE + ORDER BY + cursor
     const orderBy = hasNewSchema ? 'p.created_at DESC, p.id DESC' : 'created_at DESC, id DESC';
-    // Cursor condition TANPA "AND" — digabung lewat conditions agar selalu ada WHERE
+    // Cursor condition TANPA "AND" â€” digabung lewat conditions agar selalu ada WHERE
     const cursorCondition = cursor
       ? `(${hasNewSchema ? 'p.' : ''}created_at, ${hasNewSchema ? 'p.' : ''}id) < (${cursor.createdAt}, '${esc(cursor.id)}')`
       : '';
@@ -246,7 +249,7 @@ function mapLegacyRow(row: any[]): ProductRow {
   };
 }
 
-// ─── Lookup ────────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Lookup â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /** Cari produk by barcode (new + legacy) */
 export async function getProductByBarcode(barcode: string): Promise<ProductRow | null> {
@@ -304,7 +307,7 @@ export async function updateProductStock(productId: string, quantityChange: numb
   return false;
 }
 
-// ─── Duplicate Check ────────────────────────────────────────────────────────────
+// â”€â”€â”€ Duplicate Check â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async function checkDuplicate(field: 'sku' | 'barcode', value: string, excludeId?: string): Promise<string | null> {
   if (!value) return null;
@@ -317,7 +320,7 @@ async function checkDuplicate(field: 'sku' | 'barcode', value: string, excludeId
   return null;
 }
 
-// ─── Product CRUD ───────────────────────────────────────────────────────────────
+// â”€â”€â”€ Product CRUD â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function getProductWithUnits(id: string): Promise<ProductWithUnits | null> {
   if (!id) return null;
@@ -415,7 +418,7 @@ export async function createProduct(input: CreateProductInput, userId?: string):
       throw err;
     }
 
-    // Audit trail — create
+    // Audit trail â€” create
     const newSnapshot: Record<string, unknown> = {
       id, name: input.name, sku: input.sku ?? null, barcode: input.barcode ?? null,
       categoryId: input.categoryId ?? null, priceBuy: input.priceBuy, priceSell: input.priceSell,
@@ -559,7 +562,7 @@ export async function bulkSaveProducts(
       continue;
     }
 
-    // ── Validation ──
+    // â”€â”€ Validation â”€â”€
     const name = (row.name ?? '').toString().trim();
     if (!name) {
       errors.push({ row: i, message: 'Nama produk wajib diisi' });
@@ -590,17 +593,17 @@ export async function bulkSaveProducts(
       continue;
     }
 
-    // ── Build product data ──
+    // â”€â”€ Build product data â”€â”€
     // IMPORTANT: Determine isUpdate from the ORIGINAL row.id BEFORE we overwrite it below.
-    // If row.id is falsy (undefined/null/''), this is a brand-new row → INSERT.
-    // If row.id has a value (e.g. "prod_1780..."), this is an existing DB row → UPDATE.
+    // If row.id is falsy (undefined/null/''), this is a brand-new row â†’ INSERT.
+    // If row.id has a value (e.g. "prod_1780..."), this is an existing DB row â†’ UPDATE.
     const isUpdate = !!row.id;
     const id = row.id || `prod_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
     const sku = row.sku ? String(row.sku).trim() : null;
     const barcode = row.barcode ? String(row.barcode).trim() : null;
     const baseUnit = row.baseUnit ? String(row.baseUnit).trim() : 'pcs';
 
-    // ── Duplicate checks ──
+    // â”€â”€ Duplicate checks â”€â”€
     if (barcode) {
       // Check existing DB (exact case to match DB constraint)
       if (existingBarcodes.has(barcode) && existingBarcodes.get(barcode) !== id) {
@@ -655,7 +658,7 @@ export async function bulkSaveProducts(
     return { success: 0, errors };
   }
 
-  // ── Single database transaction for all writes ──
+  // â”€â”€ Single database transaction for all writes â”€â”€
   try {
     db.run('BEGIN TRANSACTION');
 
@@ -702,7 +705,7 @@ export async function bulkSaveProducts(
           }
         }
 
-        // Audit trail — update
+        // Audit trail â€” update
         void writeHistory(product.id, 'update', null, {
           id: product.id, name: product.name, sku: product.sku, barcode: product.barcode,
           categoryId: product.categoryId, priceBuy: product.priceBuy, priceSell: product.priceSell,
@@ -747,7 +750,7 @@ export async function bulkSaveProducts(
           }
         }
 
-        // Audit trail — create
+        // Audit trail â€” create
         void writeHistory(product.id, 'create', null, {
           id: product.id, name: product.name, sku: product.sku, barcode: product.barcode,
           categoryId: product.categoryId, priceBuy: product.priceBuy, priceSell: product.priceSell,
@@ -787,7 +790,7 @@ export async function deleteProduct(id: string, userId?: string): Promise<{ succ
     if (txCount > 0) {
       // Hard delete (transactions reference allowed since FK may not be enforced)
       db.run(`DELETE FROM products WHERE id = ?`, [id]);
-      void writeHistory(id, 'delete', oldSnapshot, null, userId, 'Hard delete — produk memiliki transaksi');
+      void writeHistory(id, 'delete', oldSnapshot, null, userId, 'Hard delete â€” produk memiliki transaksi');
       return { success: true };
     }
 
@@ -797,7 +800,7 @@ export async function deleteProduct(id: string, userId?: string): Promise<{ succ
       db.run('DELETE FROM product_units WHERE product_id = ?', [id]);
       db.run('DELETE FROM products WHERE id = ?', [id]);
       db.run('COMMIT');
-      void writeHistory(id, 'delete', oldSnapshot, null, userId, 'Hard delete — tidak ada transaksi');
+      void writeHistory(id, 'delete', oldSnapshot, null, userId, 'Hard delete â€” tidak ada transaksi');
     } catch (err) {
       try { db.run('ROLLBACK'); } catch { /* ignore */ }
       throw err;
@@ -851,7 +854,7 @@ export async function getLowStockProducts(threshold?: number): Promise<ProductRo
   return [];
 }
 
-// ─── Audit Trail ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Audit Trail â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 interface HistoryEntry {
   id: string;
@@ -882,7 +885,7 @@ async function writeHistory(productId: string, action: string, oldData: Record<s
         notes || null,
       ]
     );
-  } catch { /* ignore audit errors — must not break product CRUD */ }
+  } catch { /* ignore audit errors â€” must not break product CRUD */ }
 }
 
 export interface ProductCounts {
@@ -984,10 +987,6 @@ export async function getProductHistory(productId: string): Promise<HistoryEntry
     return [];
   }
 }
-import * as XLSX from 'xlsx';
-import * as path from 'node:path';
-import * as fs from 'node:fs';
-import { getDb } from '../../db/index.ts';
 
 export interface ExportParams {
   filter?: {
@@ -1061,10 +1060,7 @@ export async function exportProducts(params: ExportParams): Promise<{ success: b
   }
 }
 
-import * as XLSX from 'xlsx';
-import { getDb } from '../../db/index.ts';
-
-// ─── Types ─────────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export interface ImportRow {
   rowIndex: number;
@@ -1091,11 +1087,11 @@ export interface PreviewResult {
   rows: ImportRow[];
   totalRows: number;
   errors: Array<{ row: number; message: string }>;
-  /** Kategori dari file yang belum ada di DB — akan dibuat otomatis saat commit */
+  /** Kategori dari file yang belum ada di DB â€” akan dibuat otomatis saat commit */
   newCategories: string[];
 }
 
-// ─── Column mapping ────────────────────────────────────────────────────────────
+// â”€â”€â”€ Column mapping â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const COLUMN_ALIASES: Record<string, string[]> = {
   name:       ['nama', 'name', 'nama produk', 'product name', 'nama_produk'],
@@ -1133,7 +1129,7 @@ function parseNumber(value: any, fallback: number): number {
   return isNaN(n) ? fallback : Math.round(n);
 }
 
-// ─── Parse ─────────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Parse â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function parseWorkbook(buffer: Buffer): ImportRow[] {
   const workbook = XLSX.read(buffer, { type: 'buffer' });
@@ -1171,7 +1167,7 @@ function parseWorkbook(buffer: Buffer): ImportRow[] {
   }).filter(Boolean) as ImportRow[];
 }
 
-// ─── Preview (parse + validate, no DB write) ──────────────────────────────────
+// â”€â”€â”€ Preview (parse + validate, no DB write) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async function validateRows(rows: ImportRow[]): Promise<{ errors: PreviewResult['errors']; newCategories: string[] }> {
   const db = await getDb();
@@ -1206,7 +1202,7 @@ async function validateRows(rows: ImportRow[]): Promise<{ errors: PreviewResult[
     if (row.stock < 0) errors.push({ row: row.rowIndex, message: 'Stok tidak boleh negatif' });
     if (row.sku && existingSkus.has(row.sku)) errors.push({ row: row.rowIndex, message: `SKU '${row.sku}' sudah ada` });
     if (row.barcode && existingBarcodes.has(row.barcode)) errors.push({ row: row.rowIndex, message: `Barcode '${row.barcode}' sudah ada` });
-    // Kategori belum ada → tidak error, akan dibuat otomatis saat commit
+    // Kategori belum ada â†’ tidak error, akan dibuat otomatis saat commit
     if (row.categoryId && !validCategoryIds.has(row.categoryId) && !validCategoryNames.has(row.categoryId)) {
       newCategories.add(row.categoryId);
     }
@@ -1239,11 +1235,12 @@ export async function previewImport(filePath: string): Promise<PreviewResult> {
     const buffer = fs.readFileSync(resolvedPath);
     return previewImportFromBuffer(Buffer.from(buffer));
   } catch (err) {
-    return { rows: [], totalRows: 0, errors: [{ row: 0, message: (err as Error)?.message || 'Gagal membaca file' }] };
+const previewResult = { rows: [], totalRows: 0, errors: [{ row: 0, message: (err as Error)?.message || 'Gagal membaca file' }], newCategories: [] };
+    return previewResult;
   }
 }
 
-// ─── Resolve category name/ID to UUID (creates category if not exists) ────────
+// â”€â”€â”€ Resolve category name/ID to UUID (creates category if not exists) â”€â”€â”€â”€â”€â”€â”€â”€
 
 function resolveCategoryId(db: any, categoryId: string, createdCache?: Map<string, string>): string | null {
   if (!categoryId) return null;
@@ -1269,7 +1266,7 @@ function resolveCategoryId(db: any, categoryId: string, createdCache?: Map<strin
       return id;
     }
   } catch { /* ignore */ }
-  // 4. Category not found — create it
+  // 4. Category not found â€” create it
   const catId = `cat_import_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
   try {
     db.run(
@@ -1282,7 +1279,7 @@ function resolveCategoryId(db: any, categoryId: string, createdCache?: Map<strin
   }
 }
 
-// ─── Commit (atomic DB write) ─────────────────────────────────────────────────
+// â”€â”€â”€ Commit (atomic DB write) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function commitImport(rows: ImportRow[]): Promise<ImportResult> {
   const db = await getDb();
@@ -1295,7 +1292,7 @@ export async function commitImport(rows: ImportRow[]): Promise<ImportResult> {
   try {
     let imported = 0;
     const errors: ImportResult['errors'] = [];
-    const catCache = new Map<string, string>(); // cache name/ID → category ID (hindari duplikat kategori)
+    const catCache = new Map<string, string>(); // cache name/ID â†’ category ID (hindari duplikat kategori)
 
     for (const row of rows) {
       try {

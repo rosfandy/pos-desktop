@@ -492,6 +492,11 @@ export interface CategoryInput {
 }
 
 export interface API {
+  // Report
+  reportSales: (params: { startDate: number; endDate: number }) => Promise<ApiResponse<unknown>>;
+  reportStock: () => Promise<ApiResponse<unknown>>;
+  reportFinance: (params: { startDate: number; endDate: number }) => Promise<ApiResponse<unknown>>;
+
   // Auth
   authLogin: (
     credentials: { pin?: string; email?: string; password?: string }

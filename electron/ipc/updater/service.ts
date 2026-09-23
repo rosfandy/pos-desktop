@@ -26,6 +26,9 @@ export async function downloadUpdate(): Promise<{ ok: boolean; error?: string }>
 }
 
 export function installUpdate(): { ok: boolean } {
-  autoUpdater.quitAndInstall();
+  // isForceRunAfter=true: app otomatis jalan lagi setelah installer selesai.
+  // NSIS macro customCheckAppRunning (build-resources/installer.nsh) yang
+  // menutup proses app saat installer berjalan, jadi tidak ada prompt manual.
+  autoUpdater.quitAndInstall(false, true);
   return { ok: true };
 }

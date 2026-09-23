@@ -14,8 +14,6 @@ import {
   Trash,
   WarningCircle,
   Funnel,
-  CheckCursor,
-  Cube,
 } from 'phosphor-react';
 import { PosTable, PosTableHead } from '@/components/ui/table';
 
@@ -72,7 +70,7 @@ export default function InlineProductTable({ refreshKey }: { refreshKey?: number
   const [savingIds, setSavingIds] = useState<Set<string>>(new Set());
   const [selectedProductIds, setSelectedProductIds] = useState<Set<string>>(new Set());
   // State untuk UI display + refs untuk logic agar tidak trigger re-render loop
-  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [, setNextCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(false);
   const loadMoreTriggerRef = useRef<HTMLDivElement>(null);
   const debounceTimerRef = useRef<number | null>(null);

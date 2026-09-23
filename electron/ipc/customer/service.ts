@@ -1,6 +1,9 @@
-import type { Customer } from '../../db/schema.ts';
+﻿import type { Customer } from '../../db/schema.ts';
+import * as XLSX from 'xlsx';
+import * as path from 'node:path';
+import * as fs from 'node:fs';
 
-// ─── Tier Definitions ───────────────────────────────────────────────────────────
+// â”€â”€â”€ Tier Definitions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const TIER_THRESHOLDS: { tier: Customer['tier']; minSpent: number }[] = [
   { tier: 'platinum', minSpent: 10_000_000_000 }, // Rp 10.000.000 in cents
@@ -15,7 +18,7 @@ const TIER_MULTIPLIERS: Record<Customer['tier'], number> = {
   platinum: 2.0,
 };
 
-// ─── Point Calculation ──────────────────────────────────────────────────────────
+// â”€â”€â”€ Point Calculation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Calculate loyalty points earned from a transaction amount.
@@ -63,7 +66,7 @@ export function pointsToRupiah(points: number): number {
 import { getDb } from '../../db/index.ts';
 import type { NewCustomer } from '../../db/schema.ts';
 
-// ─── Customer Row (matches sql.js raw result shape) ─────────────────────────────
+// â”€â”€â”€ Customer Row (matches sql.js raw result shape) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export interface CustomerRow {
   id: string;
@@ -77,7 +80,7 @@ export interface CustomerRow {
   createdAt: number;
 }
 
-// ─── Helpers ────────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function esc(s: string): string {
   return s.replace(/'/g, "''");
@@ -97,7 +100,7 @@ function rowToCustomer(row: unknown[]): CustomerRow {
   };
 }
 
-// ─── Customer Repository ────────────────────────────────────────────────────────
+// â”€â”€â”€ Customer Repository â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function listCustomers(filter?: {
   search?: string;
@@ -329,10 +332,6 @@ export async function redeemPoints(id: string, points: number): Promise<{ custom
   }
 }
 
-import * as XLSX from 'xlsx';
-import * as path from 'node:path';
-import * as fs from 'node:fs';
-import { getDb } from '../../db/index.ts';
 
 export interface CustomerExportParams {
   filter?: {
@@ -400,10 +399,8 @@ export async function exportCustomers(params: CustomerExportParams): Promise<{ s
   }
 }
 
-import * as XLSX from 'xlsx';
-import { getDb } from '../../db/index.ts';
 
-// ─── Types ─────────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export interface CustomerImportRow {
   rowIndex: number;
@@ -429,7 +426,7 @@ export interface CustomerPreviewResult {
   errors: Array<{ row: number; message: string }>;
 }
 
-// ─── Column mapping ────────────────────────────────────────────────────────────
+// â”€â”€â”€ Column mapping â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const COLUMN_ALIASES: Record<string, string[]> = {
   name:       ['nama', 'name', 'nama pelanggan', 'customer name', 'nama_pelanggan'],
@@ -478,7 +475,7 @@ function normalizeTier(value: any): string {
   return 'bronze';
 }
 
-// ─── Parse ─────────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Parse â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function parseWorkbook(buffer: Buffer): CustomerImportRow[] {
   const workbook = XLSX.read(buffer, { type: 'buffer' });
@@ -513,7 +510,7 @@ function parseWorkbook(buffer: Buffer): CustomerImportRow[] {
   }).filter(Boolean) as CustomerImportRow[];
 }
 
-// ─── Validation ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Validation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async function validateRows(rows: CustomerImportRow[]): Promise<CustomerPreviewResult['errors']> {
   const db = await getDb();
@@ -547,7 +544,7 @@ async function validateRows(rows: CustomerImportRow[]): Promise<CustomerPreviewR
   return errors;
 }
 
-// ─── Preview ───────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Preview â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function previewImportFromBuffer(buffer: Buffer): Promise<CustomerPreviewResult> {
   try {
@@ -564,7 +561,7 @@ export async function previewImportFromBuffer(buffer: Buffer): Promise<CustomerP
   }
 }
 
-// ─── Commit ────────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Commit â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function commitImport(rows: CustomerImportRow[]): Promise<CustomerImportResult> {
   const db = await getDb();
