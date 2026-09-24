@@ -141,7 +141,8 @@
     },
     "publish": {
       "provider": "github",
-      "repo": "pos-desktop"
+      "repo": "pos-desktop",
+      "releaseType": "release"
     }
   },
   "overrides": {
