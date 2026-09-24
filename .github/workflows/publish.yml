@@ -29,16 +29,17 @@ jobs:
       - name: Create Tag & Build + Publish
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: pwsh
         run: |
-          # Extract version dari package.json
-          VER=$(node -p "require('./package.json').version")
-          echo "Version: $VER"
+          # Extract version
+          $ver = (Get-Content package.json | ConvertFrom-Json).version
+          Write-Host "Version: $ver"
 
           # Buat & push git tag
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag -a "v$VER" -m "Release $VER" || true
-          git push origin "v$VER" || true
+          git tag -a "v$ver" -m "Release $ver" 2>$null
+          git push origin "v$ver" 2>$null
 
-          # Build & publish sekaligus
+          # Build & publish
           npx electron-builder --win --publish always
