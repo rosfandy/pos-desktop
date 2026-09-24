@@ -30,11 +30,6 @@ const iconPath = app.isPackaged
 let mainWindow: BrowserWindow | null = null;
 
 function createWindow() {
-  // Set app user model id (Windows taskbar grouping + icon)
-  if (process.platform === 'win32') {
-    app.setAppUserModelId('com.posdesktop.app');
-  }
-
   const icon = nativeImage.createFromPath(iconPath);
 
   mainWindow = new BrowserWindow({
@@ -74,6 +69,12 @@ function createWindow() {
 app.whenReady().then(async () => {
   // Set app name early so Windows uses it for taskbar/title
   app.setName(APP_NAME);
+
+  // Set App User Model ID early for Windows taskbar icon
+  if (process.platform === 'win32') {
+    app.setAppUserModelId('com.posdesktop.app');
+  }
+
   console.log('[APP] whenReady fired');
 
   // ── Database ──────────────────────────────────────────────────────────
