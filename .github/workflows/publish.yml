@@ -44,16 +44,19 @@ jobs:
           git tag -a "v$ver" -m "Release $ver" 2>$null
           git push origin "v$ver" 2>$null
 
-          # Hapus SEMUA draft release + release lama supaya tidak ada asset stale
-          $headers = @{ Authorization = "Bearer $env:GH_TOKEN"; Accept = "application/vnd.github+json" }
-          $releases = Invoke-RestMethod -Uri "https://api.github.com/repos/rosfandy/pos-desktop/releases?per_page=100" -Headers $headers
-          foreach ($r in $releases) {
-            if ($r.draft -or $r.tag_name -ne "v$ver") {
-              try {
-                Invoke-RestMethod -Method Delete -Uri "https://api.github.com/repos/rosfandy/pos-desktop/releases/$($r.id)" -Headers $headers
-                Write-Host "Deleted release: $($r.tag_name) (draft=$($r.draft))"
-              } catch { Write-Host "Failed to delete $($r.tag_name)" }
-            }
+          # Hapus SEMUA draft release + release lama (pakai gh CLI)
+          Write-Host "=== Drafts ==="
+          $draftIds = gh api "repos/rosfandy/pos-desktop/releases?per_page=100" --jq '.[] | select(.draft == true) | .id'
+          foreach ($id in $draftIds) {
+            Write-Host "Deleting draft release id=$id"
+            gh api -X DELETE "repos/rosfandy/pos-desktop/releases/$id"
+          }
+
+          Write-Host "=== Old published releases ==="
+          $oldTags = gh api "repos/rosfandy/pos-desktop/releases?per_page=100" --jq ".[] | select(.draft == false and .tag_name != `"v$ver`") | .tag_name"
+          foreach ($tag in $oldTags) {
+            Write-Host "Deleting release $tag"
+            gh release delete $tag --yes --cleanup-tag
           }
 
           # Build & publish
