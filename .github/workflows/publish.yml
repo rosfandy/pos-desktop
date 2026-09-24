@@ -44,13 +44,17 @@ jobs:
           git tag -a "v$ver" -m "Release $ver" 2>$null
           git push origin "v$ver" 2>$null
 
-          # Hapus release lama (kalau ada) supaya asset tidak stale
+          # Hapus SEMUA draft release + release lama supaya tidak ada asset stale
           $headers = @{ Authorization = "Bearer $env:GH_TOKEN"; Accept = "application/vnd.github+json" }
-          try {
-            $rel = Invoke-RestMethod -Uri "https://api.github.com/repos/rosfandy/pos-desktop/releases/tags/v$ver" -Headers $headers
-            Invoke-RestMethod -Method Delete -Uri "https://api.github.com/repos/rosfandy/pos-desktop/releases/$($rel.id)" -Headers $headers
-            Write-Host "Deleted old release v$ver"
-          } catch { Write-Host "No existing release v$ver" }
+          $releases = Invoke-RestMethod -Uri "https://api.github.com/repos/rosfandy/pos-desktop/releases?per_page=100" -Headers $headers
+          foreach ($r in $releases) {
+            if ($r.draft -or $r.tag_name -ne "v$ver") {
+              try {
+                Invoke-RestMethod -Method Delete -Uri "https://api.github.com/repos/rosfandy/pos-desktop/releases/$($r.id)" -Headers $headers
+                Write-Host "Deleted release: $($r.tag_name) (draft=$($r.draft))"
+              } catch { Write-Host "Failed to delete $($r.tag_name)" }
+            }
+          }
 
           # Build & publish
           npx electron-builder --win --publish always
