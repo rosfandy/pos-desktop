@@ -1131,7 +1131,88 @@ function parseNumber(value: any, fallback: number): number {
 
 // â”€â”€â”€ Parse â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
+/** Parse CSV sederhana (support quoted fields, koma/semicolon/tab delimiter) */
+function parseCsv(text: string): ImportRow[] {
+  const clean = text.replace(/^\uFEFF/, ''); // hapus BOM
+  const lines = clean.split(/\r?\n/).filter((l) => l.trim() !== '');
+  if (lines.length === 0) return [];
+
+  const parseLine = (line: string): string[] => {
+    const out: string[] = [];
+    let cur = '';
+    let inQuotes = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (inQuotes) {
+        if (ch === '"') {
+          if (line[i + 1] === '"') { cur += '"'; i++; }
+          else inQuotes = false;
+        } else cur += ch;
+      } else if (ch === '"') {
+        inQuotes = true;
+      } else if (ch === ',' || ch === ';' || ch === '\t') {
+        out.push(cur); cur = '';
+      } else cur += ch;
+    }
+    out.push(cur);
+    return out.map((s) => s.trim());
+  };
+
+  const headers = parseLine(lines[0]);
+  const colMap = buildColumnMap(headers);
+  const dataRows = lines.slice(1);
+
+  return dataRows.map((line, i) => {
+    const row = parseLine(line);
+    if (row.every((c) => c === '')) return null;
+
+    const rowObj: Record<string, any> = {};
+    for (let j = 0; j < headers.length; j++) {
+      const field = colMap[headers[j]];
+      if (field) rowObj[field] = row[j];
+    }
+
+    return {
+      rowIndex: i + 2,
+      name: String(rowObj.name || '').trim(),
+      sku: rowObj.sku ? String(rowObj.sku).trim() : undefined,
+      barcode: rowObj.barcode ? String(rowObj.barcode).trim() : undefined,
+      categoryId: rowObj.categoryId ? String(rowObj.categoryId).trim() : undefined,
+      priceBuy: parseNumber(rowObj.priceBuy, 0),
+      priceSell: parseNumber(rowObj.priceSell, 0),
+      stock: parseNumber(rowObj.stock, 0),
+      baseUnit: String(rowObj.baseUnit || 'pcs').trim(),
+      minStock: parseNumber(rowObj.minStock, 0),
+      units: [{ unitName: String(rowObj.baseUnit || 'pcs').trim(), conversionFactor: 1, isDefault: true }],
+    };
+  }).filter(Boolean) as ImportRow[];
+}
+
 async function parseWorkbook(buffer: Buffer): Promise<ImportRow[]> {
+  // ── Deteksi format file berdasarkan magic bytes ──
+  // ZIP (PK\x03\x04) = xlsx asli | OLE2 (D0 CF 11 E0) = xls lama | teks = CSV
+  const isZip = buffer.length > 4 && buffer[0] === 0x50 && buffer[1] === 0x4b &&
+    (buffer[2] === 0x03 || buffer[2] === 0x05 || buffer[2] === 0x07);
+  const isOle2 = buffer.length > 8 && buffer[0] === 0xd0 && buffer[1] === 0xcf &&
+    buffer[2] === 0x11 && buffer[3] === 0xe0;
+  const isText = !isZip && !isOle2 && buffer.subarray(0, 512).every(
+    (b) => b === 0x09 || b === 0x0a || b === 0x0d || (b >= 0x20 && b <= 0x7e) || b >= 0x80
+  );
+
+  if (isOle2) {
+    throw new Error(
+      'Format .xls lama tidak didukung. Simpan ulang file sebagai .xlsx (Excel Workbook) lalu import kembali.'
+    );
+  }
+
+  if (isText) {
+    return parseCsv(buffer.toString('utf8'));
+  }
+
+  if (!isZip) {
+    throw new Error('File tidak dikenali. Gunakan file .xlsx atau .csv.');
+  }
+
   const workbook = new ExcelJS.Workbook();
   await workbook.xlsx.load(buffer as any);
   const worksheet = workbook.worksheets[0];
