@@ -19,9 +19,12 @@ jobs:
           cache: npm
 
       - name: Install Dependencies
-        run: npm install
+        run: npm install --legacy-peer-deps
 
-      - name: Build & Publish
+      - name: Build Application
+        run: npm run build
+
+      - name: Build & Publish Installer
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx electron-builder --win --publish always
