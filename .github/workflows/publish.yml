@@ -44,20 +44,5 @@ jobs:
           git tag -a "v$ver" -m "Release $ver" 2>$null
           git push origin "v$ver" 2>$null
 
-          # Hapus SEMUA draft release + release lama (pakai gh CLI)
-          Write-Host "=== Drafts ==="
-          $draftIds = gh api "repos/rosfandy/pos-desktop/releases?per_page=100" --jq '.[] | select(.draft == true) | .id'
-          foreach ($id in $draftIds) {
-            Write-Host "Deleting draft release id=$id"
-            gh api -X DELETE "repos/rosfandy/pos-desktop/releases/$id"
-          }
-
-          Write-Host "=== Old published releases ==="
-          $oldTags = gh api "repos/rosfandy/pos-desktop/releases?per_page=100" --jq ".[] | select(.draft == false and .tag_name != `"v$ver`") | .tag_name"
-          foreach ($tag in $oldTags) {
-            Write-Host "Deleting release $tag"
-            gh release delete $tag --yes --cleanup-tag
-          }
-
           # Build & publish
           npx electron-builder --win --publish always
