@@ -141,11 +141,7 @@
     },
     "publish": {
       "provider": "github",
-      "owner": "rosfandy",
-      "repo": "pos-desktop",
-      "releaseType": "release",
-      "vPrefixedTagName": false,
-      "artifact": "**/*.yml"
+      "repo": "pos-desktop"
     }
   },
   "overrides": {
