@@ -26,37 +26,19 @@ jobs:
       - name: Install Dependencies
         run: npm install --legacy-peer-deps
 
-      - name: Get Version & Create Tag
-        id: version
-        shell: pwsh
+      - name: Create Tag & Build + Publish
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          $json = Get-Content package.json | ConvertFrom-Json
-          $ver = $json.version
-          echo "Ver extracted: $ver"
-          echo "tag=v$ver" >> $env:GITHUB_OUTPUT
+          # Extract version dari package.json
+          VER=$(node -p "require('./package.json').version")
+          echo "Version: $VER"
 
-      - name: Create Git Tag
-        run: |
+          # Buat & push git tag
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          if ($("${{ steps.version.outputs.tag }}") -and -not $(git tag -l "${{ steps.version.outputs.tag }}")) {
-            git tag -a "${{ steps.version.outputs.tag }}" -m "Release ${{ steps.version.outputs.tag }}"
-            git push origin "${{ steps.version.outputs.tag }}"
-          }
+          git tag -a "v$VER" -m "Release $VER" || true
+          git push origin "v$VER" || true
 
-      - name: Build Application
-        run: npm run build
-
-      - name: Build Installer
-        run: npx electron-builder --win --publish never
-
-      - name: Upload Release Assets
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: ${{ steps.version.outputs.tag }}
-          files: |
-            release/latest.yml
-            release/*Setup*.exe
-            release/*Portable*.exe
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Build & publish sekaligus
+          npx electron-builder --win --publish always
