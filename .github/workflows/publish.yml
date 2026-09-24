@@ -46,3 +46,14 @@ jobs:
 
           # Build & publish
           npx electron-builder --win --publish always
+
+          # Upload latest.yml untuk auto-updater
+          $ver = "v$((Get-Content package.json | ConvertFrom-Json).version)"
+          $yml = Get-ChildItem release -Filter "latest*.yml" | Select-Object -First 1
+          if ($yml) {
+            Write-Host "Uploading $($yml.Name) to release $ver"
+            $headers = @{ Authorization = "Bearer $env:GH_TOKEN"; Accept = "application/vnd.github+json" }
+            $release = Invoke-RestMethod -Uri "https://api.github.com/repos/rosfandy/pos-desktop/releases/tags/$ver" -Headers $headers
+            $bytes = [System.IO.File]::ReadAllBytes($yml.FullName)
+            Invoke-RestMethod -Method Post -Uri "https://uploads.github.com/repos/rosfandy/pos-desktop/releases/$($release.id)/assets?name=$($yml.Name)" -Headers $headers -ContentType "application/octet-stream" -Body $bytes
+          }
