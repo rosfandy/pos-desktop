@@ -125,10 +125,7 @@
           ]
         }
       ],
-      "icon": "icon.ico",
-      "publisherName": "POS Kasir",
-      "signAndEditExecutable": false,
-      "verifyUpdateCodeSignature": false
+      "icon": "icon.ico"
     },
     "nsis": {
       "oneClick": true,
