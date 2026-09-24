@@ -14,6 +14,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js (v22 required for Electron 44)
         uses: actions/setup-node@v4
@@ -23,6 +25,19 @@ jobs:
 
       - name: Install Dependencies
         run: npm install --legacy-peer-deps
+
+      - name: Get Version
+        id: version
+        run: |
+          $ver = (Get-Content package.json | Select-String '"version"').ToString().Replace('"version": ', '').Replace(',', '').Trim()
+          echo "ver=$ver" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
+      - name: Create Git Tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "v${{ steps.version.outputs.ver }}" -m "Release ${{ steps.version.outputs.ver }}" || echo "Tag already exists"
+          git push --tags
 
       - name: Build Application
         run: npm run build
