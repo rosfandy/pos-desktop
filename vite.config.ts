@@ -13,6 +13,7 @@ export default defineConfig({
         vite: {
           build: {
             outDir: 'dist-electron',
+            emptyOutDir: true,
             rollupOptions: {
               external: ['electron', 'sql.js', 'node-thermal-printer', 'electron-updater', 'exceljs'],
               input: {
@@ -20,6 +21,9 @@ export default defineConfig({
                 preload: resolve(__dirname, 'electron/preload.ts'),
               },
             },
+            // No minify, no esbuild target transpilation
+            minify: false,
+            target: false,
           },
         },
       },
@@ -39,5 +43,7 @@ export default defineConfig({
   base: './',
   build: {
     outDir: 'dist',
+    minify: false,
+    target: false,
   },
 });
