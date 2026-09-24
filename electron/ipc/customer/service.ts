@@ -1,5 +1,5 @@
 ﻿import type { Customer } from '../../db/schema.ts';
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 import * as path from 'node:path';
 import * as fs from 'node:fs';
 
@@ -386,10 +386,10 @@ export async function exportCustomers(params: CustomerExportParams): Promise<{ s
       const csvContent = rows.map((row) => row.map((cell) => `"${String(cell ?? '').replace(/"/g, '""')}"`).join(',')).join('\n');
       fs.writeFileSync(outputPath, '\uFEFF' + csvContent);
     } else {
-      const worksheet = XLSX.utils.aoa_to_sheet(rows);
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, 'Pelanggan');
-      const buffer: Uint8Array = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet('Pelanggan');
+      worksheet.addRows(rows);
+      const buffer = await workbook.xlsx.writeBuffer();
       fs.writeFileSync(outputPath, Buffer.from(buffer));
     }
 
@@ -477,10 +477,15 @@ function normalizeTier(value: any): string {
 
 // â”€â”€â”€ Parse â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-function parseWorkbook(buffer: Buffer): CustomerImportRow[] {
-  const workbook = XLSX.read(buffer, { type: 'buffer' });
-  const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-  const rows: any[][] = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
+async function parseWorkbook(buffer: Buffer): Promise<CustomerImportRow[]> {
+  const workbook = new ExcelJS.Workbook();
+  await workbook.xlsx.load(buffer as any);
+  const worksheet = workbook.worksheets[0];
+  if (!worksheet) return [];
+  const rows: any[][] = [];
+  worksheet.eachRow({ includeEmpty: true }, (row) => {
+    rows.push((row.values as any[]).slice(1));
+  });
 
   if (rows.length === 0) return [];
 
@@ -548,7 +553,7 @@ async function validateRows(rows: CustomerImportRow[]): Promise<CustomerPreviewR
 
 export async function previewImportFromBuffer(buffer: Buffer): Promise<CustomerPreviewResult> {
   try {
-    const rows = parseWorkbook(buffer);
+    const rows = await parseWorkbook(buffer);
 
     if (rows.length === 0) {
       return { rows: [], totalRows: 0, errors: [{ row: 0, message: 'File kosong atau tidak bisa dibaca' }] };

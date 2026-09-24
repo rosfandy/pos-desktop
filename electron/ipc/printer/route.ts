@@ -176,7 +176,6 @@ export function registerPrinterHandlers() {
       const list = printers.map((p) => ({
         name: p.name,
         displayName: p.displayName || p.name,
-        status: p.status ?? 3,
       }));
       return { ok: true, data: list };
     } catch (err) {

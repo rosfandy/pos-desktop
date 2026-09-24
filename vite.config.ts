@@ -14,7 +14,7 @@ export default defineConfig({
           build: {
             outDir: 'dist-electron',
             rollupOptions: {
-              external: ['electron', 'sql.js', 'node-thermal-printer', 'electron-updater'],
+              external: ['electron', 'sql.js', 'node-thermal-printer', 'electron-updater', 'exceljs'],
               input: {
                 main: resolve(__dirname, 'electron/main.ts'),
                 preload: resolve(__dirname, 'electron/preload.ts'),

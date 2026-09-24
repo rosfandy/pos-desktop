@@ -608,42 +608,55 @@ export default function InlineProductTable({ refreshKey }: { refreshKey?: number
             {/* ── New rows (editing) ──── */}
             {[...editingRows.entries()]
               .filter(([, row]) => row.isNew)
-              .map(([id, row]) => (
+              .map(([id, row], idx) => (
                 <tr key={id} className="bg-indigo-50/40 border-b border-indigo-200">
-                  <td className="px-3 py-1.5 text-[11px] text-indigo-500 font-medium">✚ new</td>
+                  {/* Checkbox */}
+                  <td className="px-2 py-1.5"></td>
+                  {/* No */}
+                  <td className="px-2 py-1.5 text-[11px] text-indigo-500 tabular-nums">{idx + 1}</td>
+                  {/* SKU */}
                   <td className="px-1.5 py-1.5">
                     <Input value={row.sku} onChange={(e) => updateField(id, 'sku', e.target.value)} onKeyDown={(e) => handleKeyDown(e, id)} placeholder="SKU" className="h-7 text-[11px] font-mono" />
                   </td>
+                  {/* Barcode */}
                   <td className="px-1.5 py-1.5">
                     <Input value={row.barcode} onChange={(e) => updateField(id, 'barcode', e.target.value)} onKeyDown={(e) => handleKeyDown(e, id)} placeholder="Barcode" className="h-7 text-[11px] font-mono" />
                   </td>
+                  {/* Nama Produk */}
                   <td className="px-1.5 py-1.5">
                     <Input value={row.name} onChange={(e) => updateField(id, 'name', e.target.value)} onKeyDown={(e) => handleKeyDown(e, id)} placeholder="Nama produk *" className={cn('h-7 text-[11px] w-full', !row.name.trim() ? 'border-red-300 focus:ring-red-300' : '')} autoFocus />
                   </td>
+                  {/* Kategori */}
                   <td className="px-1.5 py-1.5">
                     <select value={row.categoryId} onChange={(e) => updateField(id, 'categoryId', e.target.value)} className="w-full h-7 text-[11px] border border-neutral-300 rounded px-2 focus:outline-none focus:ring-1 focus:ring-indigo-500">
                       <option value="">—</option>
                       {activeCategories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
                     </select>
                   </td>
+                  {/* Harga Beli */}
                   <td className="px-1.5 py-1.5">
                     <Input type="number" min="0" step="100" value={row.priceBuy} onChange={(e) => updateField(id, 'priceBuy', e.target.value)} onKeyDown={(e) => handleKeyDown(e, id)} className="h-7 text-[11px] text-right tabular-nums w-full" />
                   </td>
+                  {/* Harga Jual */}
                   <td className="px-1.5 py-1.5">
                     <Input type="number" min="0" step="100" value={row.priceSell} onChange={(e) => updateField(id, 'priceSell', e.target.value)} onKeyDown={(e) => handleKeyDown(e, id)} className="h-7 text-[11px] text-right tabular-nums w-full" />
                   </td>
+                  {/* Stok */}
                   <td className="px-1.5 py-1.5">
                     <Input type="number" min="0" value={row.stock} onChange={(e) => updateField(id, 'stock', e.target.value)} onKeyDown={(e) => handleKeyDown(e, id)} className="h-7 text-[11px] text-center tabular-nums w-full" />
                   </td>
+                  {/* Satuan */}
                   <td className="px-1.5 py-1.5">
                     <Input value={row.baseUnit} onChange={(e) => updateField(id, 'baseUnit', e.target.value)} onKeyDown={(e) => handleKeyDown(e, id)} placeholder="pcs" className="w-16 h-7 text-[11px] text-center" />
                   </td>
+                  {/* Min Stok */}
                   <td className="px-1.5 py-1.5">
                     <Input type="number" min="0" value={row.minStock} onChange={(e) => updateField(id, 'minStock', e.target.value)} onKeyDown={(e) => handleKeyDown(e, id)} className="w-16 h-7 text-[11px] text-center tabular-nums" />
                   </td>
+                  {/* Aksi */}
                   <td className="px-1.5 py-1.5 sticky right-0 z-10 bg-indigo-50 border-l border-indigo-100">
                     <div className="flex items-center justify-center gap-1">
-                      <Button variant="ghost" size="icon-sm" onClick={() => saveRow(id)} disabled={savingIds.has(id) || !row.name.trim()} 
+                      <Button variant="ghost" size="icon-sm" onClick={() => saveRow(id)} disabled={savingIds.has(id) || !row.name.trim()}
                       className="bg-green-200 text-green-600 hover:bg-green-300" title="Simpan (Enter)">
                         <FloppyDisk className="w-4 h-4" />
                       </Button>
@@ -657,7 +670,7 @@ export default function InlineProductTable({ refreshKey }: { refreshKey?: number
               ))}
 
             {/* ── Existing rows ──── */}
-            {products.filter((p) => !editingRows.has(p.id)).map((product, idx) => {
+            {products.map((product, idx) => {
               const editing = editingRows.get(product.id);
               const isEditing = !!editing;
               const isSaving = savingIds.has(product.id);
@@ -665,37 +678,50 @@ export default function InlineProductTable({ refreshKey }: { refreshKey?: number
               if (isEditing && editing) {
                 return (
                   <tr key={product.id} className="bg-amber-50/50 border-b border-amber-100">
-                    <td className="px-3 py-1.5 text-[11px] text-amber-600 font-medium tabular-nums">✏ {idx + 1}</td>
+                    {/* Checkbox */}
+                    <td className="px-2 py-1.5"></td>
+                    {/* No */}
+                    <td className="px-2 py-1.5 text-[11px] text-amber-600 font-medium tabular-nums">{idx + 1}</td>
+                    {/* SKU */}
                     <td className="px-1.5 py-1.5">
                       <Input value={editing.sku} onChange={(e) => updateField(product.id, 'sku', e.target.value)} onKeyDown={(e) => handleKeyDown(e, product.id)} className="h-7 text-[11px] font-mono" />
                     </td>
+                    {/* Barcode */}
                     <td className="px-1.5 py-1.5">
                       <Input value={editing.barcode} onChange={(e) => updateField(product.id, 'barcode', e.target.value)} onKeyDown={(e) => handleKeyDown(e, product.id)} placeholder="Barcode" className="h-7 text-[11px] font-mono" />
                     </td>
+                    {/* Nama Produk */}
                     <td className="px-1.5 py-1.5">
                       <Input value={editing.name} onChange={(e) => updateField(product.id, 'name', e.target.value)} onKeyDown={(e) => handleKeyDown(e, product.id)} className={cn('h-7 text-[11px] w-full', !editing.name.trim() ? 'border-red-300 focus:ring-red-300' : '')} autoFocus />
                     </td>
+                    {/* Kategori */}
                     <td className="px-1.5 py-1.5">
                       <select value={editing.categoryId} onChange={(e) => updateField(product.id, 'categoryId', e.target.value)} className="w-full h-7 text-[11px] border border-neutral-300 rounded px-2 focus:outline-none focus:ring-1 focus:ring-indigo-500">
                         <option value="">—</option>
                         {activeCategories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
                       </select>
                     </td>
+                    {/* Harga Beli */}
                     <td className="px-1.5 py-1.5">
                       <Input type="number" min="0" step="100" value={editing.priceBuy} onChange={(e) => updateField(product.id, 'priceBuy', e.target.value)} onKeyDown={(e) => handleKeyDown(e, product.id)} className="h-7 text-[11px] text-right tabular-nums w-full" />
                     </td>
+                    {/* Harga Jual */}
                     <td className="px-1.5 py-1.5">
                       <Input type="number" min="0" step="100" value={editing.priceSell} onChange={(e) => updateField(product.id, 'priceSell', e.target.value)} onKeyDown={(e) => handleKeyDown(e, product.id)} className="h-7 text-[11px] text-right tabular-nums w-full" />
                     </td>
+                    {/* Stok */}
                     <td className="px-1.5 py-1.5">
                       <Input type="number" min="0" value={editing.stock} onChange={(e) => updateField(product.id, 'stock', e.target.value)} onKeyDown={(e) => handleKeyDown(e, product.id)} className="h-7 text-[11px] text-center tabular-nums w-full" />
                     </td>
+                    {/* Satuan */}
                     <td className="px-1.5 py-1.5">
                       <Input value={editing.baseUnit} onChange={(e) => updateField(product.id, 'baseUnit', e.target.value)} onKeyDown={(e) => handleKeyDown(e, product.id)} className="w-16 h-7 text-[11px] text-center" />
                     </td>
+                    {/* Min Stok */}
                     <td className="px-1.5 py-1.5">
                     <Input type="number" min="0" value={editing.minStock} onChange={(e) => updateField(product.id, 'minStock', e.target.value)} onKeyDown={(e) => handleKeyDown(e, product.id)} className="w-16 h-7 text-[11px] text-center tabular-nums" />
                     </td>
+                    {/* Aksi */}
                     <td className="px-1.5 py-1.5 sticky right-0 z-10 bg-amber-50 border-l border-amber-100">
                       <div className="flex items-center justify-center gap-1">
                         <Button variant="ghost" size="icon-sm" onClick={() => saveRow(product.id)} disabled={isSaving || !editing.name.trim()} 
