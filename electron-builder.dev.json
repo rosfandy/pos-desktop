@@ -23,7 +23,7 @@
   "win": {
     "target": ["portable"],
     "icon": "icon.ico",
-    "publisherName": "POS Kasir",
-    "publish": null
-  }
+    "publisherName": "POS Kasir"
+  },
+  "publish": null
 }
