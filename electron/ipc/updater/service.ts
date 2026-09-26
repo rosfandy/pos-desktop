@@ -4,6 +4,18 @@ import { app } from 'electron';
 autoUpdater.autoDownload = false;
 autoUpdater.autoInstallOnAppQuit = true;
 
+// Konfigurasi feed update secara eksplisit agar tidak bergantung pada
+// file app-update.yml (electron-builder terkadang tidak menghasilkannya).
+// primary: setFeedURL; fallback: app-update.yml via extraResources.
+if (app.isPackaged) {
+  autoUpdater.setFeedURL({
+    provider: 'github',
+    owner: 'rosfandy',
+    repo: 'pos-desktop',
+    updaterCacheDirName: 'pos-desktop-updater',
+  });
+}
+
 export async function checkForUpdates(): Promise<{ ok: boolean; error?: string }> {
   if (!app.isPackaged) {
     return { ok: false, error: 'Update hanya tersedia di aplikasi terinstall' };

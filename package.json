@@ -108,6 +108,10 @@
       {
         "from": "build-resources/icon.ico",
         "to": "icon.ico"
+      },
+      {
+        "from": "build-resources/app-update.yml",
+        "to": "app-update.yml"
       }
     ],
     "win": {
@@ -133,7 +137,12 @@
       "include": "build-resources/installer.nsh",
       "deleteAppDataOnUninstall": false
     },
-    "publish": null
+    "publish": {
+      "provider": "github",
+      "repo": "pos-desktop",
+      "owner": "rosfandy",
+      "releaseType": "release"
+    }
   },
   "overrides": {
     "uuid": "^11.1.1",

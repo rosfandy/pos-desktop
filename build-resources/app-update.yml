@@ -1,0 +1,4 @@
+provider: github
+owner: rosfandy
+repo: pos-desktop
+updaterCacheDirName: pos-desktop-updater
