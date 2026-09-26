@@ -111,7 +111,8 @@ export default function InlineProductTable({ refreshKey }: { refreshKey?: number
     const gen = fetchGen; // snapshot
 
     setLoading(true);
-    setProducts([]);
+    // Don't clear products here — only replace at end to avoid table remount & focus loss
+    // setProducts([]);
     setNextCursorInner(null);
     setHasMoreInner(false);
     cursorRef.current = null;
@@ -205,7 +206,7 @@ export default function InlineProductTable({ refreshKey }: { refreshKey?: number
   useEffect(() => {
     fetchPage();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [refreshKey, debouncedSearch, categoryFilter, fetchPage]);
+  }, [refreshKey, debouncedSearch, categoryFilter]);
 
   // ── Effect: load categories once ───────────────────────────────────────────
   useEffect(() => {
@@ -578,7 +579,10 @@ export default function InlineProductTable({ refreshKey }: { refreshKey?: number
 
       {/* ── Table ───────────────────────────────────────────────────────────── */}
       <div className="flex-1 overflow-auto [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-neutral-300 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-neutral-400">
-        <PosTable className="min-w-[1100px] [&_td]:border-r [&_th]:border-r [&_td]:border-neutral-200 [&_th]:border-neutral-200">
+        <PosTable
+          key={`${debouncedSearch}::${categoryFilter}`}
+          className="min-w-[1100px] [&_td]:border-r [&_th]:border-r [&_td]:border-neutral-200 [&_th]:border-neutral-200"
+        >
           <PosTableHead>
             <tr className="bg-neutral-50 border-b-2 border-neutral-300">
               <th className="px-2 py-1.5 text-[10px] font-semibold text-neutral-500 uppercase w-8 text-center">
