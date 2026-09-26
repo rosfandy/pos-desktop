@@ -133,11 +133,7 @@
       "include": "build-resources/installer.nsh",
       "deleteAppDataOnUninstall": false
     },
-    "publish": {
-      "provider": "github",
-      "repo": "pos-desktop",
-      "releaseType": "release"
-    }
+    "publish": null
   },
   "overrides": {
     "uuid": "^11.1.1",
